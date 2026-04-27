@@ -34,11 +34,13 @@ async function handleEvent(event) {
 
   const userMessage = event.message.text;
   const lineUserId = event.source.userId;
+  const today = new Date().toISOString().split('T')[0];
 
   const aiResponse = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
     max_tokens: 1000,
     system: `あなたは日本の美容室の親切なAI予約アシスタントです。
+今日の日付は${today}です。
 日本語で返答してください。
 予約を取る場合は、必ず以下のJSON形式を返答の最後に追加してください：
 [RESERVATION]{"name":"お客様名","service":"サービス内容","date":"YYYY-MM-DD","time":"HH:MM"}[/RESERVATION]
@@ -49,7 +51,6 @@ async function handleEvent(event) {
 
   let replyText = aiResponse.content[0].text;
 
-  // 예약 정보 추출 및 저장
   const reservationMatch = replyText.match(/\[RESERVATION\](.*?)\[\/RESERVATION\]/s);
   if (reservationMatch) {
     try {
