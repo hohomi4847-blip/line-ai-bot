@@ -13,23 +13,43 @@ app.use(express.static(path.join(__dirname, 'public')));
 const anthropic = new Anthropic();
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
+// 대화 기록 불러오기 (최근 10개 + 24시간 이내)
+async function getConversationHistory(lineUserId, shopId) {
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { data } = await supabase
+    .from('conversations')
+    .select('role, content')
+    .eq('line_user_id', lineUserId)
+    .eq('shop_id', shopId || 'default')
+    .gte('created_at', since)
+    .order('created_at', { ascending: true })
+    .limit(10);
+  return data || [];
+}
+
+// 대화 기록 저장
+async function saveConversation(lineUserId, shopId, role, content) {
+  await supabase.from('conversations').insert({
+    line_user_id: lineUserId,
+    shop_id: shopId || 'default',
+    role,
+    content,
+  });
+}
+
 // 대시보드 API
 app.get('/api/dashboard', async (req, res) => {
   try {
     const today = new Date().toISOString().split('T')[0];
-
     const { data: reservations } = await supabase
       .from('reservations')
       .select('*')
       .order('created_at', { ascending: false });
-
     const { data: shops } = await supabase
       .from('shops')
       .select('*')
       .order('created_at', { ascending: false });
-
     const todayReservations = reservations.filter(r => r.reservation_date === today).length;
-
     res.json({
       totalReservations: reservations.length,
       todayReservations,
@@ -46,7 +66,6 @@ app.get('/api/dashboard', async (req, res) => {
 // 가입 API
 app.post('/api/register', async (req, res) => {
   const { email, shopName, businessType, channelSecret, channelToken } = req.body;
-
   try {
     const { error } = await supabase.from('shops').insert({
       owner_email: email,
@@ -55,7 +74,6 @@ app.post('/api/register', async (req, res) => {
       line_channel_secret: channelSecret,
       line_channel_access_token: channelToken,
     });
-
     if (error) throw error;
     res.json({ success: true });
   } catch (e) {
@@ -68,29 +86,18 @@ app.post('/api/register', async (req, res) => {
 app.get('/api/calendar/:shopId', async (req, res) => {
   try {
     const { shopId } = req.params;
-
     const { data: shop } = await supabase
-      .from('shops')
-      .select('*')
-      .eq('id', shopId)
-      .single();
-
+      .from('shops').select('*').eq('id', shopId).single();
     if (!shop) return res.status(404).send('Shop not found');
-
     const { data: reservations } = await supabase
-      .from('reservations')
-      .select('*')
+      .from('reservations').select('*')
       .eq('line_user_id', shopId)
       .order('created_at', { ascending: false });
-
     const calendar = ical({ name: shop.shop_name });
-
     (reservations || []).forEach(r => {
       if (!r.reservation_date || !r.reservation_time) return;
-
       const startDate = new Date(`${r.reservation_date}T${r.reservation_time}`);
-      const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1시간
-
+      const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
       calendar.createEvent({
         start: startDate,
         end: endDate,
@@ -98,7 +105,6 @@ app.get('/api/calendar/:shopId', async (req, res) => {
         description: `サービス: ${r.service_type || '-'}\nステータス: ${r.status}`,
       });
     });
-
     res.set('Content-Type', 'text/calendar');
     res.send(calendar.toString());
   } catch (e) {
@@ -111,18 +117,13 @@ app.get('/api/calendar/:shopId', async (req, res) => {
 app.get('/api/calendar', async (req, res) => {
   try {
     const { data: reservations } = await supabase
-      .from('reservations')
-      .select('*')
+      .from('reservations').select('*')
       .order('reservation_date', { ascending: true });
-
     const calendar = ical({ name: 'LINE AI予約ボット - 全予約' });
-
     (reservations || []).forEach(r => {
       if (!r.reservation_date || !r.reservation_time) return;
-
       const startDate = new Date(`${r.reservation_date}T${r.reservation_time}`);
       const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
-
       calendar.createEvent({
         start: startDate,
         end: endDate,
@@ -130,7 +131,6 @@ app.get('/api/calendar', async (req, res) => {
         description: `サービス: ${r.service_type || '-'}\nステータス: ${r.status}`,
       });
     });
-
     res.set('Content-Type', 'text/calendar');
     res.send(calendar.toString());
   } catch (e) {
@@ -143,29 +143,16 @@ app.get('/api/calendar', async (req, res) => {
 app.post('/webhook/:shopId', async (req, res) => {
   try {
     const { shopId } = req.params;
-
     const { data: shop } = await supabase
-      .from('shops')
-      .select('*')
-      .eq('id', shopId)
-      .single();
-
+      .from('shops').select('*').eq('id', shopId).single();
     if (!shop) return res.status(404).json({ error: 'Shop not found' });
-
     const { data: template } = await supabase
-      .from('templates')
-      .select('*')
-      .eq('business_type', shop.business_type)
-      .single();
-
+      .from('templates').select('*').eq('business_type', shop.business_type).single();
     const lineConfig = {
       channelSecret: shop.line_channel_secret,
       channelAccessToken: shop.line_channel_access_token,
     };
-
-    const lineMiddleware = line.middleware(lineConfig);
-
-    lineMiddleware(req, res, async () => {
+    line.middleware(lineConfig)(req, res, async () => {
       const events = req.body.events;
       await Promise.all(events.map(event => handleEvent(event, shop, template)));
       res.status(200).json({ status: 'ok' });
@@ -182,38 +169,49 @@ app.post('/webhook', async (req, res) => {
     channelSecret: process.env.LINE_CHANNEL_SECRET,
     channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
   };
-
   const client = new line.messagingApi.MessagingApiClient({
     channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
   });
-
   line.middleware(lineConfig)(req, res, async () => {
     try {
       const events = req.body.events;
       await Promise.all(events.map(async (event) => {
         if (event.type !== 'message' || event.message.type !== 'text') return;
-
         const today = new Date().toISOString().split('T')[0];
+        const lineUserId = event.source.userId;
+        const userMessage = event.message.text;
+
+        // 대화 기록 불러오기
+        const history = await getConversationHistory(lineUserId, 'default');
+
         const aiResponse = await anthropic.messages.create({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 1000,
           system: `あなたは日本の美容室の親切なAI予約アシスタントです。
 今日の日付は${today}です。
-日本語で返答してください。
+予約・メニュー・料金・営業時間以外の質問には「申し訳ございませんが、予約に関するご質問のみお答えできます」と答えてください。
 予約を取る場合は、必ず以下のJSON形式を返答の最後に追加してください：
 [RESERVATION]{"name":"お客様名","service":"サービス内容","date":"YYYY-MM-DD","time":"HH:MM"}[/RESERVATION]
 予約情報が不明な場合は[RESERVATION]タグは不要です。
 マークダウン記号（**など）は使わないでください。`,
-          messages: [{ role: 'user', content: event.message.text }],
+          messages: [
+            ...history,
+            { role: 'user', content: userMessage }
+          ],
         });
 
         let replyText = aiResponse.content[0].text;
+
+        // 대화 저장
+        await saveConversation(lineUserId, 'default', 'user', userMessage);
+        await saveConversation(lineUserId, 'default', 'assistant', replyText.replace(/\[RESERVATION\].*?\[\/RESERVATION\]/s, '').trim());
+
         const reservationMatch = replyText.match(/\[RESERVATION\](.*?)\[\/RESERVATION\]/s);
         if (reservationMatch) {
           try {
             const reservationData = JSON.parse(reservationMatch[1]);
             await supabase.from('reservations').insert({
-              line_user_id: event.source.userId,
+              line_user_id: lineUserId,
               customer_name: reservationData.name,
               service_type: reservationData.service,
               reservation_date: reservationData.date,
@@ -241,33 +239,44 @@ app.post('/webhook', async (req, res) => {
 
 async function handleEvent(event, shop, template) {
   if (event.type !== 'message' || event.message.type !== 'text') return;
-
   const client = new line.messagingApi.MessagingApiClient({
     channelAccessToken: shop.line_channel_access_token,
   });
-
   const today = new Date().toISOString().split('T')[0];
+  const lineUserId = event.source.userId;
+  const userMessage = event.message.text;
+
+  // 대화 기록 불러오기
+  const history = await getConversationHistory(lineUserId, shop.id);
 
   const aiResponse = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
     max_tokens: 1000,
     system: `${template.system_prompt}
 今日の日付は${today}です。
+予約・メニュー・料金・営業時間以外の質問には「申し訳ございませんが、予約に関するご質問のみお答えできます」と答えてください。
 予約を取る場合は、必ず以下のJSON形式を返答の最後に追加してください：
 [RESERVATION]{"name":"お客様名","service":"サービス内容","date":"YYYY-MM-DD","time":"HH:MM"}[/RESERVATION]
 予約情報が不明な場合は[RESERVATION]タグは不要です。
 マークダウン記号（**など）は使わないでください。`,
-    messages: [{ role: 'user', content: event.message.text }],
+    messages: [
+      ...history,
+      { role: 'user', content: userMessage }
+    ],
   });
 
   let replyText = aiResponse.content[0].text;
+
+  // 대화 저장
+  await saveConversation(lineUserId, shop.id, 'user', userMessage);
+  await saveConversation(lineUserId, shop.id, 'assistant', replyText.replace(/\[RESERVATION\].*?\[\/RESERVATION\]/s, '').trim());
 
   const reservationMatch = replyText.match(/\[RESERVATION\](.*?)\[\/RESERVATION\]/s);
   if (reservationMatch) {
     try {
       const reservationData = JSON.parse(reservationMatch[1]);
       await supabase.from('reservations').insert({
-        line_user_id: event.source.userId,
+        line_user_id: lineUserId,
         customer_name: reservationData.name,
         service_type: reservationData.service,
         reservation_date: reservationData.date,
