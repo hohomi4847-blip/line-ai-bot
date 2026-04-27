@@ -37,6 +37,35 @@ async function saveConversation(lineUserId, shopId, role, content) {
   });
 }
 
+// 가게 설정에서 extraInfo 생성
+async function getShopExtraInfo(shopId) {
+  const { data: shopSettings } = await supabase
+    .from('shops')
+    .select('shop_description, business_hours, menu_items')
+    .eq('id', shopId)
+    .single();
+
+  let extraInfo = '';
+  if (shopSettings?.shop_description) {
+    extraInfo += `\n店舗情報: ${shopSettings.shop_description}`;
+  }
+  if (shopSettings?.business_hours) {
+    const hours = shopSettings.business_hours;
+    const dayNames = { mon: '月', tue: '火', wed: '水', thu: '木', fri: '金', sat: '土', sun: '日' };
+    const hoursText = Object.entries(hours).map(([day, h]) =>
+      h.closed ? `${dayNames[day]}:定休日` : `${dayNames[day]}:${h.open}〜${h.close}`
+    ).join(', ');
+    extraInfo += `\n営業時間: ${hoursText}`;
+  }
+  if (shopSettings?.menu_items && shopSettings.menu_items.length > 0) {
+    const menuText = shopSettings.menu_items.map(m =>
+      `${m.name}(${m.price}円・${m.duration}分)`
+    ).join(', ');
+    extraInfo += `\nメニュー: ${menuText}`;
+  }
+  return extraInfo;
+}
+
 // 가게 로그인 API
 app.get('/api/shop-login', async (req, res) => {
   const { email } = req.query;
@@ -225,7 +254,7 @@ app.post('/webhook/:shopId', async (req, res) => {
   }
 });
 
-// 기존 webhook (테스트용)
+// 기존 webhook (테스트용) - 가게 설정 적용
 app.post('/webhook', async (req, res) => {
   const lineConfig = {
     channelSecret: process.env.LINE_CHANNEL_SECRET,
@@ -245,11 +274,19 @@ app.post('/webhook', async (req, res) => {
 
         const history = await getConversationHistory(lineUserId, 'default');
 
+        // 테스트용 가게 설정 불러오기
+        const { data: testShop } = await supabase
+          .from('shops')
+          .select('id')
+          .eq('owner_email', 'hohomi4847@gmail.com')
+          .single();
+        const extraInfo = testShop ? await getShopExtraInfo(testShop.id) : '';
+
         const aiResponse = await anthropic.messages.create({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 1000,
           system: `あなたは日本の美容室の親切なAI予約アシスタントです。
-今日の日付は${today}です。
+今日の日付は${today}です。${extraInfo}
 予約・メニュー・料金・営業時間以外の質問には「申し訳ございませんが、予約に関するご質問のみお答えできます」と答えてください。
 予約を取る場合は、必ず以下のJSON形式を返答の最後に追加してください：
 [RESERVATION]{"name":"お客様名","service":"サービス内容","date":"YYYY-MM-DD","time":"HH:MM"}[/RESERVATION]
@@ -307,33 +344,7 @@ async function handleEvent(event, shop, template) {
   const userMessage = event.message.text;
 
   const history = await getConversationHistory(lineUserId, shop.id);
-
-  // 가게 설정 불러오기 (영업시간, 메뉴)
-  const { data: shopSettings } = await supabase
-    .from('shops')
-    .select('shop_description, business_hours, menu_items')
-    .eq('id', shop.id)
-    .single();
-
-  // 영업시간 및 메뉴 정보를 시스템 프롬프트에 추가
-  let extraInfo = '';
-  if (shopSettings?.shop_description) {
-    extraInfo += `\n店舗情報: ${shopSettings.shop_description}`;
-  }
-  if (shopSettings?.business_hours) {
-    const hours = shopSettings.business_hours;
-    const dayNames = { mon: '月', tue: '火', wed: '水', thu: '木', fri: '金', sat: '土', sun: '日' };
-    const hoursText = Object.entries(hours).map(([day, h]) =>
-      h.closed ? `${dayNames[day]}:定休日` : `${dayNames[day]}:${h.open}〜${h.close}`
-    ).join(', ');
-    extraInfo += `\n営業時間: ${hoursText}`;
-  }
-  if (shopSettings?.menu_items && shopSettings.menu_items.length > 0) {
-    const menuText = shopSettings.menu_items.map(m =>
-      `${m.name}(${m.price}・${m.duration}分)`
-    ).join(', ');
-    extraInfo += `\nメニュー: ${menuText}`;
-  }
+  const extraInfo = await getShopExtraInfo(shop.id);
 
   const aiResponse = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
