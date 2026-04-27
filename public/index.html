@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LINE AI予約ボット - 自動生成サービス</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; }
+    
+    header {
+      background: linear-gradient(135deg, #06C755, #00B341);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    header h1 { font-size: 28px; margin-bottom: 8px; }
+    header p { font-size: 16px; opacity: 0.9; }
+
+    .container { max-width: 600px; margin: 40px auto; padding: 0 20px; }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+    }
+
+    .card h2 { font-size: 20px; margin-bottom: 24px; color: #333; }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 14px; color: #666; margin-bottom: 8px; }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: #06C755;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn-green { background: #06C755; color: white; }
+    .btn-gray { background: #f0f0f0; color: #333; margin-top: 12px; }
+
+    .price-box {
+      background: #f8fff9;
+      border: 2px solid #06C755;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .price-box h3 { color: #06C755; font-size: 18px; margin-bottom: 8px; }
+    .price-box .price { font-size: 32px; font-weight: bold; color: #333; }
+    .price-box .price span { font-size: 16px; color: #666; }
+
+    .steps { list-style: none; }
+    .steps li {
+      display: flex;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 15px;
+      color: #444;
+    }
+    .steps li:last-child { border-bottom: none; }
+    .steps li .num {
+      width: 28px;
+      height: 28px;
+      background: #06C755;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: bold;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+
+    .success-box {
+      display: none;
+      background: #f8fff9;
+      border: 2px solid #06C755;
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+    }
+    .success-box h3 { color: #06C755; font-size: 22px; margin-bottom: 12px; }
+    .success-box p { color: #444; font-size: 15px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🤖 LINE AI予約ボット</h1>
+  <p>あなたのお店に、24時間対応のAI予約アシスタントを。</p>
+</header>
+
+<div class="container">
+
+  <div class="price-box">
+    <h3>月額プラン</h3>
+    <div class="price">¥2,980 <span>〜 / 月</span></div>
+    <p style="margin-top:8px; color:#666; font-size:14px;">初月無料・いつでも解約可能</p>
+  </div>
+
+  <div class="card">
+    <h2>📋 かんたん3ステップで開始</h2>
+    <ul class="steps">
+      <li><span class="num">1</span>お店の情報を入力する</li>
+      <li><span class="num">2</span>LINEチャンネルのキーを入力する</li>
+      <li><span class="num">3</span>AIボットが自動で起動！</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>🏪 お店の情報を入力</h2>
+
+    <div class="form-group">
+      <label>メールアドレス</label>
+      <input type="email" id="email" placeholder="example@email.com">
+    </div>
+
+    <div class="form-group">
+      <label>お店の名前</label>
+      <input type="text" id="shopName" placeholder="例：山田美容室">
+    </div>
+
+    <div class="form-group">
+      <label>業種を選択</label>
+      <select id="businessType">
+        <option value="">選択してください</option>
+        <option value="beauty_salon">💇 美容室</option>
+        <option value="restaurant">🍽️ レストラン・飲食店</option>
+        <option value="osteopathy">🦴 整骨院</option>
+        <option value="nail_salon">💅 ネイルサロン</option>
+        <option value="massage">💆 マッサージ・リラクゼーション</option>
+        <option value="dental">🦷 歯科医院</option>
+        <option value="gym">💪 ジム・フィットネス</option>
+        <option value="pet_salon">🐾 ペットサロン</option>
+        <option value="eyebrow_salon">👁️ アイブロウ・まつ毛サロン</option>
+        <option value="yoga">🧘 ヨガ・ピラティス</option>
+        <option value="acupuncture">針 鍼灸院</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>LINE Channel Secret</label>
+      <input type="text" id="channelSecret" placeholder="LINEデベロッパーコンソールから取得">
+    </div>
+
+    <div class="form-group">
+      <label>LINE Channel Access Token</label>
+      <input type="text" id="channelToken" placeholder="LINEデベロッパーコンソールから取得">
+    </div>
+
+    <button class="btn btn-green" onclick="register()">🚀 AIボットを起動する</button>
+
+    <div class="success-box" id="successBox">
+      <h3>✅ 登録完了！</h3>
+      <p>AIボットが起動しました。<br>LINEでメッセージを送ってみてください！</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+async function register() {
+  const email = document.getElementById('email').value;
+  const shopName = document.getElementById('shopName').value;
+  const businessType = document.getElementById('businessType').value;
+  const channelSecret = document.getElementById('channelSecret').value;
+  const channelToken = document.getElementById('channelToken').value;
+
+  if (!email || !shopName || !businessType || !channelSecret || !channelToken) {
+    alert('すべての項目を入力してください。');
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, shopName, businessType, channelSecret, channelToken })
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      document.getElementById('successBox').style.display = 'block';
+    } else {
+      alert('エラーが発生しました。もう一度お試しください。');
+    }
+  } catch (e) {
+    alert('エラーが発生しました。もう一度お試しください。');
+  }
+}
+</script>
+
+</body>
+</html>
