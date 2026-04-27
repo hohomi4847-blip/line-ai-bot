@@ -14,13 +14,17 @@ const client = new line.messagingApi.MessagingApiClient({
   channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
 });
 
-const anthropic = new Anthropic.default();
+const anthropic = new Anthropic();
 
-// LINE Webhook 엔드포인트
 app.post('/webhook', line.middleware(lineConfig), async (req, res) => {
-  const events = req.body.events;
-  await Promise.all(events.map(handleEvent));
-  res.json({ status: 'ok' });
+  try {
+    const events = req.body.events;
+    await Promise.all(events.map(handleEvent));
+    res.status(200).json({ status: 'ok' });
+  } catch (err) {
+    console.error(err);
+    res.status(200).json({ status: 'error' });
+  }
 });
 
 async function handleEvent(event) {
@@ -28,11 +32,10 @@ async function handleEvent(event) {
 
   const userMessage = event.message.text;
 
-  // Claude AI 응답 생성
   const aiResponse = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
     max_tokens: 1000,
-    system: '당신은 일본 미용실의 친절한 AI 예약 도우미입니다. 일본어로 응답해주세요.',
+    system: 'あなたは日本の美容室の親切なAI予約アシスタントです。日本語で返答してください。',
     messages: [{ role: 'user', content: userMessage }],
   });
 
