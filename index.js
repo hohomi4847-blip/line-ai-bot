@@ -66,6 +66,18 @@ async function getShopExtraInfo(shopId) {
   return extraInfo;
 }
 
+// 예약 중복 확인
+async function checkReservationConflict(shopId, date, time) {
+  const { data } = await supabase
+    .from('reservations')
+    .select('id')
+    .eq('line_user_id', shopId)
+    .eq('reservation_date', date)
+    .eq('reservation_time', time)
+    .eq('status', 'confirmed');
+  return data && data.length > 0;
+}
+
 // 가게 로그인 API
 app.get('/api/shop-login', async (req, res) => {
   const { email } = req.query;
@@ -254,7 +266,7 @@ app.post('/webhook/:shopId', async (req, res) => {
   }
 });
 
-// 기존 webhook (테스트용) - 가게 설정 적용
+// 기존 webhook (테스트용) - 가게 설정 + 중복 확인 적용
 app.post('/webhook', async (req, res) => {
   const lineConfig = {
     channelSecret: process.env.LINE_CHANNEL_SECRET,
@@ -307,15 +319,24 @@ app.post('/webhook', async (req, res) => {
         if (reservationMatch) {
           try {
             const reservationData = JSON.parse(reservationMatch[1]);
-            await supabase.from('reservations').insert({
-              line_user_id: lineUserId,
-              customer_name: reservationData.name,
-              service_type: reservationData.service,
-              reservation_date: reservationData.date,
-              reservation_time: reservationData.time,
-              status: 'confirmed',
-            });
-            replyText = replyText.replace(/\[RESERVATION\].*?\[\/RESERVATION\]/s, '').trim();
+            const conflict = await checkReservationConflict(
+              testShop?.id || 'default',
+              reservationData.date,
+              reservationData.time
+            );
+            if (conflict) {
+              replyText = `申し訳ございません。${reservationData.date} ${reservationData.time}はすでに予約が入っております。他のお時間はいかがでしょうか？`;
+            } else {
+              await supabase.from('reservations').insert({
+                line_user_id: lineUserId,
+                customer_name: reservationData.name,
+                service_type: reservationData.service,
+                reservation_date: reservationData.date,
+                reservation_time: reservationData.time,
+                status: 'confirmed',
+              });
+              replyText = replyText.replace(/\[RESERVATION\].*?\[\/RESERVATION\]/s, '').trim();
+            }
           } catch (e) {
             replyText = replyText.replace(/\[RESERVATION\].*?\[\/RESERVATION\]/s, '').trim();
           }
@@ -371,15 +392,24 @@ async function handleEvent(event, shop, template) {
   if (reservationMatch) {
     try {
       const reservationData = JSON.parse(reservationMatch[1]);
-      await supabase.from('reservations').insert({
-        line_user_id: lineUserId,
-        customer_name: reservationData.name,
-        service_type: reservationData.service,
-        reservation_date: reservationData.date,
-        reservation_time: reservationData.time,
-        status: 'confirmed',
-      });
-      replyText = replyText.replace(/\[RESERVATION\].*?\[\/RESERVATION\]/s, '').trim();
+      const conflict = await checkReservationConflict(
+        shop.id,
+        reservationData.date,
+        reservationData.time
+      );
+      if (conflict) {
+        replyText = `申し訳ございません。${reservationData.date} ${reservationData.time}はすでに予約が入っております。他のお時間はいかがでしょうか？`;
+      } else {
+        await supabase.from('reservations').insert({
+          line_user_id: lineUserId,
+          customer_name: reservationData.name,
+          service_type: reservationData.service,
+          reservation_date: reservationData.date,
+          reservation_time: reservationData.time,
+          status: 'confirmed',
+        });
+        replyText = replyText.replace(/\[RESERVATION\].*?\[\/RESERVATION\]/s, '').trim();
+      }
     } catch (e) {
       replyText = replyText.replace(/\[RESERVATION\].*?\[\/RESERVATION\]/s, '').trim();
     }
