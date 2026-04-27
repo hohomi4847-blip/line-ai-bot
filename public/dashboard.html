@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理者ダッシュボード</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; }
+
+    header {
+      background: linear-gradient(135deg, #06C755, #00B341);
+      color: white;
+      padding: 20px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 { font-size: 22px; }
+
+    .container { max-width: 1000px; margin: 32px auto; padding: 0 20px; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      text-align: center;
+    }
+    .stat-card .num { font-size: 36px; font-weight: bold; color: #06C755; }
+    .stat-card .label { font-size: 14px; color: #888; margin-top: 4px; }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      margin-bottom: 24px;
+    }
+    .card h2 { font-size: 18px; color: #333; margin-bottom: 20px; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: #f8f8f8;
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 13px;
+      color: #666;
+      border-bottom: 2px solid #eee;
+    }
+    td {
+      padding: 14px 16px;
+      font-size: 14px;
+      color: #333;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafff9; }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .badge-green { background: #e6f9ed; color: #06C755; }
+    .badge-gray { background: #f0f0f0; color: #888; }
+
+    .loading { text-align: center; padding: 40px; color: #aaa; }
+    .empty { text-align: center; padding: 40px; color: #aaa; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🤖 管理者ダッシュボード</h1>
+  <span id="currentDate"></span>
+</header>
+
+<div class="container">
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="num" id="totalReservations">-</div>
+      <div class="label">総予約数</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" id="todayReservations">-</div>
+      <div class="label">本日の予約</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" id="totalShops">-</div>
+      <div class="label">登録店舗数</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📅 予約一覧</h2>
+    <div id="reservationTable">
+      <div class="loading">読み込み中...</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🏪 登録店舗一覧</h2>
+    <div id="shopTable">
+      <div class="loading">読み込み中...</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // 오늘 날짜 표시
+  const today = new Date();
+  document.getElementById('currentDate').textContent = 
+    today.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  // 데이터 불러오기
+  async function loadDashboard() {
+    try {
+      const response = await fetch('/api/dashboard');
+      const data = await response.json();
+
+      // 통계
+      document.getElementById('totalReservations').textContent = data.totalReservations;
+      document.getElementById('todayReservations').textContent = data.todayReservations;
+      document.getElementById('totalShops').textContent = data.totalShops;
+
+      // 예약 목록
+      if (data.reservations.length === 0) {
+        document.getElementById('reservationTable').innerHTML = '<div class="empty">予約はまだありません</div>';
+      } else {
+        document.getElementById('reservationTable').innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>お客様名</th>
+                <th>サービス</th>
+                <th>予約日</th>
+                <th>時間</th>
+                <th>ステータス</th>
+                <th>登録日時</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.reservations.map(r => `
+                <tr>
+                  <td>${r.customer_name || '-'}</td>
+                  <td>${r.service_type || '-'}</td>
+                  <td>${r.reservation_date || '-'}</td>
+                  <td>${r.reservation_time ? r.reservation_time.slice(0,5) : '-'}</td>
+                  <td><span class="badge badge-green">${r.status}</span></td>
+                  <td>${new Date(r.created_at).toLocaleDateString('ja-JP')}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+
+      // 가게 목록
+      if (data.shops.length === 0) {
+        document.getElementById('shopTable').innerHTML = '<div class="empty">登録店舗はまだありません</div>';
+      } else {
+        document.getElementById('shopTable').innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>店舗名</th>
+                <th>業種</th>
+                <th>メール</th>
+                <th>ステータス</th>
+                <th>登録日</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.shops.map(s => `
+                <tr>
+                  <td>${s.shop_name}</td>
+                  <td>${s.business_type}</td>
+                  <td>${s.owner_email}</td>
+                  <td><span class="badge ${s.is_active ? 'badge-green' : 'badge-gray'}">${s.is_active ? '稼働中' : '停止中'}</span></td>
+                  <td>${new Date(s.created_at).toLocaleDateString('ja-JP')}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  loadDashboard();
+</script>
+
+</body>
+</html>

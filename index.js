@@ -12,6 +12,36 @@ app.use(express.static(path.join(__dirname, 'public')));
 const anthropic = new Anthropic();
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
+// 대시보드 API
+app.get('/api/dashboard', async (req, res) => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+
+    const { data: reservations } = await supabase
+      .from('reservations')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    const { data: shops } = await supabase
+      .from('shops')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    const todayReservations = reservations.filter(r => r.reservation_date === today).length;
+
+    res.json({
+      totalReservations: reservations.length,
+      todayReservations,
+      totalShops: shops.length,
+      reservations,
+      shops,
+    });
+  } catch (e) {
+    console.error(e);
+    res.json({ error: 'error' });
+  }
+});
+
 // 가입 API
 app.post('/api/register', async (req, res) => {
   const { email, shopName, businessType, channelSecret, channelToken } = req.body;
