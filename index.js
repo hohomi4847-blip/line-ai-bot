@@ -5,6 +5,7 @@ const Anthropic = require('@anthropic-ai/sdk');
 const { createClient } = require('@supabase/supabase-js');
 const path = require('path');
 const ical = require('ical-generator').default;
+const cron = require('node-cron');
 
 const app = express();
 app.use(express.json());
@@ -63,7 +64,6 @@ async function getShopExtraInfo(shopId) {
   return extraInfo;
 }
 
-// 예약 중복 확인 - shop_id 기준
 async function checkReservationConflict(shopId, date, time) {
   const { data } = await supabase
     .from('reservations')
@@ -74,6 +74,65 @@ async function checkReservationConflict(shopId, date, time) {
     .eq('status', 'confirmed');
   return data && data.length > 0;
 }
+
+// 리마인더 발송 함수
+async function sendReminders() {
+  try {
+    // 일본 시간 기준 내일 날짜 계산
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+    console.log(`📅 리마인더 발송 시작: ${tomorrowStr}`);
+
+    // 내일 예약 목록 불러오기
+    const { data: reservations } = await supabase
+      .from('reservations')
+      .select('*, shops(shop_name, line_channel_access_token)')
+      .eq('reservation_date', tomorrowStr)
+      .eq('status', 'confirmed');
+
+    if (!reservations || reservations.length === 0) {
+      console.log('내일 예약 없음');
+      return;
+    }
+
+    for (const reservation of reservations) {
+      try {
+        if (!reservation.shops?.line_channel_access_token) continue;
+
+        const client = new line.messagingApi.MessagingApiClient({
+          channelAccessToken: reservation.shops.line_channel_access_token,
+        });
+
+        const message = `【予約リマインダー】
+明日のご予約のご確認です。
+
+📅 日時：${reservation.reservation_date} ${reservation.reservation_time ? reservation.reservation_time.slice(0, 5) : ''}
+✂️ メニュー：${reservation.service_type || '-'}
+🏪 店舗：${reservation.shops.shop_name}
+
+当日のご来店をお待ちしております。
+キャンセル・変更は直接ご連絡ください。`;
+
+        await client.pushMessage({
+          to: reservation.line_user_id,
+          messages: [{ type: 'text', text: message }],
+        });
+
+        console.log(`✅ 리마인더 발송 완료: ${reservation.customer_name}`);
+      } catch (e) {
+        console.error(`❌ 리마인더 발송 실패: ${reservation.customer_name}`, e);
+      }
+    }
+  } catch (e) {
+    console.error('리마인더 오류:', e);
+  }
+}
+
+// 매일 오전 9시 (일본 시간 = UTC 0시) 리마인더 발송
+cron.schedule('0 0 * * *', sendReminders);
+console.log('⏰ 리마인더 스케줄러 시작');
 
 // 가게 로그인 API
 app.get('/api/shop-login', async (req, res) => {
