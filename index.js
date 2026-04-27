@@ -37,6 +37,68 @@ async function saveConversation(lineUserId, shopId, role, content) {
   });
 }
 
+// 가게 로그인 API
+app.get('/api/shop-login', async (req, res) => {
+  const { email } = req.query;
+  try {
+    const { data: shop } = await supabase
+      .from('shops')
+      .select('*')
+      .eq('owner_email', email)
+      .single();
+    if (!shop) return res.json({ success: false });
+    res.json({ success: true, shop });
+  } catch (e) {
+    res.json({ success: false });
+  }
+});
+
+// 가게 설정 불러오기 API
+app.get('/api/shop-settings', async (req, res) => {
+  const { shopId } = req.query;
+  try {
+    const { data: shop } = await supabase
+      .from('shops')
+      .select('shop_description, business_hours, menu_items, closed_days, reservation_interval')
+      .eq('id', shopId)
+      .single();
+    res.json(shop || {});
+  } catch (e) {
+    res.json({});
+  }
+});
+
+// 가게 예약 불러오기 API
+app.get('/api/shop-reservations', async (req, res) => {
+  const { shopId } = req.query;
+  try {
+    const { data: reservations } = await supabase
+      .from('reservations')
+      .select('*')
+      .eq('line_user_id', shopId)
+      .order('reservation_date', { ascending: true });
+    res.json({ reservations: reservations || [] });
+  } catch (e) {
+    res.json({ reservations: [] });
+  }
+});
+
+// 가게 설정 업데이트 API
+app.post('/api/shop-update', async (req, res) => {
+  const { shopId, ...updateData } = req.body;
+  try {
+    const { error } = await supabase
+      .from('shops')
+      .update(updateData)
+      .eq('id', shopId);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (e) {
+    console.error(e);
+    res.json({ success: false });
+  }
+});
+
 // 대시보드 API
 app.get('/api/dashboard', async (req, res) => {
   try {
@@ -181,7 +243,6 @@ app.post('/webhook', async (req, res) => {
         const lineUserId = event.source.userId;
         const userMessage = event.message.text;
 
-        // 대화 기록 불러오기
         const history = await getConversationHistory(lineUserId, 'default');
 
         const aiResponse = await anthropic.messages.create({
@@ -202,7 +263,6 @@ app.post('/webhook', async (req, res) => {
 
         let replyText = aiResponse.content[0].text;
 
-        // 대화 저장
         await saveConversation(lineUserId, 'default', 'user', userMessage);
         await saveConversation(lineUserId, 'default', 'assistant', replyText.replace(/\[RESERVATION\].*?\[\/RESERVATION\]/s, '').trim());
 
@@ -246,14 +306,40 @@ async function handleEvent(event, shop, template) {
   const lineUserId = event.source.userId;
   const userMessage = event.message.text;
 
-  // 대화 기록 불러오기
   const history = await getConversationHistory(lineUserId, shop.id);
+
+  // 가게 설정 불러오기 (영업시간, 메뉴)
+  const { data: shopSettings } = await supabase
+    .from('shops')
+    .select('shop_description, business_hours, menu_items')
+    .eq('id', shop.id)
+    .single();
+
+  // 영업시간 및 메뉴 정보를 시스템 프롬프트에 추가
+  let extraInfo = '';
+  if (shopSettings?.shop_description) {
+    extraInfo += `\n店舗情報: ${shopSettings.shop_description}`;
+  }
+  if (shopSettings?.business_hours) {
+    const hours = shopSettings.business_hours;
+    const dayNames = { mon: '月', tue: '火', wed: '水', thu: '木', fri: '金', sat: '土', sun: '日' };
+    const hoursText = Object.entries(hours).map(([day, h]) =>
+      h.closed ? `${dayNames[day]}:定休日` : `${dayNames[day]}:${h.open}〜${h.close}`
+    ).join(', ');
+    extraInfo += `\n営業時間: ${hoursText}`;
+  }
+  if (shopSettings?.menu_items && shopSettings.menu_items.length > 0) {
+    const menuText = shopSettings.menu_items.map(m =>
+      `${m.name}(${m.price}・${m.duration}分)`
+    ).join(', ');
+    extraInfo += `\nメニュー: ${menuText}`;
+  }
 
   const aiResponse = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
     max_tokens: 1000,
     system: `${template.system_prompt}
-今日の日付は${today}です。
+今日の日付は${today}です。${extraInfo}
 予約・メニュー・料金・営業時間以外の質問には「申し訳ございませんが、予約に関するご質問のみお答えできます」と答えてください。
 予約を取る場合は、必ず以下のJSON形式を返答の最後に追加してください：
 [RESERVATION]{"name":"お客様名","service":"サービス内容","date":"YYYY-MM-DD","time":"HH:MM"}[/RESERVATION]
@@ -267,7 +353,6 @@ async function handleEvent(event, shop, template) {
 
   let replyText = aiResponse.content[0].text;
 
-  // 대화 저장
   await saveConversation(lineUserId, shop.id, 'user', userMessage);
   await saveConversation(lineUserId, shop.id, 'assistant', replyText.replace(/\[RESERVATION\].*?\[\/RESERVATION\]/s, '').trim());
 

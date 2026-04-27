@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>店舗管理ダッシュボード</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; }
+    header {
+      background: linear-gradient(135deg, #06C755, #00B341);
+      color: white; padding: 20px 32px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    header h1 { font-size: 20px; }
+    .container { max-width: 800px; margin: 32px auto; padding: 0 20px; }
+    .card {
+      background: white; border-radius: 12px; padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 24px;
+    }
+    .card h2 { font-size: 18px; color: #333; margin-bottom: 20px; border-bottom: 2px solid #06C755; padding-bottom: 10px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 14px; color: #666; margin-bottom: 6px; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; padding: 10px 14px; border: 2px solid #e0e0e0;
+      border-radius: 8px; font-size: 15px; transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group textarea:focus {
+      outline: none; border-color: #06C755;
+    }
+    .form-group textarea { height: 100px; resize: vertical; }
+    .hours-grid {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px; align-items: center; margin-bottom: 8px;
+    }
+    .hours-grid label { font-size: 14px; color: #555; }
+    .hours-grid input { padding: 8px; font-size: 14px; }
+    .menu-item {
+      display: flex; gap: 8px; margin-bottom: 8px; align-items: center;
+    }
+    .menu-item input { flex: 1; }
+    .menu-item button {
+      background: #ff4444; color: white; border: none;
+      border-radius: 6px; padding: 8px 12px; cursor: pointer; font-size: 14px;
+    }
+    .btn {
+      padding: 12px 24px; border: none; border-radius: 8px;
+      font-size: 15px; font-weight: bold; cursor: pointer; transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn-green { background: #06C755; color: white; width: 100%; margin-top: 8px; }
+    .btn-outline {
+      background: white; color: #06C755; border: 2px solid #06C755;
+      margin-top: 8px; width: 100%;
+    }
+    .success-msg {
+      display: none; background: #e6f9ed; border: 2px solid #06C755;
+      border-radius: 8px; padding: 12px; text-align: center;
+      color: #06C755; font-weight: bold; margin-top: 12px;
+    }
+    .login-box {
+      max-width: 400px; margin: 80px auto; background: white;
+      border-radius: 16px; padding: 32px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .login-box h2 { text-align: center; color: #06C755; margin-bottom: 24px; }
+    .calendar-link {
+      background: #f0f9f4; border: 2px solid #06C755;
+      border-radius: 8px; padding: 16px; margin-top: 12px;
+    }
+    .calendar-link p { font-size: 13px; color: #666; margin-bottom: 8px; }
+    .calendar-link code {
+      background: #e0f0e8; padding: 4px 8px; border-radius: 4px;
+      font-size: 12px; word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+
+<!-- 로그인 화면 -->
+<div id="loginBox" class="login-box">
+  <h2>🏪 店舗ログイン</h2>
+  <div class="form-group">
+    <label>メールアドレス</label>
+    <input type="email" id="loginEmail" placeholder="登録したメールアドレス">
+  </div>
+  <button class="btn btn-green" onclick="login()">ログイン</button>
+  <p id="loginError" style="color:red; text-align:center; margin-top:12px; display:none;">
+    メールアドレスが見つかりません
+  </p>
+</div>
+
+<!-- 대시보드 -->
+<div id="dashboard" style="display:none;">
+  <header>
+    <h1>🏪 <span id="shopNameHeader"></span> 管理画面</h1>
+    <span id="todayDate"></span>
+  </header>
+
+  <div class="container">
+
+    <!-- 예약 현황 -->
+    <div class="card">
+      <h2>📅 予約一覧</h2>
+      <div id="reservationList">読み込み中...</div>
+    </div>
+
+    <!-- 가게 기본 정보 -->
+    <div class="card">
+      <h2>🏪 店舗基本情報</h2>
+      <div class="form-group">
+        <label>店舗紹介文（AIが案内に使用します）</label>
+        <textarea id="shopDescription" placeholder="例：駅から徒歩3分の美容室です。経験豊富なスタッフが丁寧に対応します。"></textarea>
+      </div>
+      <button class="btn btn-green" onclick="saveBasicInfo()">保存する</button>
+    </div>
+
+    <!-- 영업시간 -->
+    <div class="card">
+      <h2>🕐 営業時間設定</h2>
+      <div id="hoursGrid">
+        <!-- JavaScript로 생성 -->
+      </div>
+      <button class="btn btn-green" onclick="saveHours()">営業時間を保存</button>
+    </div>
+
+    <!-- 메뉴/가격 -->
+    <div class="card">
+      <h2>📋 メニュー・料金設定</h2>
+      <div id="menuItems"></div>
+      <button class="btn btn-outline" onclick="addMenuItem()">＋ メニューを追加</button>
+      <button class="btn btn-green" onclick="saveMenu()">メニューを保存</button>
+    </div>
+
+    <!-- 캘린더 링크 -->
+    <div class="card">
+      <h2>📆 Googleカレンダー連携</h2>
+      <div class="calendar-link">
+        <p>以下のURLをGoogleカレンダーの「URLで追加」に貼り付けてください：</p>
+        <code id="calendarUrl"></code>
+      </div>
+    </div>
+
+    <div class="success-msg" id="successMsg">✅ 保存しました！</div>
+
+  </div>
+</div>
+
+<script>
+const days = ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日'];
+const dayKeys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+let currentShop = null;
+
+// 영업시간 그리드 생성
+function buildHoursGrid() {
+  const grid = document.getElementById('hoursGrid');
+  grid.innerHTML = days.map((day, i) => `
+    <div class="hours-grid">
+      <label>${day}</label>
+      <input type="time" id="open_${dayKeys[i]}" value="09:00">
+      <input type="time" id="close_${dayKeys[i]}" value="19:00">
+    </div>
+    <div style="margin-bottom:4px;">
+      <label style="font-size:13px; color:#888;">
+        <input type="checkbox" id="closed_${dayKeys[i]}"> 定休日
+      </label>
+    </div>
+  `).join('');
+}
+
+// 로그인
+async function login() {
+  const email = document.getElementById('loginEmail').value;
+  if (!email) return;
+
+  const response = await fetch(`/api/shop-login?email=${encodeURIComponent(email)}`);
+  const data = await response.json();
+
+  if (data.success) {
+    currentShop = data.shop;
+    showDashboard();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
+
+// 대시보드 표시
+async function showDashboard() {
+  document.getElementById('loginBox').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('shopNameHeader').textContent = currentShop.shop_name;
+  document.getElementById('todayDate').textContent = 
+    new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  // 캘린더 URL
+  document.getElementById('calendarUrl').textContent = 
+    `${window.location.origin}/api/calendar/${currentShop.id}`;
+
+  buildHoursGrid();
+  loadShopSettings();
+  loadReservations();
+}
+
+// 가게 설정 불러오기
+async function loadShopSettings() {
+  if (!currentShop) return;
+  const response = await fetch(`/api/shop-settings?shopId=${currentShop.id}`);
+  const data = await response.json();
+
+  if (data.shop_description) {
+    document.getElementById('shopDescription').value = data.shop_description;
+  }
+
+  if (data.business_hours) {
+    dayKeys.forEach(day => {
+      if (data.business_hours[day]) {
+        document.getElementById(`open_${day}`).value = data.business_hours[day].open || '09:00';
+        document.getElementById(`close_${day}`).value = data.business_hours[day].close || '19:00';
+        document.getElementById(`closed_${day}`).checked = data.business_hours[day].closed || false;
+      }
+    });
+  }
+
+  if (data.menu_items && data.menu_items.length > 0) {
+    data.menu_items.forEach(item => addMenuItem(item.name, item.price, item.duration));
+  } else {
+    addMenuItem();
+  }
+}
+
+// 예약 목록 불러오기
+async function loadReservations() {
+  const response = await fetch(`/api/shop-reservations?shopId=${currentShop.id}`);
+  const data = await response.json();
+
+  if (!data.reservations || data.reservations.length === 0) {
+    document.getElementById('reservationList').innerHTML = 
+      '<p style="color:#aaa; text-align:center; padding:20px;">予約はまだありません</p>';
+    return;
+  }
+
+  document.getElementById('reservationList').innerHTML = `
+    <table style="width:100%; border-collapse:collapse;">
+      <thead>
+        <tr style="background:#f8f8f8;">
+          <th style="padding:10px; text-align:left; font-size:13px; color:#666;">お客様名</th>
+          <th style="padding:10px; text-align:left; font-size:13px; color:#666;">サービス</th>
+          <th style="padding:10px; text-align:left; font-size:13px; color:#666;">予約日</th>
+          <th style="padding:10px; text-align:left; font-size:13px; color:#666;">時間</th>
+          <th style="padding:10px; text-align:left; font-size:13px; color:#666;">状態</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.reservations.map(r => `
+          <tr style="border-bottom:1px solid #f0f0f0;">
+            <td style="padding:12px 10px;">${r.customer_name || '-'}</td>
+            <td style="padding:12px 10px;">${r.service_type || '-'}</td>
+            <td style="padding:12px 10px;">${r.reservation_date || '-'}</td>
+            <td style="padding:12px 10px;">${r.reservation_time ? r.reservation_time.slice(0,5) : '-'}</td>
+            <td style="padding:12px 10px;">
+              <span style="background:#e6f9ed; color:#06C755; padding:4px 10px; border-radius:20px; font-size:12px;">
+                ${r.status}
+              </span>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+// 메뉴 아이템 추가
+function addMenuItem(name = '', price = '', duration = '60') {
+  const container = document.getElementById('menuItems');
+  const div = document.createElement('div');
+  div.className = 'menu-item';
+  div.innerHTML = `
+    <input type="text" placeholder="メニュー名（例：カット）" value="${name}" class="menu-name">
+    <input type="text" placeholder="料金（例：¥3,000）" value="${price}" class="menu-price" style="max-width:120px;">
+    <input type="text" placeholder="時間(分)" value="${duration}" class="menu-duration" style="max-width:80px;">
+    <button onclick="this.parentElement.remove()">×</button>
+  `;
+  container.appendChild(div);
+}
+
+// 기본 정보 저장
+async function saveBasicInfo() {
+  const description = document.getElementById('shopDescription').value;
+  await fetch('/api/shop-update', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ shopId: currentShop.id, shop_description: description })
+  });
+  showSuccess();
+}
+
+// 영업시간 저장
+async function saveHours() {
+  const hours = {};
+  dayKeys.forEach(day => {
+    hours[day] = {
+      open: document.getElementById(`open_${day}`).value,
+      close: document.getElementById(`close_${day}`).value,
+      closed: document.getElementById(`closed_${day}`).checked,
+    };
+  });
+  await fetch('/api/shop-update', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ shopId: currentShop.id, business_hours: hours })
+  });
+  showSuccess();
+}
+
+// 메뉴 저장
+async function saveMenu() {
+  const items = [];
+  document.querySelectorAll('.menu-item').forEach(item => {
+    const name = item.querySelector('.menu-name').value;
+    const price = item.querySelector('.menu-price').value;
+    const duration = item.querySelector('.menu-duration').value;
+    if (name) items.push({ name, price, duration });
+  });
+  await fetch('/api/shop-update', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ shopId: currentShop.id, menu_items: items })
+  });
+  showSuccess();
+}
+
+function showSuccess() {
+  const msg = document.getElementById('successMsg');
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display = 'none', 3000);
+}
+</script>
+
+</body>
+</html>
