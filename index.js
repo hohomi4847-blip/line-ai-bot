@@ -4,6 +4,7 @@ const line = require('@line/bot-sdk');
 const Anthropic = require('@anthropic-ai/sdk');
 const { createClient } = require('@supabase/supabase-js');
 const path = require('path');
+const ical = require('ical-generator').default;
 
 const app = express();
 app.use(express.json());
@@ -60,6 +61,81 @@ app.post('/api/register', async (req, res) => {
   } catch (e) {
     console.error(e);
     res.json({ success: false });
+  }
+});
+
+// iCalendar 피드 API
+app.get('/api/calendar/:shopId', async (req, res) => {
+  try {
+    const { shopId } = req.params;
+
+    const { data: shop } = await supabase
+      .from('shops')
+      .select('*')
+      .eq('id', shopId)
+      .single();
+
+    if (!shop) return res.status(404).send('Shop not found');
+
+    const { data: reservations } = await supabase
+      .from('reservations')
+      .select('*')
+      .eq('line_user_id', shopId)
+      .order('created_at', { ascending: false });
+
+    const calendar = ical({ name: shop.shop_name });
+
+    (reservations || []).forEach(r => {
+      if (!r.reservation_date || !r.reservation_time) return;
+
+      const startDate = new Date(`${r.reservation_date}T${r.reservation_time}`);
+      const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1시간
+
+      calendar.createEvent({
+        start: startDate,
+        end: endDate,
+        summary: `${r.customer_name || 'お客様'} - ${r.service_type || '予約'}`,
+        description: `サービス: ${r.service_type || '-'}\nステータス: ${r.status}`,
+      });
+    });
+
+    res.set('Content-Type', 'text/calendar');
+    res.send(calendar.toString());
+  } catch (e) {
+    console.error(e);
+    res.status(500).send('Error');
+  }
+});
+
+// 전체 예약 캘린더 (운영자용)
+app.get('/api/calendar', async (req, res) => {
+  try {
+    const { data: reservations } = await supabase
+      .from('reservations')
+      .select('*')
+      .order('reservation_date', { ascending: true });
+
+    const calendar = ical({ name: 'LINE AI予約ボット - 全予約' });
+
+    (reservations || []).forEach(r => {
+      if (!r.reservation_date || !r.reservation_time) return;
+
+      const startDate = new Date(`${r.reservation_date}T${r.reservation_time}`);
+      const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+
+      calendar.createEvent({
+        start: startDate,
+        end: endDate,
+        summary: `${r.customer_name || 'お客様'} - ${r.service_type || '予約'}`,
+        description: `サービス: ${r.service_type || '-'}\nステータス: ${r.status}`,
+      });
+    });
+
+    res.set('Content-Type', 'text/calendar');
+    res.send(calendar.toString());
+  } catch (e) {
+    console.error(e);
+    res.status(500).send('Error');
   }
 });
 
