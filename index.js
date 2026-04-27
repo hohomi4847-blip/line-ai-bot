@@ -13,7 +13,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 const anthropic = new Anthropic();
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
-// 대화 기록 불러오기 (최근 10개 + 24시간 이내)
 async function getConversationHistory(lineUserId, shopId) {
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const { data } = await supabase
@@ -27,7 +26,6 @@ async function getConversationHistory(lineUserId, shopId) {
   return data || [];
 }
 
-// 대화 기록 저장
 async function saveConversation(lineUserId, shopId, role, content) {
   await supabase.from('conversations').insert({
     line_user_id: lineUserId,
@@ -37,7 +35,6 @@ async function saveConversation(lineUserId, shopId, role, content) {
   });
 }
 
-// 가게 설정에서 extraInfo 생성
 async function getShopExtraInfo(shopId) {
   const { data: shopSettings } = await supabase
     .from('shops')
@@ -66,12 +63,12 @@ async function getShopExtraInfo(shopId) {
   return extraInfo;
 }
 
-// 예약 중복 확인
+// 예약 중복 확인 - shop_id 기준
 async function checkReservationConflict(shopId, date, time) {
   const { data } = await supabase
     .from('reservations')
     .select('id')
-    .eq('line_user_id', shopId)
+    .eq('shop_id', shopId)
     .eq('reservation_date', date)
     .eq('reservation_time', time)
     .eq('status', 'confirmed');
@@ -83,10 +80,7 @@ app.get('/api/shop-login', async (req, res) => {
   const { email } = req.query;
   try {
     const { data: shop } = await supabase
-      .from('shops')
-      .select('*')
-      .eq('owner_email', email)
-      .single();
+      .from('shops').select('*').eq('owner_email', email).single();
     if (!shop) return res.json({ success: false });
     res.json({ success: true, shop });
   } catch (e) {
@@ -101,8 +95,7 @@ app.get('/api/shop-settings', async (req, res) => {
     const { data: shop } = await supabase
       .from('shops')
       .select('shop_description, business_hours, menu_items, closed_days, reservation_interval')
-      .eq('id', shopId)
-      .single();
+      .eq('id', shopId).single();
     res.json(shop || {});
   } catch (e) {
     res.json({});
@@ -114,9 +107,8 @@ app.get('/api/shop-reservations', async (req, res) => {
   const { shopId } = req.query;
   try {
     const { data: reservations } = await supabase
-      .from('reservations')
-      .select('*')
-      .eq('line_user_id', shopId)
+      .from('reservations').select('*')
+      .eq('shop_id', shopId)
       .order('reservation_date', { ascending: true });
     res.json({ reservations: reservations || [] });
   } catch (e) {
@@ -129,9 +121,7 @@ app.post('/api/shop-update', async (req, res) => {
   const { shopId, ...updateData } = req.body;
   try {
     const { error } = await supabase
-      .from('shops')
-      .update(updateData)
-      .eq('id', shopId);
+      .from('shops').update(updateData).eq('id', shopId);
     if (error) throw error;
     res.json({ success: true });
   } catch (e) {
@@ -145,21 +135,11 @@ app.get('/api/dashboard', async (req, res) => {
   try {
     const today = new Date().toISOString().split('T')[0];
     const { data: reservations } = await supabase
-      .from('reservations')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .from('reservations').select('*').order('created_at', { ascending: false });
     const { data: shops } = await supabase
-      .from('shops')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .from('shops').select('*').order('created_at', { ascending: false });
     const todayReservations = reservations.filter(r => r.reservation_date === today).length;
-    res.json({
-      totalReservations: reservations.length,
-      todayReservations,
-      totalShops: shops.length,
-      reservations,
-      shops,
-    });
+    res.json({ totalReservations: reservations.length, todayReservations, totalShops: shops.length, reservations, shops });
   } catch (e) {
     console.error(e);
     res.json({ error: 'error' });
@@ -171,11 +151,8 @@ app.post('/api/register', async (req, res) => {
   const { email, shopName, businessType, channelSecret, channelToken } = req.body;
   try {
     const { error } = await supabase.from('shops').insert({
-      owner_email: email,
-      shop_name: shopName,
-      business_type: businessType,
-      line_channel_secret: channelSecret,
-      line_channel_access_token: channelToken,
+      owner_email: email, shop_name: shopName, business_type: businessType,
+      line_channel_secret: channelSecret, line_channel_access_token: channelToken,
     });
     if (error) throw error;
     res.json({ success: true });
@@ -189,21 +166,17 @@ app.post('/api/register', async (req, res) => {
 app.get('/api/calendar/:shopId', async (req, res) => {
   try {
     const { shopId } = req.params;
-    const { data: shop } = await supabase
-      .from('shops').select('*').eq('id', shopId).single();
+    const { data: shop } = await supabase.from('shops').select('*').eq('id', shopId).single();
     if (!shop) return res.status(404).send('Shop not found');
     const { data: reservations } = await supabase
-      .from('reservations').select('*')
-      .eq('line_user_id', shopId)
-      .order('created_at', { ascending: false });
+      .from('reservations').select('*').eq('shop_id', shopId).order('created_at', { ascending: false });
     const calendar = ical({ name: shop.shop_name });
     (reservations || []).forEach(r => {
       if (!r.reservation_date || !r.reservation_time) return;
       const startDate = new Date(`${r.reservation_date}T${r.reservation_time}`);
       const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
       calendar.createEvent({
-        start: startDate,
-        end: endDate,
+        start: startDate, end: endDate,
         summary: `${r.customer_name || 'お客様'} - ${r.service_type || '予約'}`,
         description: `サービス: ${r.service_type || '-'}\nステータス: ${r.status}`,
       });
@@ -220,16 +193,14 @@ app.get('/api/calendar/:shopId', async (req, res) => {
 app.get('/api/calendar', async (req, res) => {
   try {
     const { data: reservations } = await supabase
-      .from('reservations').select('*')
-      .order('reservation_date', { ascending: true });
+      .from('reservations').select('*').order('reservation_date', { ascending: true });
     const calendar = ical({ name: 'LINE AI予約ボット - 全予約' });
     (reservations || []).forEach(r => {
       if (!r.reservation_date || !r.reservation_time) return;
       const startDate = new Date(`${r.reservation_date}T${r.reservation_time}`);
       const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
       calendar.createEvent({
-        start: startDate,
-        end: endDate,
+        start: startDate, end: endDate,
         summary: `${r.customer_name || 'お客様'} - ${r.service_type || '予約'}`,
         description: `サービス: ${r.service_type || '-'}\nステータス: ${r.status}`,
       });
@@ -246,8 +217,7 @@ app.get('/api/calendar', async (req, res) => {
 app.post('/webhook/:shopId', async (req, res) => {
   try {
     const { shopId } = req.params;
-    const { data: shop } = await supabase
-      .from('shops').select('*').eq('id', shopId).single();
+    const { data: shop } = await supabase.from('shops').select('*').eq('id', shopId).single();
     if (!shop) return res.status(404).json({ error: 'Shop not found' });
     const { data: template } = await supabase
       .from('templates').select('*').eq('business_type', shop.business_type).single();
@@ -266,7 +236,7 @@ app.post('/webhook/:shopId', async (req, res) => {
   }
 });
 
-// 기존 webhook (테스트용) - 가게 설정 + 중복 확인 적용
+// 기존 webhook (테스트용)
 app.post('/webhook', async (req, res) => {
   const lineConfig = {
     channelSecret: process.env.LINE_CHANNEL_SECRET,
@@ -284,15 +254,11 @@ app.post('/webhook', async (req, res) => {
         const lineUserId = event.source.userId;
         const userMessage = event.message.text;
 
-        const history = await getConversationHistory(lineUserId, 'default');
-
-        // 테스트용 가게 설정 불러오기
         const { data: testShop } = await supabase
-          .from('shops')
-          .select('id')
-          .eq('owner_email', 'hohomi4847@gmail.com')
-          .single();
-        const extraInfo = testShop ? await getShopExtraInfo(testShop.id) : '';
+          .from('shops').select('id').eq('owner_email', 'hohomi4847@gmail.com').single();
+        const shopId = testShop?.id || 'default';
+        const extraInfo = testShop ? await getShopExtraInfo(shopId) : '';
+        const history = await getConversationHistory(lineUserId, shopId);
 
         const aiResponse = await anthropic.messages.create({
           model: 'claude-sonnet-4-20250514',
@@ -304,31 +270,25 @@ app.post('/webhook', async (req, res) => {
 [RESERVATION]{"name":"お客様名","service":"サービス内容","date":"YYYY-MM-DD","time":"HH:MM"}[/RESERVATION]
 予約情報が不明な場合は[RESERVATION]タグは不要です。
 マークダウン記号（**など）は使わないでください。`,
-          messages: [
-            ...history,
-            { role: 'user', content: userMessage }
-          ],
+          messages: [...history, { role: 'user', content: userMessage }],
         });
 
         let replyText = aiResponse.content[0].text;
 
-        await saveConversation(lineUserId, 'default', 'user', userMessage);
-        await saveConversation(lineUserId, 'default', 'assistant', replyText.replace(/\[RESERVATION\].*?\[\/RESERVATION\]/s, '').trim());
+        await saveConversation(lineUserId, shopId, 'user', userMessage);
+        await saveConversation(lineUserId, shopId, 'assistant', replyText.replace(/\[RESERVATION\].*?\[\/RESERVATION\]/s, '').trim());
 
         const reservationMatch = replyText.match(/\[RESERVATION\](.*?)\[\/RESERVATION\]/s);
         if (reservationMatch) {
           try {
             const reservationData = JSON.parse(reservationMatch[1]);
-            const conflict = await checkReservationConflict(
-              testShop?.id || 'default',
-              reservationData.date,
-              reservationData.time
-            );
+            const conflict = await checkReservationConflict(shopId, reservationData.date, reservationData.time);
             if (conflict) {
               replyText = `申し訳ございません。${reservationData.date} ${reservationData.time}はすでに予約が入っております。他のお時間はいかがでしょうか？`;
             } else {
               await supabase.from('reservations').insert({
                 line_user_id: lineUserId,
+                shop_id: shopId,
                 customer_name: reservationData.name,
                 service_type: reservationData.service,
                 reservation_date: reservationData.date,
@@ -377,10 +337,7 @@ async function handleEvent(event, shop, template) {
 [RESERVATION]{"name":"お客様名","service":"サービス内容","date":"YYYY-MM-DD","time":"HH:MM"}[/RESERVATION]
 予約情報が不明な場合は[RESERVATION]タグは不要です。
 マークダウン記号（**など）は使わないでください。`,
-    messages: [
-      ...history,
-      { role: 'user', content: userMessage }
-    ],
+    messages: [...history, { role: 'user', content: userMessage }],
   });
 
   let replyText = aiResponse.content[0].text;
@@ -392,16 +349,13 @@ async function handleEvent(event, shop, template) {
   if (reservationMatch) {
     try {
       const reservationData = JSON.parse(reservationMatch[1]);
-      const conflict = await checkReservationConflict(
-        shop.id,
-        reservationData.date,
-        reservationData.time
-      );
+      const conflict = await checkReservationConflict(shop.id, reservationData.date, reservationData.time);
       if (conflict) {
         replyText = `申し訳ございません。${reservationData.date} ${reservationData.time}はすでに予約が入っております。他のお時間はいかがでしょうか？`;
       } else {
         await supabase.from('reservations').insert({
           line_user_id: lineUserId,
+          shop_id: shop.id,
           customer_name: reservationData.name,
           service_type: reservationData.service,
           reservation_date: reservationData.date,
