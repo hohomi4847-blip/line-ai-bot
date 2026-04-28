@@ -1,10 +1,9 @@
 require('dotenv').config();
 const express = require('express');
-const session = require('express-session');
-const pgSession = require('connect-pg-simple')(session);
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
 const line = require('@line/bot-sdk');
 const Anthropic = require('@anthropic-ai/sdk');
 const { createClient } = require('@supabase/supabase-js');
@@ -20,28 +19,6 @@ app.use('/paddle/webhook', express.raw({ type: 'application/json' }));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// ✅ 세션 설정 - Supabase(PostgreSQL)에 세션 저장 (서버 재시작해도 로그인 유지)
-app.use(session({
-  store: new pgSession({
-    conString: process.env.SUPABASE_DB_URL,
-    tableName: 'session',
-    createTableIfMissing: false,
-  }),
-  secret: process.env.SESSION_SECRET || 'fallback-secret',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7일
-  }
-}));
-
-// ✅ Passport 초기화
-app.use(passport.initialize());
-app.use(passport.session());
-
 app.use(express.static(path.join(__dirname, 'public')));
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -50,7 +27,43 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// ✅ Passport Google 전략 설정
+const JWT_SECRET = process.env.SESSION_SECRET || 'fallback-secret';
+const JWT_EXPIRES = '7d';
+
+// ✅ JWT 쿠키 발급 함수
+function issueJWT(res, user) {
+  const token = jwt.sign(
+    { email: user.email, name: user.name },
+    JWT_SECRET,
+    { expiresIn: JWT_EXPIRES }
+  );
+  res.cookie('auth_token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7일
+  });
+}
+
+// ✅ JWT 검증 미들웨어
+function verifyJWT(req, res, next) {
+  const token = req.cookies?.auth_token;
+  if (!token) {
+    req.user = null;
+    return next();
+  }
+  try {
+    req.user = jwt.verify(token, JWT_SECRET);
+  } catch (e) {
+    req.user = null;
+    res.clearCookie('auth_token');
+  }
+  next();
+}
+
+app.use(verifyJWT);
+
+// ✅ Passport 초기화 (세션 없이 사용)
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -65,13 +78,11 @@ passport.use(new GoogleStrategy({
   }
 }));
 
-passport.serializeUser((user, done) => {
-  done(null, user);
-});
+// ✅ 세션 없이 Passport 사용
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((user, done) => done(null, user));
 
-passport.deserializeUser((user, done) => {
-  done(null, user);
-});
+app.use(passport.initialize());
 
 // ✅ 운영자 인증 미들웨어
 function adminAuth(req, res, next) {
@@ -237,35 +248,35 @@ cron.schedule('0 1 * * 1', cleanOldConversations, { timezone: 'UTC' });
 console.log('⏰ 스케줄러 시작');
 
 // ============================
-// ✅ Google OAuth 라우트
+// ✅ Google OAuth 라우트 (JWT 방식)
 // ============================
 app.get('/auth/google', passport.authenticate('google', {
-  scope: ['profile', 'email']
+  scope: ['profile', 'email'],
+  session: false
 }));
 
 app.get('/auth/callback',
-  passport.authenticate('google', { failureRedirect: '/?error=auth_failed' }),
+  passport.authenticate('google', { failureRedirect: '/?error=auth_failed', session: false }),
   (req, res) => {
-    // ✅ 로그인 성공 - 메인 페이지로 이동
+    // ✅ JWT 쿠키 발급 후 메인으로 이동
+    issueJWT(res, req.user);
     res.redirect('/');
   }
 );
 
 // ✅ 현재 로그인 유저 정보 API
 app.get('/api/me', (req, res) => {
-  if (req.isAuthenticated()) {
+  if (req.user) {
     res.json({ success: true, user: req.user });
   } else {
     res.json({ success: false });
   }
 });
 
-// ✅ 로그아웃
+// ✅ 로그아웃 - 쿠키 삭제
 app.get('/auth/logout', (req, res) => {
-  req.logout((err) => {
-    if (err) console.error(err);
-    res.redirect('/');
-  });
+  res.clearCookie('auth_token');
+  res.redirect('/');
 });
 
 // ============================
