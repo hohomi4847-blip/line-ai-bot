@@ -159,7 +159,6 @@
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjb3R1bG12dXR6cGtnaWxmb25zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU3MDI0NjQsImV4cCI6MjA2MTI3ODQ2NH0.yBCKsqFRGsS3WxiHFx4QeP7JVzJqvtNkPYexqwDvASA'
   );
 
-  // ✅ 수정: eventCallback으로 결제 완료 감지 (successCallback 제거)
   Paddle.Initialize({
     token: 'live_f85c45d01df1d11366f81a2083b',
     eventCallback: function(data) {
@@ -171,6 +170,15 @@
   });
 
   let currentUser = null;
+
+  // ✅ 핵심 수정: 페이지 로드 시 기존 세션 복원 (구글 로그인 후 돌아올 때 처리)
+  supabaseClient.auth.getSession().then(({ data: { session } }) => {
+    if (session?.user) {
+      currentUser = session.user;
+      showUserInfo(session.user);
+      enableStep2();
+    }
+  });
 
   // 인증 상태 변화 감지
   supabaseClient.auth.onAuthStateChange((event, session) => {
@@ -246,7 +254,6 @@
     }
   }
 
-  // ✅ 수정: successCallback 제거, currentUser 체크 추가
   function startPayment() {
     if (!currentUser) {
       alert('ログインが必要です。再度ログインしてください。');
