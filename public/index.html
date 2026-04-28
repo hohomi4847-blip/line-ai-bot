@@ -159,13 +159,20 @@
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjb3R1bG12dXR6cGtnaWxmb25zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU3MDI0NjQsImV4cCI6MjA2MTI3ODQ2NH0.yBCKsqFRGsS3WxiHFx4QeP7JVzJqvtNkPYexqwDvASA'
   );
 
+  // ✅ 수정: eventCallback으로 결제 완료 감지 (successCallback 제거)
   Paddle.Initialize({
-    token: 'live_f85c45d01df1d11366f81a2083b'
+    token: 'live_f85c45d01df1d11366f81a2083b',
+    eventCallback: function(data) {
+      if (data.name === 'checkout.completed') {
+        document.getElementById('successBox').style.display = 'block';
+        document.getElementById('step3').scrollIntoView({ behavior: 'smooth' });
+      }
+    }
   });
 
   let currentUser = null;
 
-  // 인증 상태 변화 감지 (구글 로그인 후 돌아올 때 자동 처리)
+  // 인증 상태 변화 감지
   supabaseClient.auth.onAuthStateChange((event, session) => {
     if (session?.user) {
       currentUser = session.user;
@@ -239,14 +246,16 @@
     }
   }
 
+  // ✅ 수정: successCallback 제거, currentUser 체크 추가
   function startPayment() {
+    if (!currentUser) {
+      alert('ログインが必要です。再度ログインしてください。');
+      return;
+    }
     Paddle.Checkout.open({
       items: [{ priceId: 'pri_01kq8rg1516ndq78xsvt9zgwch', quantity: 1 }],
-      customer: { email: currentUser?.email },
-      settings: { locale: 'ja' },
-      successCallback: function() {
-        document.getElementById('successBox').style.display = 'block';
-      }
+      customer: { email: currentUser.email },
+      settings: { locale: 'ja' }
     });
   }
 </script>
