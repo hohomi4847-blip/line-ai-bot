@@ -330,20 +330,25 @@ function verifyPaddleSignature(rawBody, signatureHeader, secret) {
 }
 
 app.post('/paddle/webhook', async (req, res) => {
-  try {
-    // ✅ 서명 검증 — PADDLE_WEBHOOK_SECRET이 설정된 경우 강제 검증
-    const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET;
-    if (webhookSecret) {
-      const sig = req.headers['paddle-signature'];
-      if (!verifyPaddleSignature(req.body.toString(), sig, webhookSecret)) {
-        console.warn('⚠️ Paddle webhook 서명 검증 실패 — 무시');
-        return res.status(400).json({ error: 'Invalid signature' });
-      }
-    } else {
-      console.warn('⚠️ PADDLE_WEBHOOK_SECRET 미설정 — 서명 검증 건너뜀');
-    }
+  // ── 1단계: 서명 검증 — try/catch 밖에서 처리하여 우회 불가 ──
+  const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    console.error('❌ [Paddle] PADDLE_WEBHOOK_SECRET 미설정 — webhook 거부');
+    return res.status(401).json({ error: 'Server misconfiguration' });
+  }
 
-    const body = JSON.parse(req.body.toString());
+  const sig     = req.headers['paddle-signature'];
+  const rawBody = req.body.toString();
+
+  if (!verifyPaddleSignature(rawBody, sig, webhookSecret)) {
+    console.warn(`⚠️ [Paddle] 서명 검증 실패 | IP=${req.ip} | Paddle-Signature: ${sig || '(없음)'}`);
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
+  console.log(`✅ [Paddle] 서명 검증 성공 | IP=${req.ip}`);
+
+  // ── 2단계: 비즈니스 로직 — Paddle 재시도 방지를 위해 항상 200 반환 ──
+  try {
+    const body = JSON.parse(rawBody);
     const eventType = body.event_type;
 
     // Paddle v2 webhook: customData は custom_data (snake_case) で届く
