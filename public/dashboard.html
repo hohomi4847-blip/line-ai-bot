@@ -4,180 +4,324 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>管理者ダッシュボード</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ─── ログイン ─── */
+    :root {
+      --green:        #06C755;
+      --green-d:      #05A847;
+      --green-light:  #F0FDF4;
+      --green-border: #BBF7D0;
+      --bg:           #F3F4F6;
+      --white:        #FFFFFF;
+      --text:         #111827;
+      --text2:        #4B5563;
+      --text3:        #9CA3AF;
+      --border:       #E5E7EB;
+      --radius:       12px;
+      --shadow-sm:    0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md:    0 4px 20px rgba(0,0,0,0.08);
+      --shadow-lg:    0 10px 40px rgba(0,0,0,0.14);
+    }
+
+    body {
+      font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg); color: var(--text);
+      -webkit-font-smoothing: antialiased; min-height: 100vh;
+    }
+
+    /* ── LOGIN SCREEN ────────────────────────────────────── */
     #loginScreen {
-      display: flex; flex-direction: column; align-items: center;
-      justify-content: center; min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: 100vh; padding: 20px;
+      background: linear-gradient(135deg, #111827 0%, #1F2937 100%);
+    }
+    .login-logo {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 40px;
+    }
+    .login-logo-icon {
+      width: 44px; height: 44px; background: var(--green);
+      border-radius: 12px; display: flex; align-items: center;
+      justify-content: center; font-size: 22px;
+    }
+    .login-logo-text {
+      font-size: 18px; font-weight: 700; color: white; letter-spacing: -0.02em;
     }
     .login-card {
-      background: white; border-radius: 16px; padding: 40px 36px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.1); width: 340px; max-width: 94vw;
+      background: var(--white); border-radius: 20px;
+      padding: 44px 40px; width: 380px; max-width: 94vw;
+      box-shadow: var(--shadow-lg);
     }
-    .login-card h2 { text-align: center; color: #06C755; margin-bottom: 24px; font-size: 20px; }
-    .login-card input {
-      width: 100%; padding: 11px 14px; border: 2px solid #e0e0e0;
-      border-radius: 8px; font-size: 15px; margin-bottom: 14px;
+    .login-card-title {
+      font-size: 22px; font-weight: 800; color: var(--text);
+      letter-spacing: -0.03em; margin-bottom: 6px; text-align: center;
     }
-    .login-card input:focus { outline: none; border-color: #06C755; }
-    .login-card .login-btn {
-      width: 100%; padding: 12px; background: #06C755; color: white;
-      border: none; border-radius: 8px; font-size: 15px; font-weight: bold;
-      cursor: pointer;
+    .login-card-sub {
+      font-size: 14px; color: var(--text3); text-align: center;
+      margin-bottom: 32px;
     }
-    .login-card .login-btn:hover:not(:disabled) { opacity: 0.9; }
-    .login-card .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .login-label {
+      display: block; font-size: 13px; font-weight: 600;
+      color: var(--text2); margin-bottom: 7px;
+    }
+    .login-input {
+      width: 100%; padding: 12px 14px;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      font-size: 15px; font-family: inherit; color: var(--text);
+      transition: border-color 0.15s, box-shadow 0.15s;
+      margin-bottom: 16px;
+    }
+    .login-input:focus {
+      outline: none; border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(6,199,85,0.1);
+    }
+    .login-btn {
+      width: 100%; padding: 13px; background: var(--green); color: white;
+      border: none; border-radius: 10px;
+      font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
+      transition: background 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 14px rgba(6,199,85,0.3);
+    }
+    .login-btn:hover:not(:disabled) { background: var(--green-d); box-shadow: 0 6px 20px rgba(6,199,85,0.4); }
+    .login-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
     #loginError {
-      color: #d00; text-align: center; margin-top: 12px;
-      font-size: 14px; display: none;
+      display: none; margin-top: 14px; padding: 10px 14px;
+      background: #FEF2F2; border: 1px solid #FECACA;
+      border-radius: 8px; color: #DC2626;
+      font-size: 13px; font-weight: 600; text-align: center;
     }
 
-    /* ─── ヘッダー ─── */
-    header {
-      background: linear-gradient(135deg, #06C755, #00B341);
-      color: white; padding: 15px 28px;
-      display: flex; justify-content: space-between; align-items: center;
-      flex-wrap: wrap; gap: 8px;
+    /* ── HEADER ─────────────────────────────────────────── */
+    .admin-header {
+      background: #111827; color: white; padding: 0 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px; position: sticky; top: 0; z-index: 100;
+      border-bottom: 1px solid #1F2937;
     }
-    header h1 { font-size: 20px; }
-    .header-right { display: flex; align-items: center; gap: 14px; font-size: 13px; }
+    .admin-header-left { display: flex; align-items: center; gap: 12px; }
+    .admin-logo {
+      width: 32px; height: 32px; background: var(--green);
+      border-radius: 8px; display: flex; align-items: center;
+      justify-content: center; font-size: 16px;
+    }
+    .admin-title { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+    .admin-header-right { display: flex; align-items: center; gap: 16px; }
+    #currentDate { font-size: 13px; color: #9CA3AF; }
     .logout-btn {
-      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
-      color: white; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px;
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      color: #D1D5DB; padding: 7px 16px; border-radius: 8px;
+      cursor: pointer; font-size: 13px; font-weight: 500; font-family: inherit;
+      transition: background 0.15s, color 0.15s;
     }
+    .logout-btn:hover { background: rgba(255,255,255,0.14); color: white; }
 
-    /* ─── レイアウト ─── */
-    .container { max-width: 1100px; margin: 24px auto; padding: 0 20px; }
+    /* ── LAYOUT ─────────────────────────────────────────── */
+    .admin-body { max-width: 1140px; margin: 0 auto; padding: 28px 24px; }
 
-    /* ─── 統計 ─── */
-    .stats {
+    /* ── STAT CARDS ─────────────────────────────────────── */
+    .stats-grid {
       display: grid; grid-template-columns: repeat(5, 1fr);
-      gap: 14px; margin-bottom: 26px;
+      gap: 16px; margin-bottom: 28px;
     }
     .stat-card {
-      background: white; border-radius: 12px; padding: 20px 16px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.06); text-align: center;
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 22px 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex; flex-direction: column; gap: 10px;
     }
-    .stat-card .num { font-size: 28px; font-weight: bold; color: #06C755; }
-    .stat-card .lbl { font-size: 12px; color: #888; margin-top: 5px; }
+    .stat-card-icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .icon-green  { background: var(--green-light); }
+    .icon-blue   { background: #EFF6FF; }
+    .icon-purple { background: #F5F3FF; }
+    .icon-amber  { background: #FFFBEB; }
+    .icon-rose   { background: #FFF1F2; }
+    .stat-num {
+      font-size: 28px; font-weight: 800; color: var(--text);
+      letter-spacing: -0.04em; line-height: 1;
+    }
+    .stat-lbl { font-size: 12px; color: var(--text3); font-weight: 500; }
 
-    /* ─── カード ─── */
-    .card {
-      background: white; border-radius: 12px; padding: 20px 24px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 24px;
+    /* ── SECTION CARDS ──────────────────────────────────── */
+    .section-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px;
+      box-shadow: var(--shadow-sm); margin-bottom: 24px;
     }
-    .card-header {
+    .section-head {
       display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
+      margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
     }
-    .card-header h2 { font-size: 17px; color: #333; }
+    .section-title {
+      font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.02em;
+    }
     .refresh-btn {
-      background: none; border: 1.5px solid #06C755; color: #06C755;
-      padding: 6px 16px; border-radius: 7px; cursor: pointer; font-size: 13px; font-weight: bold;
+      display: flex; align-items: center; gap: 6px;
+      background: none; border: 1.5px solid var(--border); color: var(--text2);
+      padding: 7px 16px; border-radius: 8px; cursor: pointer;
+      font-size: 13px; font-weight: 600; font-family: inherit;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
     }
-    .refresh-btn:hover:not(:disabled) { background: #e6f9ed; }
+    .refresh-btn:hover:not(:disabled) { border-color: var(--green); color: var(--green); background: var(--green-light); }
     .refresh-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* ─── テーブル ─── */
+    /* ── TABLES ─────────────────────────────────────────── */
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    th {
-      background: #fafafa; padding: 10px 12px; text-align: left;
-      font-size: 12px; color: #999; border-bottom: 1px solid #eee; white-space: nowrap;
+    thead th {
+      background: var(--bg); padding: 10px 14px; text-align: left;
+      font-size: 12px; font-weight: 600; color: var(--text3);
+      border-bottom: 1px solid var(--border); white-space: nowrap;
     }
-    td { padding: 11px 12px; color: #333; border-bottom: 1px solid #f5f5f5; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #fafff9; }
+    tbody td { padding: 13px 14px; color: var(--text2); border-bottom: 1px solid var(--border); }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #FAFFF9; }
 
-    /* ─── バッジ ─── */
+    /* ── BADGES ─────────────────────────────────────────── */
     .badge {
       display: inline-block; padding: 3px 10px;
-      border-radius: 12px; font-size: 12px; font-weight: 600; white-space: nowrap;
+      border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap;
     }
-    .b-active   { background: #e6f9ed; color: #06C755; }
-    .b-pending  { background: #fff8e6; color: #c07800; }
-    .b-canceled { background: #f5f5f5; color: #888; }
-    .b-expired  { background: #fff0f0; color: #d00; }
-    .b-refunded { background: #f0f0ff; color: #669; }
+    .b-active   { background: var(--green-light); color: #16a34a; border: 1px solid var(--green-border); }
+    .b-pending  { background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; }
+    .b-canceled { background: var(--bg); color: var(--text3); border: 1px solid var(--border); }
+    .b-expired  { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; }
+    .b-refunded { background: #F5F3FF; color: #7C3AED; border: 1px solid #DDD6FE; }
 
-    /* ─── 操作ボタン ─── */
+    /* ── TOGGLE BUTTONS ─────────────────────────────────── */
     .toggle-btn {
-      padding: 5px 13px; border-radius: 6px;
-      cursor: pointer; font-size: 12px; font-weight: bold; white-space: nowrap;
+      padding: 6px 14px; border-radius: 7px;
+      cursor: pointer; font-size: 12px; font-weight: 600;
+      white-space: nowrap; font-family: inherit;
+      transition: background 0.15s, opacity 0.15s;
     }
     .toggle-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-activate   { background: #e6f9ed; color: #06C755; border: 1px solid #b3e5c8; }
-    .btn-deactivate { background: #fff0f0; color: #d00;    border: 1px solid #f8c0c0; }
+    .btn-activate   { background: var(--green-light); color: #16a34a; border: 1.5px solid var(--green-border); }
+    .btn-activate:hover:not(:disabled) { background: #DCFCE7; }
+    .btn-deactivate { background: #FEF2F2; color: #DC2626; border: 1.5px solid #FECACA; }
+    .btn-deactivate:hover:not(:disabled) { background: #FEE2E2; }
 
-    /* ─── ページネーション ─── */
+    /* ── PAGINATION ─────────────────────────────────────── */
     .pagination {
       display: flex; justify-content: center; align-items: center;
-      gap: 10px; margin-top: 16px;
+      gap: 10px; margin-top: 20px; flex-wrap: wrap;
     }
     .page-btn {
-      padding: 6px 16px; border: 1.5px solid #ddd;
-      border-radius: 6px; background: white; cursor: pointer; font-size: 13px;
+      padding: 7px 18px; border: 1.5px solid var(--border);
+      border-radius: 8px; background: var(--white); cursor: pointer;
+      font-size: 13px; font-weight: 600; font-family: inherit;
+      transition: border-color 0.15s, color 0.15s, background 0.15s; color: var(--text2);
     }
-    .page-btn:hover:not(:disabled) { border-color: #06C755; color: #06C755; }
+    .page-btn:hover:not(:disabled) { border-color: var(--green); color: var(--green); background: var(--green-light); }
     .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-    .page-info { font-size: 13px; color: #888; }
+    .page-info { font-size: 13px; color: var(--text3); font-weight: 500; }
 
-    .empty   { text-align: center; padding: 40px; color: #aaa; font-size: 14px; }
-    .loading { text-align: center; padding: 40px; color: #aaa; }
+    .empty   { text-align: center; padding: 48px 20px; color: var(--text3); font-size: 14px; }
+    .loading { text-align: center; padding: 48px 20px; color: var(--text3); font-size: 14px; }
 
-    @media (max-width: 720px) {
-      .stats { grid-template-columns: repeat(2, 1fr); }
-      .stats .stat-card:last-child { grid-column: 1 / -1; }
-      th:nth-child(6), td:nth-child(6) { display: none; }
+    /* ── RESPONSIVE ─────────────────────────────────────── */
+    @media (max-width: 960px) {
+      .stats-grid { grid-template-columns: repeat(3, 1fr); }
+      .stats-grid .stat-card:nth-child(4) { grid-column: span 1; }
+      .stats-grid .stat-card:nth-child(5) { grid-column: span 2; }
+    }
+    @media (max-width: 680px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .stats-grid .stat-card:nth-child(5) { grid-column: 1 / -1; }
+      thead th:nth-child(5), tbody td:nth-child(5),
+      thead th:nth-child(6), tbody td:nth-child(6) { display: none; }
+      .admin-header { padding: 0 16px; }
+      #currentDate { display: none; }
+      .admin-body { padding: 16px; }
+      .login-card { padding: 32px 24px; }
     }
   </style>
 </head>
 <body>
 
-<!-- ログイン画面 -->
+<!-- ══ LOGIN SCREEN ══════════════════════════════════════ -->
 <div id="loginScreen">
+  <div class="login-logo">
+    <div class="login-logo-icon">🤖</div>
+    <span class="login-logo-text">LINE AI予約ボット</span>
+  </div>
   <div class="login-card">
-    <h2>🔐 管理者ログイン</h2>
-    <input type="password" id="pwInput" placeholder="管理者パスワード">
+    <h2 class="login-card-title">管理者ログイン</h2>
+    <p class="login-card-sub">管理者パスワードを入力してください</p>
+    <label class="login-label" for="pwInput">パスワード</label>
+    <input type="password" id="pwInput" class="login-input" placeholder="管理者パスワード">
     <button class="login-btn" id="loginBtn" onclick="doLogin()">ログイン</button>
     <div id="loginError">パスワードが正しくありません</div>
   </div>
 </div>
 
-<!-- ダッシュボード -->
+<!-- ══ DASHBOARD ══════════════════════════════════════════ -->
 <div id="dashboardScreen" style="display:none;">
-  <header>
-    <h1>🤖 管理者ダッシュボード</h1>
-    <div class="header-right">
+
+  <!-- Header -->
+  <header class="admin-header">
+    <div class="admin-header-left">
+      <div class="admin-logo">🤖</div>
+      <span class="admin-title">管理者ダッシュボード</span>
+    </div>
+    <div class="admin-header-right">
       <span id="currentDate"></span>
       <button class="logout-btn" onclick="doLogout()">ログアウト</button>
     </div>
   </header>
 
-  <div class="container">
+  <div class="admin-body">
 
-    <div class="stats">
-      <div class="stat-card"><div class="num" id="sTotal">-</div><div class="lbl">総予約数</div></div>
-      <div class="stat-card"><div class="num" id="sToday">-</div><div class="lbl">本日の予約</div></div>
-      <div class="stat-card"><div class="num" id="sShops">-</div><div class="lbl">登録店舗数</div></div>
-      <div class="stat-card"><div class="num" id="sPaid">-</div><div class="lbl">有料店舗数</div></div>
-      <div class="stat-card"><div class="num" id="sMRR">-</div><div class="lbl">推定MRR</div></div>
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card-icon icon-green">📅</div>
+        <div class="stat-num" id="sTotal">-</div>
+        <div class="stat-lbl">総予約数</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon icon-blue">🌅</div>
+        <div class="stat-num" id="sToday">-</div>
+        <div class="stat-lbl">本日の予約</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon icon-purple">🏪</div>
+        <div class="stat-num" id="sShops">-</div>
+        <div class="stat-lbl">登録店舗数</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon icon-amber">✅</div>
+        <div class="stat-num" id="sPaid">-</div>
+        <div class="stat-lbl">有料店舗数</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon icon-rose">💰</div>
+        <div class="stat-num" id="sMRR">-</div>
+        <div class="stat-lbl">推定MRR</div>
+      </div>
     </div>
 
-    <div class="card">
-      <div class="card-header">
-        <h2>📅 予約一覧</h2>
+    <!-- Reservations -->
+    <div class="section-card">
+      <div class="section-head">
+        <h2 class="section-title">📅 予約一覧</h2>
         <button class="refresh-btn" id="refreshResBtn" onclick="reloadReservations()">↻ 更新</button>
       </div>
       <div id="reservationTable"><div class="loading">読み込み中...</div></div>
       <div class="pagination" id="resPager"></div>
     </div>
 
-    <div class="card">
-      <div class="card-header">
-        <h2>🏪 登録店舗一覧</h2>
+    <!-- Shops -->
+    <div class="section-card">
+      <div class="section-head">
+        <h2 class="section-title">🏪 登録店舗一覧</h2>
         <button class="refresh-btn" id="refreshShopBtn" onclick="reloadShops()">↻ 更新</button>
       </div>
       <div id="shopTable"><div class="loading">読み込み中...</div></div>

@@ -3,180 +3,717 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LINE AI予約ボット - 自動生成サービス</title>
+  <title>LINE AI予約ボット - 24時間自動予約対応</title>
   <meta name="description" content="AIを活用したLINE予約ボットで、24時間自動予約対応。美容室・飲食店・整骨院など11業種対応。月額¥2,980〜">
-  <meta property="og:title" content="LINE AI予約ボット - 自動生成サービス">
+  <meta property="og:title" content="LINE AI予約ボット - 24時間自動予約対応">
   <meta property="og:description" content="AIを活用したLINE予約ボットで、24時間自動予約対応。月額¥2,980〜">
   <meta property="og:type" content="website">
   <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; }
-    header {
-      background: linear-gradient(135deg, #06C755, #00B341);
-      color: white; padding: 20px; text-align: center;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:        #06C755;
+      --green-d:      #05A847;
+      --green-light:  #F0FDF4;
+      --green-border: #BBF7D0;
+      --bg:           #F9FAFB;
+      --white:        #FFFFFF;
+      --text:         #111827;
+      --text2:        #4B5563;
+      --text3:        #9CA3AF;
+      --border:       #E5E7EB;
+      --radius:       14px;
+      --shadow-sm:    0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md:    0 4px 20px rgba(0,0,0,0.08);
+      --shadow-lg:    0 12px 40px rgba(0,0,0,0.12);
     }
-    header h1 { font-size: 28px; margin-bottom: 8px; }
-    header p { font-size: 16px; opacity: 0.9; }
-    .container { max-width: 600px; margin: 40px auto; padding: 0 20px; }
-    .card {
-      background: white; border-radius: 16px; padding: 32px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 24px;
+
+    body {
+      font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
     }
-    .card h2 { font-size: 20px; margin-bottom: 24px; color: #333; }
-    .form-group { margin-bottom: 20px; }
-    .form-group label { display: block; font-size: 14px; color: #666; margin-bottom: 8px; }
+
+    /* ── NAVBAR ─────────────────────────────────────────── */
+    .navbar {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .navbar-inner {
+      max-width: 1100px; margin: 0 auto; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 62px;
+    }
+    .navbar-logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 36px; height: 36px; background: var(--green);
+      border-radius: 10px; display: flex; align-items: center;
+      justify-content: center; font-size: 18px; flex-shrink: 0;
+    }
+    .logo-text {
+      font-size: 15px; font-weight: 700; color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    .logo-text em { color: var(--green); font-style: normal; }
+    .navbar-links { display: flex; align-items: center; gap: 4px; }
+    .nav-link {
+      color: var(--text2); text-decoration: none; font-size: 14px;
+      font-weight: 500; padding: 7px 12px; border-radius: 8px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-link:hover { background: var(--bg); color: var(--text); }
+    .nav-cta {
+      background: var(--green); color: white; text-decoration: none;
+      font-size: 14px; font-weight: 600; padding: 9px 20px;
+      border-radius: 9px; margin-left: 8px;
+      transition: background 0.15s, box-shadow 0.15s;
+      box-shadow: 0 2px 8px rgba(6,199,85,0.3);
+    }
+    .nav-cta:hover { background: var(--green-d); box-shadow: 0 4px 14px rgba(6,199,85,0.4); }
+
+    /* ── HERO ───────────────────────────────────────────── */
+    .hero {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 90px 24px 80px;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--green-light); border: 1px solid var(--green-border);
+      color: #16a34a; font-size: 13px; font-weight: 600;
+      padding: 5px 15px; border-radius: 100px; margin-bottom: 30px;
+    }
+    .badge-dot {
+      width: 7px; height: 7px; background: var(--green);
+      border-radius: 50%; animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+    .hero h1 {
+      font-size: clamp(30px, 5.5vw, 58px);
+      font-weight: 800; line-height: 1.12; letter-spacing: -0.04em;
+      color: var(--text); margin-bottom: 22px;
+    }
+    .hero h1 .hl { color: var(--green); }
+    .hero-sub {
+      font-size: clamp(15px, 1.8vw, 18px); color: var(--text2);
+      max-width: 540px; margin: 0 auto 44px; line-height: 1.75;
+    }
+    .hero-actions {
+      display: flex; align-items: center; justify-content: center;
+      gap: 14px; flex-wrap: wrap; margin-bottom: 16px;
+    }
+    .btn-hero {
+      display: inline-flex; align-items: center; gap: 9px;
+      background: var(--green); color: white;
+      font-size: 16px; font-weight: 700; padding: 16px 34px;
+      border-radius: 12px; text-decoration: none; border: none; cursor: pointer;
+      transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
+      box-shadow: 0 4px 18px rgba(6,199,85,0.38);
+    }
+    .btn-hero:hover { background: var(--green-d); box-shadow: 0 6px 24px rgba(6,199,85,0.48); transform: translateY(-1px); }
+    .btn-hero:active { transform: none; }
+    .btn-outline-hero {
+      display: inline-flex; align-items: center; gap: 9px;
+      background: var(--white); color: var(--text);
+      font-size: 15px; font-weight: 600; padding: 15px 28px;
+      border-radius: 12px; text-decoration: none;
+      border: 1.5px solid var(--border);
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .btn-outline-hero:hover { border-color: var(--green); background: var(--green-light); color: #16a34a; }
+    .hero-note { font-size: 13px; color: var(--text3); margin-bottom: 56px; }
+    .hero-stats {
+      display: inline-flex; gap: 0; border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden; background: var(--white);
+      box-shadow: var(--shadow-sm);
+    }
+    .hero-stat {
+      padding: 20px 36px; border-right: 1px solid var(--border); text-align: center;
+    }
+    .hero-stat:last-child { border-right: none; }
+    .stat-num {
+      font-size: 26px; font-weight: 800; color: var(--text);
+      letter-spacing: -0.04em; line-height: 1;
+    }
+    .stat-num em { color: var(--green); font-style: normal; }
+    .stat-lbl { font-size: 12px; color: var(--text3); margin-top: 5px; font-weight: 500; }
+
+    /* ── SECTION COMMON ─────────────────────────────────── */
+    .section-wrap { max-width: 1100px; margin: 0 auto; padding: 88px 24px; }
+    .section-tag {
+      display: inline-block; font-size: 12px; font-weight: 700;
+      color: var(--green); text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: clamp(24px, 3.5vw, 38px); font-weight: 800;
+      letter-spacing: -0.035em; line-height: 1.18; margin-bottom: 14px;
+    }
+    .section-sub {
+      font-size: 16px; color: var(--text2); line-height: 1.72;
+      max-width: 500px; margin-bottom: 52px;
+    }
+
+    /* ── FEATURES ───────────────────────────────────────── */
+    .features-bg { background: var(--bg); border-bottom: 1px solid var(--border); }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
+    }
+    .feat-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 28px 24px;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .feat-card:hover { border-color: var(--green-border); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .feat-icon {
+      width: 48px; height: 48px; background: var(--green-light);
+      border-radius: 12px; display: flex; align-items: center;
+      justify-content: center; font-size: 24px; margin-bottom: 18px;
+    }
+    .feat-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .feat-desc { font-size: 14px; color: var(--text2); line-height: 1.68; }
+
+    /* ── HOW IT WORKS ───────────────────────────────────── */
+    .how-bg {
+      background: var(--green-light);
+      border-top: 1px solid var(--green-border);
+      border-bottom: 1px solid var(--green-border);
+    }
+    .steps-row {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 40px; position: relative;
+    }
+    .steps-row::before {
+      content: ''; position: absolute;
+      top: 27px; left: calc(16.7% + 14px); right: calc(16.7% + 14px);
+      height: 2px; background: var(--green-border); z-index: 0;
+    }
+    .step-item { text-align: center; position: relative; z-index: 1; }
+    .step-num {
+      width: 54px; height: 54px; background: var(--green); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 20px; font-weight: 800;
+      margin: 0 auto 18px;
+      box-shadow: 0 4px 16px rgba(6,199,85,0.38);
+    }
+    .step-title { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+    .step-desc { font-size: 14px; color: var(--text2); line-height: 1.68; }
+
+    /* ── INDUSTRIES ─────────────────────────────────────── */
+    .ind-bg { background: var(--white); border-top: 1px solid var(--border); }
+    .ind-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+    .ind-chip {
+      background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: 100px; padding: 10px 20px;
+      font-size: 14px; font-weight: 500; color: var(--text2);
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+    }
+    .ind-chip:hover { border-color: var(--green); background: var(--green-light); color: #16a34a; }
+
+    /* ── PRICING ────────────────────────────────────────── */
+    .pricing-bg { background: var(--bg); border-top: 1px solid var(--border); }
+    .pricing-center { display: flex; justify-content: center; }
+    .pricing-card {
+      background: var(--white); border: 1.5px solid var(--border);
+      border-radius: 20px; padding: 44px 42px;
+      width: 100%; max-width: 480px;
+      box-shadow: var(--shadow-lg); position: relative; overflow: hidden;
+    }
+    .pricing-card::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 4px; background: var(--green);
+    }
+    .pricing-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--green-light); color: #16a34a;
+      font-size: 12px; font-weight: 700; padding: 5px 13px;
+      border-radius: 6px; margin-bottom: 22px; letter-spacing: 0.02em;
+    }
+    .pricing-price {
+      font-size: 54px; font-weight: 800; color: var(--text);
+      letter-spacing: -0.05em; line-height: 1;
+    }
+    .price-unit { font-size: 18px; font-weight: 500; color: var(--text2); }
+    .pricing-note { font-size: 14px; color: var(--text3); margin-top: 7px; margin-bottom: 28px; }
+    .pricing-divider { height: 1px; background: var(--border); margin: 24px 0; }
+    .pricing-features { list-style: none; margin-bottom: 34px; }
+    .pricing-features li {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 15px; color: var(--text2); padding: 7px 0;
+    }
+    .pricing-features li::before {
+      content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0;
+    }
+    .pricing-cta {
+      display: flex; align-items: center; justify-content: center; gap: 9px;
+      width: 100%; padding: 16px; background: var(--green); color: white;
+      font-size: 16px; font-weight: 700; border: none; border-radius: 12px;
+      text-decoration: none; cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 16px rgba(6,199,85,0.32);
+    }
+    .pricing-cta:hover { background: var(--green-d); box-shadow: 0 6px 22px rgba(6,199,85,0.42); }
+    .pricing-trial {
+      text-align: center; font-size: 13px; color: var(--text3); margin-top: 14px;
+    }
+
+    /* ── REGISTER SECTION ───────────────────────────────── */
+    .register-bg {
+      background: var(--bg); border-top: 1px solid var(--border);
+    }
+    .register-wrap { max-width: 620px; margin: 0 auto; padding: 88px 24px; }
+    .register-header { text-align: center; margin-bottom: 48px; }
+
+    .reg-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 32px;
+      margin-bottom: 14px; box-shadow: var(--shadow-sm);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .reg-card:focus-within { border-color: var(--green-border); box-shadow: 0 0 0 3px rgba(6,199,85,0.07); }
+    .reg-card-head {
+      display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
+    }
+    .reg-num {
+      width: 34px; height: 34px; background: var(--green); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 14px; font-weight: 700; flex-shrink: 0;
+    }
+    .reg-title { font-size: 17px; font-weight: 700; color: var(--text); }
+
+    /* Google button */
+    .btn-google {
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      width: 100%; padding: 14px 20px;
+      background: var(--white); border: 1.5px solid var(--border);
+      border-radius: 10px; font-size: 15px; font-weight: 600; color: var(--text);
+      text-decoration: none; transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    .btn-google:hover { border-color: #4285F4; background: #F8F9FF; box-shadow: 0 2px 10px rgba(66,133,244,0.14); }
+    .user-info-box {
+      background: var(--green-light); border: 1.5px solid var(--green-border);
+      border-radius: 10px; padding: 13px 18px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .user-info-email { font-size: 14px; color: #16a34a; font-weight: 600; word-break: break-all; }
+    .logout-link { font-size: 13px; color: var(--text3); text-decoration: none; white-space: nowrap; flex-shrink: 0; }
+    .logout-link:hover { color: var(--text); }
+
+    /* Form */
+    .form-group { margin-bottom: 18px; }
+    .form-group label {
+      display: block; font-size: 13px; font-weight: 600;
+      color: var(--text2); margin-bottom: 7px;
+    }
     .form-group input, .form-group select {
-      width: 100%; padding: 12px 16px; border: 2px solid #e0e0e0;
-      border-radius: 8px; font-size: 16px; transition: border-color 0.2s;
+      width: 100%; padding: 11px 14px;
+      border: 1.5px solid var(--border); border-radius: 9px;
+      font-size: 15px; color: var(--text); background: var(--white);
+      font-family: inherit; transition: border-color 0.15s, box-shadow 0.15s;
     }
     .form-group input:focus, .form-group select:focus {
-      outline: none; border-color: #06C755;
+      outline: none; border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(6,199,85,0.1);
     }
-    .btn {
-      width: 100%; padding: 16px; border: none; border-radius: 8px;
-      font-size: 16px; font-weight: bold; cursor: pointer; transition: opacity 0.2s;
-    }
-    .btn:hover { opacity: 0.9; }
-    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-green { background: #06C755; color: white; }
-    .btn-google {
-      background: white; color: #333; border: 2px solid #e0e0e0;
-      display: flex; align-items: center; justify-content: center; gap: 12px;
-      margin-bottom: 16px; width: 100%; padding: 16px;
-      border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;
-      transition: opacity 0.2s; text-decoration: none;
-    }
-    .btn-google:hover { opacity: 0.8; }
-    .price-box {
-      background: #f8fff9; border: 2px solid #06C755;
-      border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 24px;
-    }
-    .price-box h3 { color: #06C755; font-size: 18px; margin-bottom: 8px; }
-    .price-box .price { font-size: 32px; font-weight: bold; color: #333; }
-    .price-box .price span { font-size: 16px; color: #666; }
-    .steps { list-style: none; }
-    .steps li {
-      display: flex; align-items: center; padding: 12px 0;
-      border-bottom: 1px solid #f0f0f0; font-size: 15px; color: #444;
-    }
-    .steps li:last-child { border-bottom: none; }
-    .steps li .num {
-      width: 28px; height: 28px; background: #06C755; color: white;
-      border-radius: 50%; display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: bold; margin-right: 12px; flex-shrink: 0;
-    }
-    .success-box {
-      display: none; background: #f8fff9; border: 2px solid #06C755;
-      border-radius: 12px; padding: 24px; text-align: center; margin-top: 16px;
-    }
-    .success-box h3 { color: #06C755; font-size: 22px; margin-bottom: 12px; }
-    .webhook-box {
-      background: #f0f9f4; border: 2px solid #06C755;
-      border-radius: 8px; padding: 16px; margin-top: 16px; text-align: left;
-    }
-    .webhook-box p { font-size: 13px; color: #666; margin-bottom: 8px; }
-    .webhook-box code {
-      background: #e0f0e8; padding: 8px 12px; border-radius: 4px;
-      font-size: 12px; word-break: break-all; display: block;
-    }
+    .form-group input::placeholder { color: var(--text3); }
+    .form-hint { font-size: 12px; color: var(--text3); margin-top: 5px; line-height: 1.5; }
+
     .error-msg {
-      color: #e53e3e; font-size: 13px; margin-top: 8px; display: none;
+      display: none; color: #DC2626; font-size: 13px;
+      background: #FEF2F2; border: 1px solid #FCA5A5;
+      padding: 9px 13px; border-radius: 8px; margin-top: 12px;
+    }
+
+    .btn-reg {
+      width: 100%; padding: 15px 20px; background: var(--green); color: white;
+      border: none; border-radius: 10px;
+      font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit;
+      transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
+      margin-top: 6px;
+      box-shadow: 0 4px 14px rgba(6,199,85,0.3);
+    }
+    .btn-reg:hover:not(:disabled) {
+      background: var(--green-d);
+      box-shadow: 0 6px 20px rgba(6,199,85,0.42);
+      transform: translateY(-1px);
+    }
+    .btn-reg:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; box-shadow: none; }
+
+    /* Step 3 */
+    .trial-box {
+      background: var(--green-light); border: 1.5px solid var(--green-border);
+      border-radius: 10px; padding: 16px 18px; margin-bottom: 22px;
+    }
+    .trial-box-title { font-size: 14px; font-weight: 700; color: #16a34a; margin-bottom: 4px; }
+    .trial-box-text { font-size: 13px; color: #16a34a; line-height: 1.6; }
+
+    /* Success box — display toggled by JS via style.display */
+    .success-outer { margin-top: 18px; }
+    .success-inner {
+      background: var(--green-light); border: 1.5px solid var(--green-border);
+      border-radius: 12px; padding: 30px 24px; text-align: center;
+    }
+    .success-icon { font-size: 52px; margin-bottom: 14px; }
+    .success-title {
+      font-size: 22px; font-weight: 800; color: #16a34a;
+      margin-bottom: 8px; letter-spacing: -0.03em;
+    }
+    .success-body { font-size: 15px; color: #16a34a; margin-bottom: 22px; line-height: 1.65; }
+    .webhook-card {
+      background: var(--white); border: 1.5px solid var(--green-border);
+      border-radius: 10px; padding: 16px; text-align: left;
+    }
+    .webhook-label {
+      font-size: 11px; font-weight: 700; color: var(--text2);
+      text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;
+    }
+    .webhook-url-box {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 7px; padding: 10px 13px;
+    }
+    .webhook-url-box code {
+      font-size: 12px; color: var(--text); word-break: break-all;
+      font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+    }
+
+    /* ── FOOTER ─────────────────────────────────────────── */
+    footer {
+      background: #111827; color: #9CA3AF;
+      padding: 42px 24px; text-align: center;
+    }
+    .footer-nav {
+      display: flex; flex-wrap: wrap; justify-content: center;
+      gap: 8px 24px; margin-bottom: 20px;
+    }
+    .footer-nav a {
+      color: #6B7280; text-decoration: none; font-size: 13px;
+      transition: color 0.15s;
+    }
+    .footer-nav a:hover { color: var(--green); }
+    .footer-copy { font-size: 12px; color: #4B5563; }
+
+    /* ── RESPONSIVE ─────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .steps-row { grid-template-columns: 1fr; gap: 24px; }
+      .steps-row::before { display: none; }
+      .nav-link { display: none; }
+    }
+    @media (max-width: 600px) {
+      .features-grid { grid-template-columns: 1fr; }
+      .hero { padding: 60px 20px 52px; }
+      .hero-stats { flex-direction: column; border: none; background: transparent; box-shadow: none; gap: 8px; }
+      .hero-stat { border: 1px solid var(--border); border-radius: 12px; padding: 16px 24px; border-right: 1px solid var(--border) !important; }
+      .pricing-card { padding: 32px 22px; }
+      .reg-card { padding: 22px 18px; }
     }
   </style>
 </head>
 <body>
 
-<header>
-  <h1>🤖 LINE AI予約ボット</h1>
-  <p>あなたのお店に、24時間対応のAI予約アシスタントを。</p>
-</header>
-
-<div class="container">
-
-  <div class="price-box">
-    <h3>月額プラン</h3>
-    <div class="price">¥2,980 <span>〜 / 月</span></div>
-    <p style="margin-top:8px; color:#666; font-size:14px;">30日間無料・いつでも解約可能</p>
-  </div>
-
-  <div class="card">
-    <h2>📋 かんたん3ステップで開始</h2>
-    <ul class="steps">
-      <li><span class="num">1</span>Googleアカウントでログイン</li>
-      <li><span class="num">2</span>お店の情報を入力する</li>
-      <li><span class="num">3</span>AIボットが自動で起動！</li>
-    </ul>
-  </div>
-
-  <!-- Step 1: 구글 로그인 -->
-  <div class="card" id="step1">
-    <h2>① Googleでログイン</h2>
-    <!-- ✅ 서버 기반 OAuth - 단순 링크로 처리 -->
-    <a href="/auth/google" class="btn-google" id="googleBtn">
-      <img src="https://www.google.com/favicon.ico" alt="Google" width="24">
-      Googleでログイン
+<!-- ══ NAVBAR ═══════════════════════════════════════════════ -->
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="/" class="navbar-logo">
+      <div class="logo-icon">🤖</div>
+      <span class="logo-text">LINE <em>AI予約</em>ボット</span>
     </a>
-    <div id="userInfo" style="display:none; background:#f8fff9; border:2px solid #06C755; border-radius:12px; padding:16px;">
-      <p id="userEmail" style="color:#333; font-size:14px;"></p>
-      <a href="/auth/logout" style="color:#888; font-size:12px; text-decoration:none;">ログアウト</a>
+    <div class="navbar-links">
+      <a href="#features" class="nav-link">機能</a>
+      <a href="#pricing" class="nav-link">料金</a>
+      <a href="/shop-dashboard.html" class="nav-link">ダッシュボード</a>
+      <a href="#start" class="nav-cta">無料で始める</a>
     </div>
   </div>
+</nav>
 
-  <!-- Step 2: 가게 정보 -->
-  <div class="card" id="step2" style="opacity:0.5; pointer-events:none;">
-    <h2>② お店の情報を入力</h2>
-    <div class="form-group">
-      <label>お店の名前</label>
-      <input type="text" id="shopName" placeholder="例：山田美容室" maxlength="100">
-    </div>
-    <div class="form-group">
-      <label>業種を選択</label>
-      <select id="businessType">
-        <option value="">選択してください</option>
-        <option value="beauty_salon">💇 美容室</option>
-        <option value="restaurant">🍽️ レストラン・飲食店</option>
-        <option value="osteopathy">🦴 整骨院</option>
-        <option value="nail_salon">💅 ネイルサロン</option>
-        <option value="massage">💆 マッサージ・リラクゼーション</option>
-        <option value="dental">🦷 歯科医院</option>
-        <option value="gym">💪 ジム・フィットネス</option>
-        <option value="pet_salon">🐾 ペットサロン</option>
-        <option value="eyebrow_salon">👁️ アイブロウ・まつ毛サロン</option>
-        <option value="yoga">🧘 ヨガ・ピラティス</option>
-        <option value="acupuncture">針 鍼灸院</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>LINE Channel Secret</label>
-      <input type="text" id="channelSecret" placeholder="LINEデベロッパーコンソールから取得">
-    </div>
-    <div class="form-group">
-      <label>LINE Channel Access Token</label>
-      <input type="text" id="channelToken" placeholder="LINEデベロッパーコンソールから取得">
-    </div>
-    <p class="error-msg" id="registerError"></p>
-    <button class="btn btn-green" id="registerBtn" onclick="register()">次へ → 決済へ進む</button>
+<!-- ══ HERO ════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="badge-dot"></span>
+    30日間完全無料トライアル実施中
   </div>
+  <h1>あなたのお店に、<br><span class="hl">AIが予約を取ってくれる</span></h1>
+  <p class="hero-sub">
+    LINEを通じて24時間・365日、予約を自動受付。<br>
+    美容室・飲食店など11業種対応。設定5分で即日スタート。
+  </p>
+  <div class="hero-actions">
+    <a href="#start" class="btn-hero">30日間無料で試す →</a>
+    <a href="/shop-dashboard.html" class="btn-outline-hero">ダッシュボードへ</a>
+  </div>
+  <p class="hero-note">クレジットカード不要 &middot; いつでも解約可能 &middot; 設定5分</p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="stat-num">24<em>h</em></div>
+      <div class="stat-lbl">自動対応</div>
+    </div>
+    <div class="hero-stat">
+      <div class="stat-num">11<em>+</em></div>
+      <div class="stat-lbl">対応業種</div>
+    </div>
+    <div class="hero-stat">
+      <div class="stat-num">5<em>分</em></div>
+      <div class="stat-lbl">設定時間</div>
+    </div>
+    <div class="hero-stat">
+      <div class="stat-num">¥2,980</div>
+      <div class="stat-lbl">月額〜</div>
+    </div>
+  </div>
+</section>
 
-  <!-- Step 3: 결제 -->
-  <div class="card" id="step3" style="display:none;">
-    <h2>③ 決済情報を入力</h2>
-    <p style="color:#666; font-size:14px; margin-bottom:20px;">
-      30日間無料でお試しいただけます。<br>無料期間中の解約は料金が発生しません。
-    </p>
-    <button class="btn btn-green" id="payBtn" onclick="startPayment()">🚀 30日間無料で始める</button>
-    <div class="success-box" id="successBox">
-      <h3>✅ 登録完了！</h3>
-      <p>AIボットが起動しました。<br>LINEでメッセージを送ってみてください！</p>
-      <div class="webhook-box">
-        <p>📌 LINEデベロッパーコンソールのWebhook URLに以下を設定してください：</p>
-        <code id="webhookUrl"></code>
+<!-- ══ FEATURES ════════════════════════════════════════════ -->
+<div class="features-bg" id="features">
+  <div class="section-wrap">
+    <div class="section-tag">Features</div>
+    <h2 class="section-title">面倒な予約管理を、<br>AIに任せましょう</h2>
+    <p class="section-sub">受電対応・予約調整・リマインド送信まで、すべて自動化。</p>
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon">🤖</div>
+        <div class="feat-title">AI自動応答</div>
+        <p class="feat-desc">Claude AIが自然な会話で予約を受付。空き確認から予約確定まですべて自動で対応します。</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🕐</div>
+        <div class="feat-title">24時間対応</div>
+        <p class="feat-desc">深夜・早朝・休日問わず予約を受け付け。機会損失ゼロに。スタッフの負担も大幅軽減。</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📱</div>
+        <div class="feat-title">LINE公式連携</div>
+        <p class="feat-desc">お客様が使い慣れたLINEで予約完結。アプリ不要で開始率・予約率が大幅アップ。</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📅</div>
+        <div class="feat-title">カレンダー連携</div>
+        <p class="feat-desc">GoogleカレンダーiCal同期に対応。予約はすべてカレンダーに自動反映されます。</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🔔</div>
+        <div class="feat-title">リマインド自動送信</div>
+        <p class="feat-desc">予約前日にLINEで自動リマインド。ノーショー（無断キャンセル）を大幅に削減。</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">⚙️</div>
+        <div class="feat-title">かんたん設定</div>
+        <p class="feat-desc">専門知識不要。LINEのChannel情報を入力するだけで、最短5分でボットが起動します。</p>
       </div>
     </div>
   </div>
-
 </div>
+
+<!-- ══ HOW IT WORKS ════════════════════════════════════════ -->
+<div class="how-bg">
+  <div class="section-wrap" style="text-align:center;">
+    <div class="section-tag">How it works</div>
+    <h2 class="section-title" style="margin-bottom:52px;">かんたん3ステップで開始</h2>
+    <div class="steps-row">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-title">Googleでログイン</div>
+        <p class="step-desc">Googleアカウントで安全に認証。新規アカウント作成は不要です。</p>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-title">店舗情報を入力</div>
+        <p class="step-desc">店舗名・業種・LINE Channel情報を入力するだけ。5分で完了します。</p>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-title">AIボット自動起動</div>
+        <p class="step-desc">設定完了後すぐにAIが起動。LINEに届く予約メッセージに即座に対応開始。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ INDUSTRIES ══════════════════════════════════════════ -->
+<div class="ind-bg">
+  <div class="section-wrap">
+    <div class="section-tag">Industries</div>
+    <h2 class="section-title">11業種に対応</h2>
+    <p class="section-sub">あらゆる業種の予約フローに最適化された自動応答を提供します。</p>
+    <div class="ind-grid">
+      <span class="ind-chip">💇 美容室</span>
+      <span class="ind-chip">🍽️ レストラン・飲食店</span>
+      <span class="ind-chip">🦴 整骨院</span>
+      <span class="ind-chip">💅 ネイルサロン</span>
+      <span class="ind-chip">💆 マッサージ・リラクゼーション</span>
+      <span class="ind-chip">🦷 歯科医院</span>
+      <span class="ind-chip">💪 ジム・フィットネス</span>
+      <span class="ind-chip">🐾 ペットサロン</span>
+      <span class="ind-chip">👁️ アイブロウ・まつ毛サロン</span>
+      <span class="ind-chip">🧘 ヨガ・ピラティス</span>
+      <span class="ind-chip">🪡 鍼灸院</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PRICING ═════════════════════════════════════════════ -->
+<div class="pricing-bg" id="pricing">
+  <div class="section-wrap" style="text-align:center;">
+    <div class="section-tag">Pricing</div>
+    <h2 class="section-title">シンプルな料金プラン</h2>
+    <p class="section-sub" style="margin:14px auto 52px; text-align:center; max-width:420px;">
+      まずは30日間、無料でお試しください。<br>いつでもキャンセル可能です。
+    </p>
+    <div class="pricing-center">
+      <div class="pricing-card">
+        <div class="pricing-badge">✦ 30日間 無料トライアル</div>
+        <div class="pricing-price">¥2,980<span class="price-unit"> / 月〜</span></div>
+        <p class="pricing-note">税込・月次自動更新・いつでも解約可</p>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li>30日間無料トライアル（クレカ不要）</li>
+          <li>24時間AI自動予約受付</li>
+          <li>LINEメッセージ数 無制限</li>
+          <li>GoogleカレンダーiCal連携</li>
+          <li>前日リマインド自動送信</li>
+          <li>11業種対応AIシナリオ</li>
+          <li>店舗管理ダッシュボード</li>
+          <li>いつでも解約可能</li>
+        </ul>
+        <a href="#start" class="pricing-cta">30日間無料で始める →</a>
+        <p class="pricing-trial">無料期間中に解約しても費用は一切かかりません</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ REGISTRATION ════════════════════════════════════════ -->
+<div class="register-bg" id="start">
+  <div class="register-wrap">
+    <div class="register-header">
+      <div class="section-tag">Get Started</div>
+      <h2 class="section-title">今すぐ無料で始める</h2>
+      <p style="font-size:15px; color:var(--text2); margin-top:12px; line-height:1.7;">
+        以下の3ステップに従って、5分でAI予約ボットを起動できます。
+      </p>
+    </div>
+
+    <!-- Step 1: Google Login -->
+    <div class="reg-card" id="step1">
+      <div class="reg-card-head">
+        <div class="reg-num">1</div>
+        <div class="reg-title">Googleアカウントでログイン</div>
+      </div>
+      <a href="/auth/google" class="btn-google" id="googleBtn">
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        Googleでログイン
+      </a>
+      <div id="userInfo" style="display:none;">
+        <div class="user-info-box">
+          <p id="userEmail" class="user-info-email"></p>
+          <a href="/auth/logout" class="logout-link">ログアウト</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Shop Info -->
+    <div class="reg-card" id="step2" style="opacity:0.5; pointer-events:none;">
+      <div class="reg-card-head">
+        <div class="reg-num">2</div>
+        <div class="reg-title">お店の情報を入力</div>
+      </div>
+      <div class="form-group">
+        <label>お店の名前</label>
+        <input type="text" id="shopName" placeholder="例：山田美容室" maxlength="100">
+      </div>
+      <div class="form-group">
+        <label>業種を選択</label>
+        <select id="businessType">
+          <option value="">選択してください</option>
+          <option value="beauty_salon">💇 美容室</option>
+          <option value="restaurant">🍽️ レストラン・飲食店</option>
+          <option value="osteopathy">🦴 整骨院</option>
+          <option value="nail_salon">💅 ネイルサロン</option>
+          <option value="massage">💆 マッサージ・リラクゼーション</option>
+          <option value="dental">🦷 歯科医院</option>
+          <option value="gym">💪 ジム・フィットネス</option>
+          <option value="pet_salon">🐾 ペットサロン</option>
+          <option value="eyebrow_salon">👁️ アイブロウ・まつ毛サロン</option>
+          <option value="yoga">🧘 ヨガ・ピラティス</option>
+          <option value="acupuncture">🪡 鍼灸院</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>LINE Channel Secret</label>
+        <input type="text" id="channelSecret" placeholder="LINEデベロッパーコンソールから取得">
+        <p class="form-hint">LINE Developers → プロバイダー → チャネル → チャネル基本設定</p>
+      </div>
+      <div class="form-group">
+        <label>LINE Channel Access Token</label>
+        <input type="text" id="channelToken" placeholder="LINEデベロッパーコンソールから取得">
+        <p class="form-hint">LINE Developers → Messaging API設定 → チャネルアクセストークン（発行）</p>
+      </div>
+      <p class="error-msg" id="registerError"></p>
+      <button class="btn-reg" id="registerBtn" onclick="register()">次へ → 決済へ進む</button>
+    </div>
+
+    <!-- Step 3: Payment -->
+    <div class="reg-card" id="step3" style="display:none;">
+      <div class="reg-card-head">
+        <div class="reg-num">3</div>
+        <div class="reg-title">30日間無料トライアル開始</div>
+      </div>
+      <div class="trial-box">
+        <div class="trial-box-title">🎉 30日間、完全無料</div>
+        <div class="trial-box-text">
+          無料期間中の解約は費用が一切かかりません。<br>
+          トライアル終了後、¥2,980/月〜の自動更新となります。
+        </div>
+      </div>
+      <button class="btn-reg" id="payBtn" onclick="startPayment()" style="font-size:17px; padding:17px;">🚀 30日間無料で始める</button>
+      <div class="success-outer" id="successBox" style="display:none;">
+        <div class="success-inner">
+          <div class="success-icon">🎉</div>
+          <div class="success-title">登録完了！</div>
+          <p class="success-body">
+            AIボットが起動しました！<br>LINEでメッセージを送ってみてください。
+          </p>
+          <div class="webhook-card">
+            <div class="webhook-label">LINE Webhook URL（デベロッパーコンソールに設定）</div>
+            <div class="webhook-url-box">
+              <code id="webhookUrl"></code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FOOTER ══════════════════════════════════════════════ -->
+<footer>
+  <nav class="footer-nav">
+    <a href="/">トップページ</a>
+    <a href="/terms.html">利用規約</a>
+    <a href="/privacy.html">プライバシーポリシー</a>
+    <a href="/refund.html">返金ポリシー</a>
+    <a href="/tokusho.html">特定商取引法に基づく表記</a>
+  </nav>
+  <p class="footer-copy">&copy; 2026 LINE AI予約ボット（キム・テヒョン）</p>
+</footer>
 
 <script>
   // Paddle v2 初期化 — token と eventCallback のみ指定（公式仕様準拠）
