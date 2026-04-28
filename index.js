@@ -1,4 +1,7 @@
-require('dotenv').config();
+// Railway 환경에서는 dotenv 불필요 (환경변수 자동 주입)
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
 const express = require('express');
 const line = require('@line/bot-sdk');
 const Anthropic = require('@anthropic-ai/sdk');
