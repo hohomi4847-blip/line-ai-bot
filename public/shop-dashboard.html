@@ -7,334 +7,645 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; }
+
+    .screen {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 100vh; padding: 20px;
+    }
+    .spinner {
+      width: 44px; height: 44px; border: 4px solid #e0e0e0;
+      border-top-color: #06C755; border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin-bottom: 14px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .block-card {
+      background: white; border-radius: 16px; padding: 40px 32px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1); max-width: 420px; width: 100%;
+      text-align: center;
+    }
+    .block-card .icon { font-size: 48px; margin-bottom: 16px; }
+    .block-card h2 { font-size: 22px; color: #333; margin-bottom: 12px; }
+    .block-card p { color: #666; font-size: 15px; line-height: 1.6; margin-bottom: 24px; }
+
     header {
       background: linear-gradient(135deg, #06C755, #00B341);
-      color: white; padding: 20px 32px;
+      color: white; padding: 14px 24px;
       display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 8px;
     }
-    header h1 { font-size: 20px; }
-    .container { max-width: 800px; margin: 32px auto; padding: 0 20px; }
+    header h1 { font-size: 18px; }
+    .header-right { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+    .logout-link {
+      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
+      color: white; padding: 5px 14px; border-radius: 6px; text-decoration: none; font-size: 13px;
+    }
+
+    .container { max-width: 820px; margin: 24px auto; padding: 0 16px; }
+
     .card {
-      background: white; border-radius: 12px; padding: 24px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 24px;
+      background: white; border-radius: 12px; padding: 20px 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 20px;
     }
-    .card h2 { font-size: 18px; color: #333; margin-bottom: 20px; border-bottom: 2px solid #06C755; padding-bottom: 10px; }
-    .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 14px; color: #666; margin-bottom: 6px; }
-    .form-group input, .form-group textarea, .form-group select {
-      width: 100%; padding: 10px 14px; border: 2px solid #e0e0e0;
-      border-radius: 8px; font-size: 15px; transition: border-color 0.2s;
+    .card h2 {
+      font-size: 16px; color: #333; margin-bottom: 16px;
+      border-bottom: 2px solid #06C755; padding-bottom: 10px;
     }
-    .form-group input:focus, .form-group textarea:focus {
-      outline: none; border-color: #06C755;
+
+    .status-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+    .badge {
+      padding: 5px 13px; border-radius: 20px; font-size: 12px; font-weight: 600;
     }
-    .form-group textarea { height: 100px; resize: vertical; }
-    .hours-grid {
-      display: grid; grid-template-columns: 1fr 1fr 1fr;
+    .badge-active { background: #e6f9ed; color: #06C755; }
+    .badge-warn   { background: #fff8e6; color: #e6a000; }
+    .badge-danger { background: #fff0f0; color: #d00; }
+    .badge-neutral { background: #f5f5f5; color: #666; }
+
+    .info-box {
+      background: #f6fdf9; border: 1px solid #b8e6cf;
+      border-radius: 8px; padding: 14px 16px; margin-bottom: 12px;
+    }
+    .info-box .info-label { font-size: 12px; color: #888; margin-bottom: 6px; }
+    .info-box code {
+      font-size: 13px; color: #333; word-break: break-all;
+      background: #ddf0e8; padding: 5px 9px; border-radius: 5px; display: block;
+    }
+    .copy-btn {
+      margin-top: 8px; background: none; border: 1px solid #06C755; color: #06C755;
+      padding: 4px 12px; border-radius: 5px; cursor: pointer; font-size: 12px;
+    }
+    .copy-btn:active { background: #e6f9ed; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 13px; color: #666; margin-bottom: 5px; }
+    .form-group input, .form-group textarea {
+      width: 100%; padding: 9px 12px; border: 2px solid #e0e0e0;
+      border-radius: 8px; font-size: 14px; transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #06C755; }
+    .form-group textarea { height: 90px; resize: vertical; }
+
+    .hours-row {
+      display: grid; grid-template-columns: 72px 1fr 1fr auto;
       gap: 8px; align-items: center; margin-bottom: 8px;
     }
-    .hours-grid label { font-size: 14px; color: #555; }
-    .hours-grid input { padding: 8px; font-size: 14px; }
+    .hours-row span { font-size: 14px; color: #555; }
+    .hours-row input[type="time"] {
+      padding: 7px 8px; border: 2px solid #e0e0e0; border-radius: 7px; font-size: 13px;
+    }
+    .hours-row input[type="time"]:focus { outline: none; border-color: #06C755; }
+    .closed-label { display: flex; align-items: center; gap: 5px; font-size: 13px; white-space: nowrap; cursor: pointer; }
+
     .menu-item {
-      display: flex; gap: 8px; margin-bottom: 8px; align-items: center;
+      display: grid; grid-template-columns: 1fr 100px 80px 36px;
+      gap: 8px; margin-bottom: 8px; align-items: center;
     }
-    .menu-item input { flex: 1; }
-    .menu-item button {
+    .menu-item input {
+      padding: 8px 10px; border: 2px solid #e0e0e0; border-radius: 7px;
+      font-size: 13px; width: 100%;
+    }
+    .menu-item input:focus { outline: none; border-color: #06C755; }
+    .del-btn {
       background: #ff4444; color: white; border: none;
-      border-radius: 6px; padding: 8px 12px; cursor: pointer; font-size: 14px;
+      border-radius: 6px; width: 34px; height: 34px; cursor: pointer; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
     }
+
+    .res-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .res-table th {
+      padding: 9px 8px; text-align: left; font-size: 12px;
+      color: #999; background: #fafafa; border-bottom: 1px solid #f0f0f0;
+    }
+    .res-table td { padding: 10px 8px; border-bottom: 1px solid #f5f5f5; }
+    .res-table tr:last-child td { border-bottom: none; }
+    .s-confirmed { background: #e6f9ed; color: #06C755; padding: 3px 9px; border-radius: 12px; font-size: 12px; }
+    .s-canceled  { background: #f5f5f5; color: #999;    padding: 3px 9px; border-radius: 12px; font-size: 12px; }
+    .cancel-btn {
+      background: none; border: 1px solid #ddd; color: #999;
+      padding: 4px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;
+    }
+    .cancel-btn:hover:not(:disabled) { border-color: #ff4444; color: #ff4444; }
+    .cancel-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
     .btn {
-      padding: 12px 24px; border: none; border-radius: 8px;
-      font-size: 15px; font-weight: bold; cursor: pointer; transition: opacity 0.2s;
+      padding: 11px 20px; border: none; border-radius: 8px;
+      font-size: 14px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; width: 100%;
     }
-    .btn:hover { opacity: 0.9; }
-    .btn-green { background: #06C755; color: white; width: 100%; margin-top: 8px; }
-    .btn-outline {
-      background: white; color: #06C755; border: 2px solid #06C755;
-      margin-top: 8px; width: 100%;
+    .btn:hover:not(:disabled) { opacity: 0.88; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-green   { background: #06C755; color: white; margin-top: 10px; }
+    .btn-outline { background: white; color: #06C755; border: 2px solid #06C755; margin-top: 8px; }
+    .btn-primary { background: #06C755; color: white; padding: 13px 32px; font-size: 15px; border-radius: 10px; width: auto; }
+
+    .toast {
+      display: none; border-radius: 8px; padding: 10px 14px;
+      text-align: center; font-weight: bold; margin-top: 10px; font-size: 13px;
     }
-    .success-msg {
-      display: none; background: #e6f9ed; border: 2px solid #06C755;
-      border-radius: 8px; padding: 12px; text-align: center;
-      color: #06C755; font-weight: bold; margin-top: 12px;
-    }
-    .login-box {
-      max-width: 400px; margin: 80px auto; background: white;
-      border-radius: 16px; padding: 32px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    }
-    .login-box h2 { text-align: center; color: #06C755; margin-bottom: 24px; }
-    .calendar-link {
-      background: #f0f9f4; border: 2px solid #06C755;
-      border-radius: 8px; padding: 16px; margin-top: 12px;
-    }
-    .calendar-link p { font-size: 13px; color: #666; margin-bottom: 8px; }
-    .calendar-link code {
-      background: #e0f0e8; padding: 4px 8px; border-radius: 4px;
-      font-size: 12px; word-break: break-all;
+    .toast-ok  { background: #e6f9ed; border: 1.5px solid #06C755; color: #06C755; }
+    .toast-err { background: #fff0f0; border: 1.5px solid #d00; color: #d00; }
+
+    @media (max-width: 600px) {
+      header h1 { font-size: 15px; }
+      .card { padding: 14px 16px; }
+      .hours-row { grid-template-columns: 56px 1fr 1fr; }
+      .hours-row .closed-label { grid-column: 1 / -1; padding-left: 4px; }
+      .menu-item { grid-template-columns: 1fr 80px 36px; }
+      .menu-item input.menu-duration { display: none; }
+      .res-table th:nth-child(2), .res-table td:nth-child(2) { display: none; }
+      .res-table th:nth-child(3), .res-table td:nth-child(3) { display: none; }
     }
   </style>
 </head>
 <body>
 
-<!-- 로그인 화면 -->
-<div id="loginBox" class="login-box">
-  <h2>🏪 店舗ログイン</h2>
-  <div class="form-group">
-    <label>メールアドレス</label>
-    <input type="email" id="loginEmail" placeholder="登録したメールアドレス">
-  </div>
-  <button class="btn btn-green" onclick="login()">ログイン</button>
-  <p id="loginError" style="color:red; text-align:center; margin-top:12px; display:none;">
-    メールアドレスが見つかりません
-  </p>
+<!-- ローディング -->
+<div id="loadingScreen" class="screen">
+  <div class="spinner"></div>
+  <p style="color:#999; font-size:14px;">読み込み中...</p>
 </div>
 
-<!-- 대시보드 -->
+<!-- 未払いブロック -->
+<div id="paymentScreen" class="screen" style="display:none;">
+  <div class="block-card">
+    <div class="icon">💳</div>
+    <h2>お支払いが必要です</h2>
+    <p>サービスをご利用いただくには、サブスクリプションのお申し込みが必要です。</p>
+    <button class="btn-primary" onclick="location.href='/'">プランを確認する</button>
+  </div>
+</div>
+
+<!-- 期限切れブロック -->
+<div id="expiredScreen" class="screen" style="display:none;">
+  <div class="block-card">
+    <div class="icon">⏰</div>
+    <h2>サブスクリプションが期限切れです</h2>
+    <p>ご契約のプランが期限切れになりました。引き続きご利用いただくには更新が必要です。</p>
+    <button class="btn-primary" onclick="location.href='/'">プランを更新する</button>
+  </div>
+</div>
+
+<!-- ダッシュボード -->
 <div id="dashboard" style="display:none;">
   <header>
     <h1>🏪 <span id="shopNameHeader"></span> 管理画面</h1>
-    <span id="todayDate"></span>
+    <div class="header-right">
+      <span id="todayDate"></span>
+      <a href="/auth/logout" class="logout-link">ログアウト</a>
+    </div>
   </header>
 
   <div class="container">
 
-    <!-- 예약 현황 -->
+    <div class="status-row" id="statusRow"></div>
+
+    <!-- 連携情報 -->
+    <div class="card">
+      <h2>🔗 連携情報</h2>
+      <div class="info-box">
+        <div class="info-label">LINE Webhook URL（LINEデベロッパーコンソールに設定）</div>
+        <code id="webhookUrl"></code>
+        <button class="copy-btn" onclick="copyCode('webhookUrl', this)">コピー</button>
+      </div>
+      <div class="info-box">
+        <div class="info-label">Googleカレンダー連携URL（「URLで追加」に貼り付け）</div>
+        <code id="calendarUrl"></code>
+        <button class="copy-btn" onclick="copyCode('calendarUrl', this)">コピー</button>
+      </div>
+    </div>
+
+    <!-- 予約一覧 -->
     <div class="card">
       <h2>📅 予約一覧</h2>
       <div id="reservationList">読み込み中...</div>
     </div>
 
-    <!-- 가게 기본 정보 -->
+    <!-- 店舗基本情報 -->
     <div class="card">
       <h2>🏪 店舗基本情報</h2>
       <div class="form-group">
         <label>店舗紹介文（AIが案内に使用します）</label>
         <textarea id="shopDescription" placeholder="例：駅から徒歩3分の美容室です。経験豊富なスタッフが丁寧に対応します。"></textarea>
       </div>
-      <button class="btn btn-green" onclick="saveBasicInfo()">保存する</button>
+      <button class="btn btn-green" id="saveBasicBtn" onclick="saveBasicInfo()">保存する</button>
+      <div class="toast toast-ok"  id="basicOk">✅ 保存しました！</div>
+      <div class="toast toast-err" id="basicErr">❌ 保存に失敗しました。もう一度お試しください。</div>
     </div>
 
-    <!-- 영업시간 -->
+    <!-- 営業時間 -->
     <div class="card">
       <h2>🕐 営業時間設定</h2>
-      <div id="hoursGrid">
-        <!-- JavaScript로 생성 -->
-      </div>
-      <button class="btn btn-green" onclick="saveHours()">営業時間を保存</button>
+      <div id="hoursGrid"></div>
+      <button class="btn btn-green" id="saveHoursBtn" onclick="saveHours()">営業時間を保存</button>
+      <div class="toast toast-ok"  id="hoursOk">✅ 保存しました！</div>
+      <div class="toast toast-err" id="hoursErr">❌ 保存に失敗しました。</div>
     </div>
 
-    <!-- 메뉴/가격 -->
+    <!-- メニュー -->
     <div class="card">
       <h2>📋 メニュー・料金設定</h2>
       <div id="menuItems"></div>
       <button class="btn btn-outline" onclick="addMenuItem()">＋ メニューを追加</button>
-      <button class="btn btn-green" onclick="saveMenu()">メニューを保存</button>
+      <button class="btn btn-green" id="saveMenuBtn" onclick="saveMenu()">メニューを保存</button>
+      <div class="toast toast-ok"  id="menuOk">✅ 保存しました！</div>
+      <div class="toast toast-err" id="menuErr">❌ 保存に失敗しました。</div>
     </div>
-
-    <!-- 캘린더 링크 -->
-    <div class="card">
-      <h2>📆 Googleカレンダー連携</h2>
-      <div class="calendar-link">
-        <p>以下のURLをGoogleカレンダーの「URLで追加」に貼り付けてください：</p>
-        <code id="calendarUrl"></code>
-      </div>
-    </div>
-
-    <div class="success-msg" id="successMsg">✅ 保存しました！</div>
 
   </div>
 </div>
 
 <script>
-const days = ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日'];
-const dayKeys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
-let currentShop = null;
+'use strict';
 
-// 영업시간 그리드 생성
-function buildHoursGrid() {
-  const grid = document.getElementById('hoursGrid');
-  grid.innerHTML = days.map((day, i) => `
-    <div class="hours-grid">
-      <label>${day}</label>
-      <input type="time" id="open_${dayKeys[i]}" value="09:00">
-      <input type="time" id="close_${dayKeys[i]}" value="19:00">
-    </div>
-    <div style="margin-bottom:4px;">
-      <label style="font-size:13px; color:#888;">
-        <input type="checkbox" id="closed_${dayKeys[i]}"> 定休日
-      </label>
-    </div>
-  `).join('');
+const DAY_LABELS = ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日'];
+const DAY_KEYS   = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+
+let currentShop = null;
+let currentUser = null;
+
+// ─── ユーティリティ ──────────────────────────────────────
+function esc(str) {
+  const d = document.createElement('div');
+  d.textContent = (str == null ? '' : String(str));
+  return d.innerHTML;
 }
 
-// 로그인
-async function login() {
-  const email = document.getElementById('loginEmail').value;
-  if (!email) return;
+function showEl(id, displayType) {
+  document.getElementById(id).style.display = displayType || 'block';
+}
+function hideEl(id) {
+  document.getElementById(id).style.display = 'none';
+}
 
-  const response = await fetch(`/api/shop-login?email=${encodeURIComponent(email)}`);
-  const data = await response.json();
+function toast(id, ms) {
+  const el = document.getElementById(id);
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, ms || 3000);
+}
 
-  if (data.success) {
-    currentShop = data.shop;
-    showDashboard();
-  } else {
-    document.getElementById('loginError').style.display = 'block';
+function copyCode(codeId, btn) {
+  const text = document.getElementById(codeId).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'コピー済み ✓';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  });
+}
+
+// 401 を自動ハンドリングする fetch ラッパー
+async function api(url, opts) {
+  const res = await fetch(url, Object.assign({ credentials: 'include' }, opts));
+  if (res.status === 401) {
+    location.href = '/auth/google';
+    throw new Error('Unauthorized');
+  }
+  return res;
+}
+
+// ─── 初期化 ──────────────────────────────────────────────
+async function init() {
+  try {
+    const meRes = await fetch('/api/me', { credentials: 'include' });
+    const me = await meRes.json();
+    if (!me.success) { location.href = '/auth/google'; return; }
+    currentUser = me.user;
+
+    const shopRes = await api('/api/my-shop');
+    const shopData = await shopRes.json();
+    if (!shopData.success) { location.href = '/'; return; }
+    currentShop = shopData.shop;
+
+    hideEl('loadingScreen');
+
+    if (!currentShop.is_paid) {
+      showEl(currentShop.plan_status === 'expired' ? 'expiredScreen' : 'paymentScreen', 'flex');
+      return;
+    }
+
+    renderDashboard();
+  } catch (e) {
+    if (e.message !== 'Unauthorized') {
+      hideEl('loadingScreen');
+      showEl('paymentScreen', 'flex');
+    }
   }
 }
 
-// 대시보드 표시
-async function showDashboard() {
-  document.getElementById('loginBox').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
+// ─── ダッシュボード描画 ───────────────────────────────────
+function renderDashboard() {
   document.getElementById('shopNameHeader').textContent = currentShop.shop_name;
-  document.getElementById('todayDate').textContent = 
+  document.getElementById('todayDate').textContent =
     new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
 
-  // 캘린더 URL
-  document.getElementById('calendarUrl').textContent = 
-    `${window.location.origin}/api/calendar/${currentShop.id}`;
+  // ステータスバッジ
+  const planMap = {
+    active:   ['✅ 利用中', 'badge-active'],
+    trial:    ['🔑 トライアル中', 'badge-active'],
+    canceled: ['⚠️ キャンセル済', 'badge-warn'],
+    expired:  ['❌ 期限切れ', 'badge-danger'],
+    pending:  ['⏳ 未払い', 'badge-warn'],
+  };
+  const [planLabel, planClass] = planMap[currentShop.plan_status] || [currentShop.plan_status, 'badge-neutral'];
+  const statusRow = document.getElementById('statusRow');
+  statusRow.innerHTML = '';
+
+  const b1 = document.createElement('span');
+  b1.className = `badge ${planClass}`;
+  b1.textContent = planLabel;
+  statusRow.appendChild(b1);
+
+  if (currentShop.subscription_end_date) {
+    const b2 = document.createElement('span');
+    b2.className = 'badge badge-warn';
+    b2.textContent = '有効期限: ' + currentShop.subscription_end_date.slice(0, 10);
+    statusRow.appendChild(b2);
+  }
+
+  const b3 = document.createElement('span');
+  b3.className = 'badge badge-neutral';
+  b3.textContent = '👤 ' + currentUser.email;
+  statusRow.appendChild(b3);
+
+  // URL 設定
+  const origin = location.origin;
+  const token  = currentUser.email.slice(0, 4);
+  document.getElementById('webhookUrl').textContent  = `${origin}/webhook/${currentShop.id}`;
+  document.getElementById('calendarUrl').textContent = `${origin}/api/calendar/${currentShop.id}?token=${token}`;
 
   buildHoursGrid();
   loadShopSettings();
   loadReservations();
+  showEl('dashboard');
 }
 
-// 가게 설정 불러오기
+// ─── 営業時間グリッド構築 ─────────────────────────────────
+function buildHoursGrid() {
+  const grid = document.getElementById('hoursGrid');
+  grid.innerHTML = '';
+  DAY_KEYS.forEach((key, i) => {
+    const row = document.createElement('div');
+    row.className = 'hours-row';
+
+    const daySpan = document.createElement('span');
+    daySpan.textContent = DAY_LABELS[i];
+
+    const openInput  = document.createElement('input');
+    openInput.type   = 'time';
+    openInput.id     = `open_${key}`;
+    openInput.value  = '09:00';
+
+    const closeInput  = document.createElement('input');
+    closeInput.type   = 'time';
+    closeInput.id     = `close_${key}`;
+    closeInput.value  = '19:00';
+
+    const label   = document.createElement('label');
+    label.className = 'closed-label';
+    const cb      = document.createElement('input');
+    cb.type       = 'checkbox';
+    cb.id         = `closed_${key}`;
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode(' 定休日'));
+
+    row.appendChild(daySpan);
+    row.appendChild(openInput);
+    row.appendChild(closeInput);
+    row.appendChild(label);
+    grid.appendChild(row);
+  });
+}
+
+// ─── 設定読み込み ─────────────────────────────────────────
 async function loadShopSettings() {
-  if (!currentShop) return;
-  const response = await fetch(`/api/shop-settings?shopId=${currentShop.id}`);
-  const data = await response.json();
+  try {
+    const res  = await api(`/api/shop-settings?shopId=${encodeURIComponent(currentShop.id)}`);
+    const data = await res.json();
 
-  if (data.shop_description) {
-    document.getElementById('shopDescription').value = data.shop_description;
-  }
+    if (data.shop_description) {
+      document.getElementById('shopDescription').value = data.shop_description;
+    }
 
-  if (data.business_hours) {
-    dayKeys.forEach(day => {
-      if (data.business_hours[day]) {
-        document.getElementById(`open_${day}`).value = data.business_hours[day].open || '09:00';
-        document.getElementById(`close_${day}`).value = data.business_hours[day].close || '19:00';
-        document.getElementById(`closed_${day}`).checked = data.business_hours[day].closed || false;
+    if (data.business_hours) {
+      DAY_KEYS.forEach(key => {
+        const h = data.business_hours[key];
+        if (!h) return;
+        document.getElementById(`open_${key}`).value   = h.open  || '09:00';
+        document.getElementById(`close_${key}`).value  = h.close || '19:00';
+        document.getElementById(`closed_${key}`).checked = !!h.closed;
+      });
+    }
+
+    const menuContainer = document.getElementById('menuItems');
+    menuContainer.innerHTML = '';
+    if (data.menu_items && data.menu_items.length > 0) {
+      data.menu_items.forEach(item => addMenuItem(item.name, item.price, item.duration));
+    } else {
+      addMenuItem();
+    }
+  } catch (e) { /* 401はapi()内でリダイレクト */ }
+}
+
+// ─── 予約一覧 ─────────────────────────────────────────────
+async function loadReservations() {
+  const container = document.getElementById('reservationList');
+  try {
+    const res  = await api(`/api/shop-reservations?shopId=${encodeURIComponent(currentShop.id)}`);
+    const data = await res.json();
+
+    if (!data.reservations || data.reservations.length === 0) {
+      container.innerHTML = '<p style="color:#aaa;text-align:center;padding:20px;">予約はまだありません</p>';
+      return;
+    }
+
+    const table = document.createElement('table');
+    table.className = 'res-table';
+
+    const thead = table.createTHead();
+    const hrow  = thead.insertRow();
+    ['お客様名', 'サービス', '日付', '時間', '状態', ''].forEach(text => {
+      const th = document.createElement('th');
+      th.textContent = text;
+      hrow.appendChild(th);
+    });
+
+    const tbody = table.createTBody();
+    data.reservations.forEach(r => {
+      const tr = tbody.insertRow();
+
+      [
+        r.customer_name || '-',
+        r.service_type  || '-',
+        r.reservation_date || '-',
+        r.reservation_time ? r.reservation_time.slice(0, 5) : '-',
+      ].forEach(text => {
+        const td = tr.insertCell();
+        td.textContent = text;
+      });
+
+      // 状態セル
+      const statusTd = tr.insertCell();
+      const badge = document.createElement('span');
+      badge.className = r.status === 'confirmed' ? 's-confirmed' : 's-canceled';
+      badge.textContent = r.status === 'confirmed' ? '確定' : 'キャンセル';
+      statusTd.appendChild(badge);
+
+      // キャンセルボタンセル
+      const actionTd = tr.insertCell();
+      if (r.status === 'confirmed') {
+        const btn = document.createElement('button');
+        btn.className = 'cancel-btn';
+        btn.textContent = 'キャンセル';
+        btn.addEventListener('click', () => cancelReservation(r.id, btn));
+        actionTd.appendChild(btn);
       }
     });
-  }
 
-  if (data.menu_items && data.menu_items.length > 0) {
-    data.menu_items.forEach(item => addMenuItem(item.name, item.price, item.duration));
-  } else {
-    addMenuItem();
+    container.innerHTML = '';
+    container.appendChild(table);
+  } catch (e) { /* handled */ }
+}
+
+async function cancelReservation(reservationId, btn) {
+  if (!confirm('この予約をキャンセルしますか？')) return;
+  btn.disabled = true;
+  try {
+    const res  = await api('/api/cancel-reservation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reservationId, shopId: currentShop.id }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      loadReservations();
+    } else {
+      alert('キャンセルに失敗しました。');
+      btn.disabled = false;
+    }
+  } catch (e) {
+    btn.disabled = false;
   }
 }
 
-// 예약 목록 불러오기
-async function loadReservations() {
-  const response = await fetch(`/api/shop-reservations?shopId=${currentShop.id}`);
-  const data = await response.json();
-
-  if (!data.reservations || data.reservations.length === 0) {
-    document.getElementById('reservationList').innerHTML = 
-      '<p style="color:#aaa; text-align:center; padding:20px;">予約はまだありません</p>';
-    return;
-  }
-
-  document.getElementById('reservationList').innerHTML = `
-    <table style="width:100%; border-collapse:collapse;">
-      <thead>
-        <tr style="background:#f8f8f8;">
-          <th style="padding:10px; text-align:left; font-size:13px; color:#666;">お客様名</th>
-          <th style="padding:10px; text-align:left; font-size:13px; color:#666;">サービス</th>
-          <th style="padding:10px; text-align:left; font-size:13px; color:#666;">予約日</th>
-          <th style="padding:10px; text-align:left; font-size:13px; color:#666;">時間</th>
-          <th style="padding:10px; text-align:left; font-size:13px; color:#666;">状態</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${data.reservations.map(r => `
-          <tr style="border-bottom:1px solid #f0f0f0;">
-            <td style="padding:12px 10px;">${r.customer_name || '-'}</td>
-            <td style="padding:12px 10px;">${r.service_type || '-'}</td>
-            <td style="padding:12px 10px;">${r.reservation_date || '-'}</td>
-            <td style="padding:12px 10px;">${r.reservation_time ? r.reservation_time.slice(0,5) : '-'}</td>
-            <td style="padding:12px 10px;">
-              <span style="background:#e6f9ed; color:#06C755; padding:4px 10px; border-radius:20px; font-size:12px;">
-                ${r.status}
-              </span>
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  `;
-}
-
-// 메뉴 아이템 추가
-function addMenuItem(name = '', price = '', duration = '60') {
+// ─── メニュー追加 ─────────────────────────────────────────
+function addMenuItem(name, price, duration) {
   const container = document.getElementById('menuItems');
   const div = document.createElement('div');
   div.className = 'menu-item';
-  div.innerHTML = `
-    <input type="text" placeholder="メニュー名（例：カット）" value="${name}" class="menu-name">
-    <input type="text" placeholder="料金（例：¥3,000）" value="${price}" class="menu-price" style="max-width:120px;">
-    <input type="text" placeholder="時間(分)" value="${duration}" class="menu-duration" style="max-width:80px;">
-    <button onclick="this.parentElement.remove()">×</button>
-  `;
+
+  const nameInput     = document.createElement('input');
+  nameInput.type      = 'text';
+  nameInput.placeholder = 'メニュー名（例：カット）';
+  nameInput.className = 'menu-name';
+  nameInput.value     = name != null ? name : '';
+
+  const priceInput      = document.createElement('input');
+  priceInput.type       = 'number';
+  priceInput.placeholder = '料金(円)';
+  priceInput.className  = 'menu-price';
+  priceInput.min        = '0';
+  priceInput.value      = price != null ? Number(price) : '';
+
+  const durInput      = document.createElement('input');
+  durInput.type       = 'number';
+  durInput.placeholder = '分';
+  durInput.className  = 'menu-duration';
+  durInput.min        = '1';
+  durInput.value      = duration != null ? Number(duration) : '60';
+
+  const delBtn = document.createElement('button');
+  delBtn.className = 'del-btn';
+  delBtn.textContent = '×';
+  delBtn.type = 'button';
+  delBtn.addEventListener('click', () => div.remove());
+
+  div.appendChild(nameInput);
+  div.appendChild(priceInput);
+  div.appendChild(durInput);
+  div.appendChild(delBtn);
   container.appendChild(div);
 }
 
-// 기본 정보 저장
+// ─── 保存処理 ─────────────────────────────────────────────
 async function saveBasicInfo() {
-  const description = document.getElementById('shopDescription').value;
-  await fetch('/api/shop-update', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ shopId: currentShop.id, shop_description: description })
-  });
-  showSuccess();
+  const btn = document.getElementById('saveBasicBtn');
+  if (btn.disabled) return;
+  btn.disabled = true;
+  try {
+    const res  = await api('/api/shop-update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        shopId: currentShop.id,
+        shop_description: document.getElementById('shopDescription').value,
+      }),
+    });
+    const data = await res.json();
+    toast(data.success ? 'basicOk' : 'basicErr');
+  } catch (e) {
+    toast('basicErr');
+  } finally {
+    btn.disabled = false;
+  }
 }
 
-// 영업시간 저장
 async function saveHours() {
-  const hours = {};
-  dayKeys.forEach(day => {
-    hours[day] = {
-      open: document.getElementById(`open_${day}`).value,
-      close: document.getElementById(`close_${day}`).value,
-      closed: document.getElementById(`closed_${day}`).checked,
-    };
-  });
-  await fetch('/api/shop-update', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ shopId: currentShop.id, business_hours: hours })
-  });
-  showSuccess();
+  const btn = document.getElementById('saveHoursBtn');
+  if (btn.disabled) return;
+  btn.disabled = true;
+  try {
+    const hours = {};
+    DAY_KEYS.forEach(key => {
+      hours[key] = {
+        open:   document.getElementById(`open_${key}`).value,
+        close:  document.getElementById(`close_${key}`).value,
+        closed: document.getElementById(`closed_${key}`).checked,
+      };
+    });
+    const res  = await api('/api/shop-update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ shopId: currentShop.id, business_hours: hours }),
+    });
+    const data = await res.json();
+    toast(data.success ? 'hoursOk' : 'hoursErr');
+  } catch (e) {
+    toast('hoursErr');
+  } finally {
+    btn.disabled = false;
+  }
 }
 
-// 메뉴 저장
 async function saveMenu() {
-  const items = [];
-  document.querySelectorAll('.menu-item').forEach(item => {
-    const name = item.querySelector('.menu-name').value;
-    const price = item.querySelector('.menu-price').value;
-    const duration = item.querySelector('.menu-duration').value;
-    if (name) items.push({ name, price, duration });
-  });
-  await fetch('/api/shop-update', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ shopId: currentShop.id, menu_items: items })
-  });
-  showSuccess();
+  const btn = document.getElementById('saveMenuBtn');
+  if (btn.disabled) return;
+  btn.disabled = true;
+  try {
+    const items = [];
+    document.querySelectorAll('.menu-item').forEach(row => {
+      const name = row.querySelector('.menu-name').value.trim();
+      if (!name) return;
+      const price    = parseInt(row.querySelector('.menu-price').value, 10);
+      const duration = parseInt(row.querySelector('.menu-duration').value, 10);
+      items.push({
+        name,
+        price:    isNaN(price)    ? 0  : price,
+        duration: isNaN(duration) ? 60 : duration,
+      });
+    });
+    const res  = await api('/api/shop-update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ shopId: currentShop.id, menu_items: items }),
+    });
+    const data = await res.json();
+    toast(data.success ? 'menuOk' : 'menuErr');
+  } catch (e) {
+    toast('menuErr');
+  } finally {
+    btn.disabled = false;
+  }
 }
 
-function showSuccess() {
-  const msg = document.getElementById('successMsg');
-  msg.style.display = 'block';
-  setTimeout(() => msg.style.display = 'none', 3000);
-}
+document.addEventListener('DOMContentLoaded', init);
 </script>
-
 </body>
 </html>

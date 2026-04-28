@@ -63,6 +63,12 @@ function verifyJWT(req, res, next) {
 
 app.use(verifyJWT);
 
+// ✅ JWT 필수 미들웨어 (미인증 시 401)
+function requireJWT(req, res, next) {
+  if (!req.user) return res.status(401).json({ error: '認証が必要です' });
+  next();
+}
+
 // ✅ Passport 초기화 (세션 없이 사용)
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
@@ -273,6 +279,24 @@ app.get('/api/me', (req, res) => {
   }
 });
 
+// ✅ 내 가게 정보 API (JWT 필수 + 결제/만료 체크)
+app.get('/api/my-shop', requireJWT, async (req, res) => {
+  try {
+    const { data: shop } = await supabase.from('shops').select('*')
+      .eq('owner_email', req.user.email).single();
+    if (!shop) return res.json({ success: false, reason: 'no_shop' });
+    if (shop.subscription_end_date && new Date(shop.subscription_end_date) < new Date()) {
+      await supabase.from('shops').update({ is_paid: false, plan_status: 'expired' }).eq('id', shop.id);
+      shop.is_paid = false;
+      shop.plan_status = 'expired';
+    }
+    const { line_channel_secret, line_channel_access_token, ...safeShop } = shop;
+    res.json({ success: true, shop: safeShop });
+  } catch (e) {
+    res.status(500).json({ success: false });
+  }
+});
+
 // ✅ 로그아웃 - 쿠키 삭제
 app.get('/auth/logout', (req, res) => {
   res.clearCookie('auth_token');
@@ -363,57 +387,65 @@ app.post('/api/admin/activate-shop', adminAuth, async (req, res) => {
   }
 });
 
-app.get('/api/shop-settings', async (req, res) => {
+app.get('/api/shop-settings', requireJWT, async (req, res) => {
   const { shopId } = req.query;
-  if (!shopId) return res.json({});
+  if (!shopId) return res.status(400).json({ error: 'shopId required' });
   try {
     const { data } = await supabase.from('shops')
-      .select('shop_description, business_hours, menu_items, closed_days, reservation_interval')
+      .select('shop_description, business_hours, menu_items, closed_days, reservation_interval, owner_email')
       .eq('id', shopId).single();
-    res.json(data || {});
+    if (!data || data.owner_email !== req.user.email) return res.status(403).json({ error: 'Forbidden' });
+    const { owner_email, ...safeData } = data;
+    res.json(safeData);
   } catch (e) {
-    res.json({});
+    res.status(500).json({});
   }
 });
 
-app.get('/api/shop-reservations', async (req, res) => {
+app.get('/api/shop-reservations', requireJWT, async (req, res) => {
   const { shopId } = req.query;
-  if (!shopId) return res.json({ reservations: [] });
+  if (!shopId) return res.status(400).json({ error: 'shopId required' });
   try {
+    const { data: shop } = await supabase.from('shops').select('owner_email').eq('id', shopId).single();
+    if (!shop || shop.owner_email !== req.user.email) return res.status(403).json({ error: 'Forbidden' });
     const { data } = await supabase.from('reservations').select('*')
       .eq('shop_id', shopId).order('reservation_date', { ascending: true });
     res.json({ reservations: data || [] });
   } catch (e) {
-    res.json({ reservations: [] });
+    res.status(500).json({ reservations: [] });
   }
 });
 
-app.post('/api/cancel-reservation', async (req, res) => {
+app.post('/api/cancel-reservation', requireJWT, async (req, res) => {
   const { reservationId, shopId } = req.body;
-  if (!reservationId || !shopId) return res.json({ success: false });
+  if (!reservationId || !shopId) return res.status(400).json({ success: false });
   try {
-    await supabase.from('reservations').update({ status: 'canceled' })
+    const { data: shop } = await supabase.from('shops').select('owner_email').eq('id', shopId).single();
+    if (!shop || shop.owner_email !== req.user.email) return res.status(403).json({ success: false });
+    const { error } = await supabase.from('reservations').update({ status: 'canceled' })
       .eq('id', reservationId).eq('shop_id', shopId);
+    if (error) throw error;
     res.json({ success: true });
   } catch (e) {
-    res.json({ success: false });
+    res.status(500).json({ success: false });
   }
 });
 
-app.post('/api/shop-update', async (req, res) => {
-  const { shopId, ownerEmail, ...updateData } = req.body;
-  if (!shopId || !ownerEmail) return res.json({ success: false });
+app.post('/api/shop-update', requireJWT, async (req, res) => {
+  const { shopId, ...updateData } = req.body;
+  if (!shopId) return res.status(400).json({ success: false });
   try {
     const { data: shop } = await supabase.from('shops').select('id')
-      .eq('id', shopId).eq('owner_email', ownerEmail).single();
+      .eq('id', shopId).eq('owner_email', req.user.email).single();
     if (!shop) return res.status(403).json({ success: false });
     const allowedFields = ['shop_description', 'business_hours', 'menu_items', 'closed_days', 'reservation_interval'];
     const safeUpdate = {};
     allowedFields.forEach(f => { if (updateData[f] !== undefined) safeUpdate[f] = updateData[f]; });
-    await supabase.from('shops').update(safeUpdate).eq('id', shopId);
+    const { error } = await supabase.from('shops').update(safeUpdate).eq('id', shopId);
+    if (error) throw error;
     res.json({ success: true });
   } catch (e) {
-    res.json({ success: false });
+    res.status(500).json({ success: false });
   }
 });
 
