@@ -179,27 +179,14 @@
 </div>
 
 <script>
-  // ✅ Paddle 초기화 — settings는 Initialize 레벨에서 지정 (Checkout.open에 settings를 넣으면 400 오류 발생)
+  // Paddle v2 初期化 — token と eventCallback のみ指定（公式仕様準拠）
   Paddle.Initialize({
     token: 'live_f85c45d01df1d11366f81a2083b',
-    checkout: {
-      settings: {
-        displayMode: 'overlay',
-        locale: 'ja-JP'
-      }
-    },
     eventCallback: function(data) {
       if (data.name === 'checkout.completed') {
-        document.getElementById('payBtn').style.display = 'none';
-        document.getElementById('successBox').style.display = 'block';
-        document.getElementById('step3').scrollIntoView({ behavior: 'smooth' });
-        document.getElementById('step2').style.opacity = '0.5';
-        document.getElementById('step2').style.pointerEvents = 'none';
-        document.getElementById('registerBtn').disabled = true;
-        if (currentShopId) {
-          document.getElementById('webhookUrl').textContent =
-            window.location.origin + '/webhook/' + currentShopId;
-        }
+        // オーバーレイ内での完了: localStorage 削除 → success 表示
+        localStorage.removeItem('paddle_shop_id');
+        showPaymentSuccess(currentShopId);
       } else if (data.name === 'checkout.closed' || data.name === 'checkout.error') {
         var btn = document.getElementById('payBtn');
         if (btn && btn.disabled) {
@@ -213,7 +200,48 @@
   let currentUser = null;
   let currentShopId = null;
 
-  // ✅ 페이지 로드 시 서버에서 로그인 상태 확인
+  // 決済成功 UI 表示
+  function showPaymentSuccess(shopId) {
+    document.getElementById('payBtn').style.display = 'none';
+    document.getElementById('successBox').style.display = 'block';
+    document.getElementById('step3').style.display = 'block';
+    document.getElementById('step3').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('step2').style.opacity = '0.5';
+    document.getElementById('step2').style.pointerEvents = 'none';
+    document.getElementById('registerBtn').disabled = true;
+    if (shopId) {
+      document.getElementById('webhookUrl').textContent =
+        window.location.origin + '/webhook/' + shopId;
+    }
+  }
+
+  // successUrl リダイレクト後の復元処理 (?payment=success)
+  (function() {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('payment') !== 'success') return;
+
+    var savedShopId = localStorage.getItem('paddle_shop_id');
+    if (savedShopId) {
+      currentShopId = savedShopId;
+      localStorage.removeItem('paddle_shop_id');
+      fetch('/api/me')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success && data.user) {
+            currentUser = data.user;
+            document.getElementById('googleBtn').style.display = 'none';
+            document.getElementById('userInfo').style.display = 'block';
+            document.getElementById('userEmail').textContent = '✅ ' + data.user.email + ' でログイン中';
+          }
+          showPaymentSuccess(savedShopId);
+        })
+        .catch(function() { showPaymentSuccess(savedShopId); });
+    }
+    // URL からパラメータを除去
+    history.replaceState(null, '', '/');
+  })();
+
+  // ページ読み込み時にログイン状態を確認
   async function checkLoginStatus() {
     try {
       const res = await fetch('/api/me');
@@ -227,7 +255,7 @@
         document.getElementById('step2').style.pointerEvents = 'auto';
       }
     } catch (e) {
-      console.error('로그인 상태 확인 실패:', e);
+      console.error('ログイン状態確認失敗:', e);
     }
   }
 
@@ -309,14 +337,22 @@
       return;
     }
 
-    const btn = document.getElementById('payBtn');
+    var btn = document.getElementById('payBtn');
     btn.disabled = true;
     btn.textContent = '決済画面を開いています...';
 
+    // successUrl リダイレクト後に shopId を復元するために保存
+    localStorage.setItem('paddle_shop_id', String(currentShopId));
+
     Paddle.Checkout.open({
+      settings: {
+        displayMode: 'overlay',
+        locale: 'ja-JP',
+        successUrl: window.location.origin + '/?payment=success'
+      },
       items: [{ priceId: 'pri_01kq8rg1516ndq78xsvt9zgwch', quantity: 1 }],
       customer: { email: currentUser.email.trim() },
-      customData: { shop_id: String(currentShopId) }
+      customData: { shopId: String(currentShopId) }
     });
   }
 </script>
