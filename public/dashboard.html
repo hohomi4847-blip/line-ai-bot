@@ -8,202 +8,515 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; }
 
+    /* ─── ログイン ─── */
+    #loginScreen {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 100vh;
+    }
+    .login-card {
+      background: white; border-radius: 16px; padding: 40px 36px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.1); width: 340px; max-width: 94vw;
+    }
+    .login-card h2 { text-align: center; color: #06C755; margin-bottom: 24px; font-size: 20px; }
+    .login-card input {
+      width: 100%; padding: 11px 14px; border: 2px solid #e0e0e0;
+      border-radius: 8px; font-size: 15px; margin-bottom: 14px;
+    }
+    .login-card input:focus { outline: none; border-color: #06C755; }
+    .login-card .login-btn {
+      width: 100%; padding: 12px; background: #06C755; color: white;
+      border: none; border-radius: 8px; font-size: 15px; font-weight: bold;
+      cursor: pointer;
+    }
+    .login-card .login-btn:hover:not(:disabled) { opacity: 0.9; }
+    .login-card .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    #loginError {
+      color: #d00; text-align: center; margin-top: 12px;
+      font-size: 14px; display: none;
+    }
+
+    /* ─── ヘッダー ─── */
     header {
       background: linear-gradient(135deg, #06C755, #00B341);
-      color: white;
-      padding: 20px 32px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      color: white; padding: 15px 28px;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 8px;
     }
-    header h1 { font-size: 22px; }
+    header h1 { font-size: 20px; }
+    .header-right { display: flex; align-items: center; gap: 14px; font-size: 13px; }
+    .logout-btn {
+      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
+      color: white; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px;
+    }
 
-    .container { max-width: 1000px; margin: 32px auto; padding: 0 20px; }
+    /* ─── レイアウト ─── */
+    .container { max-width: 1100px; margin: 24px auto; padding: 0 20px; }
 
+    /* ─── 統計 ─── */
     .stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-bottom: 32px;
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: 14px; margin-bottom: 26px;
     }
-
     .stat-card {
-      background: white;
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-      text-align: center;
+      background: white; border-radius: 12px; padding: 20px 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06); text-align: center;
     }
-    .stat-card .num { font-size: 36px; font-weight: bold; color: #06C755; }
-    .stat-card .label { font-size: 14px; color: #888; margin-top: 4px; }
+    .stat-card .num { font-size: 28px; font-weight: bold; color: #06C755; }
+    .stat-card .lbl { font-size: 12px; color: #888; margin-top: 5px; }
 
+    /* ─── カード ─── */
     .card {
-      background: white;
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-      margin-bottom: 24px;
+      background: white; border-radius: 12px; padding: 20px 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 24px;
     }
-    .card h2 { font-size: 18px; color: #333; margin-bottom: 20px; }
+    .card-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
+    }
+    .card-header h2 { font-size: 17px; color: #333; }
+    .refresh-btn {
+      background: none; border: 1.5px solid #06C755; color: #06C755;
+      padding: 6px 16px; border-radius: 7px; cursor: pointer; font-size: 13px; font-weight: bold;
+    }
+    .refresh-btn:hover:not(:disabled) { background: #e6f9ed; }
+    .refresh-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    table { width: 100%; border-collapse: collapse; }
+    /* ─── テーブル ─── */
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
     th {
-      background: #f8f8f8;
-      padding: 12px 16px;
-      text-align: left;
-      font-size: 13px;
-      color: #666;
-      border-bottom: 2px solid #eee;
+      background: #fafafa; padding: 10px 12px; text-align: left;
+      font-size: 12px; color: #999; border-bottom: 1px solid #eee; white-space: nowrap;
     }
-    td {
-      padding: 14px 16px;
-      font-size: 14px;
-      color: #333;
-      border-bottom: 1px solid #f0f0f0;
-    }
+    td { padding: 11px 12px; color: #333; border-bottom: 1px solid #f5f5f5; }
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: #fafff9; }
 
+    /* ─── バッジ ─── */
     .badge {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: bold;
+      display: inline-block; padding: 3px 10px;
+      border-radius: 12px; font-size: 12px; font-weight: 600; white-space: nowrap;
     }
-    .badge-green { background: #e6f9ed; color: #06C755; }
-    .badge-gray { background: #f0f0f0; color: #888; }
+    .b-active   { background: #e6f9ed; color: #06C755; }
+    .b-pending  { background: #fff8e6; color: #c07800; }
+    .b-canceled { background: #f5f5f5; color: #888; }
+    .b-expired  { background: #fff0f0; color: #d00; }
+    .b-refunded { background: #f0f0ff; color: #669; }
 
+    /* ─── 操作ボタン ─── */
+    .toggle-btn {
+      padding: 5px 13px; border-radius: 6px;
+      cursor: pointer; font-size: 12px; font-weight: bold; white-space: nowrap;
+    }
+    .toggle-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-activate   { background: #e6f9ed; color: #06C755; border: 1px solid #b3e5c8; }
+    .btn-deactivate { background: #fff0f0; color: #d00;    border: 1px solid #f8c0c0; }
+
+    /* ─── ページネーション ─── */
+    .pagination {
+      display: flex; justify-content: center; align-items: center;
+      gap: 10px; margin-top: 16px;
+    }
+    .page-btn {
+      padding: 6px 16px; border: 1.5px solid #ddd;
+      border-radius: 6px; background: white; cursor: pointer; font-size: 13px;
+    }
+    .page-btn:hover:not(:disabled) { border-color: #06C755; color: #06C755; }
+    .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .page-info { font-size: 13px; color: #888; }
+
+    .empty   { text-align: center; padding: 40px; color: #aaa; font-size: 14px; }
     .loading { text-align: center; padding: 40px; color: #aaa; }
-    .empty { text-align: center; padding: 40px; color: #aaa; }
+
+    @media (max-width: 720px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .stats .stat-card:last-child { grid-column: 1 / -1; }
+      th:nth-child(6), td:nth-child(6) { display: none; }
+    }
   </style>
 </head>
 <body>
 
-<header>
-  <h1>🤖 管理者ダッシュボード</h1>
-  <span id="currentDate"></span>
-</header>
-
-<div class="container">
-
-  <div class="stats">
-    <div class="stat-card">
-      <div class="num" id="totalReservations">-</div>
-      <div class="label">総予約数</div>
-    </div>
-    <div class="stat-card">
-      <div class="num" id="todayReservations">-</div>
-      <div class="label">本日の予約</div>
-    </div>
-    <div class="stat-card">
-      <div class="num" id="totalShops">-</div>
-      <div class="label">登録店舗数</div>
-    </div>
+<!-- ログイン画面 -->
+<div id="loginScreen">
+  <div class="login-card">
+    <h2>🔐 管理者ログイン</h2>
+    <input type="password" id="pwInput" placeholder="管理者パスワード">
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">ログイン</button>
+    <div id="loginError">パスワードが正しくありません</div>
   </div>
+</div>
 
-  <div class="card">
-    <h2>📅 予約一覧</h2>
-    <div id="reservationTable">
-      <div class="loading">読み込み中...</div>
+<!-- ダッシュボード -->
+<div id="dashboardScreen" style="display:none;">
+  <header>
+    <h1>🤖 管理者ダッシュボード</h1>
+    <div class="header-right">
+      <span id="currentDate"></span>
+      <button class="logout-btn" onclick="doLogout()">ログアウト</button>
     </div>
-  </div>
+  </header>
 
-  <div class="card">
-    <h2>🏪 登録店舗一覧</h2>
-    <div id="shopTable">
-      <div class="loading">読み込み中...</div>
+  <div class="container">
+
+    <div class="stats">
+      <div class="stat-card"><div class="num" id="sTotal">-</div><div class="lbl">総予約数</div></div>
+      <div class="stat-card"><div class="num" id="sToday">-</div><div class="lbl">本日の予約</div></div>
+      <div class="stat-card"><div class="num" id="sShops">-</div><div class="lbl">登録店舗数</div></div>
+      <div class="stat-card"><div class="num" id="sPaid">-</div><div class="lbl">有料店舗数</div></div>
+      <div class="stat-card"><div class="num" id="sMRR">-</div><div class="lbl">推定MRR</div></div>
     </div>
-  </div>
 
+    <div class="card">
+      <div class="card-header">
+        <h2>📅 予約一覧</h2>
+        <button class="refresh-btn" id="refreshResBtn" onclick="reloadReservations()">↻ 更新</button>
+      </div>
+      <div id="reservationTable"><div class="loading">読み込み中...</div></div>
+      <div class="pagination" id="resPager"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>🏪 登録店舗一覧</h2>
+        <button class="refresh-btn" id="refreshShopBtn" onclick="reloadShops()">↻ 更新</button>
+      </div>
+      <div id="shopTable"><div class="loading">読み込み中...</div></div>
+      <div class="pagination" id="shopPager"></div>
+    </div>
+
+  </div>
 </div>
 
 <script>
-  // 오늘 날짜 표시
-  const today = new Date();
-  document.getElementById('currentDate').textContent = 
-    today.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+'use strict';
 
-  // 데이터 불러오기
-  async function loadDashboard() {
-    try {
-      const response = await fetch('/api/dashboard');
-      const data = await response.json();
+const PAGE_SIZE  = 20;
+const BASE_PRICE = 2980;
 
-      // 통계
-      document.getElementById('totalReservations').textContent = data.totalReservations;
-      document.getElementById('todayReservations').textContent = data.todayReservations;
-      document.getElementById('totalShops').textContent = data.totalShops;
+const PLAN_MAP = {
+  active:    ['稼働中',     'b-active'],
+  trial:     ['トライアル', 'b-active'],
+  pending:   ['未払い',     'b-pending'],
+  canceled:  ['キャンセル', 'b-canceled'],
+  suspended: ['停止中',     'b-canceled'],
+  expired:   ['期限切れ',   'b-expired'],
+  refunded:  ['返金済み',   'b-refunded'],
+};
 
-      // 예약 목록
-      if (data.reservations.length === 0) {
-        document.getElementById('reservationTable').innerHTML = '<div class="empty">予約はまだありません</div>';
-      } else {
-        document.getElementById('reservationTable').innerHTML = `
-          <table>
-            <thead>
-              <tr>
-                <th>お客様名</th>
-                <th>サービス</th>
-                <th>予約日</th>
-                <th>時間</th>
-                <th>ステータス</th>
-                <th>登録日時</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${data.reservations.map(r => `
-                <tr>
-                  <td>${r.customer_name || '-'}</td>
-                  <td>${r.service_type || '-'}</td>
-                  <td>${r.reservation_date || '-'}</td>
-                  <td>${r.reservation_time ? r.reservation_time.slice(0,5) : '-'}</td>
-                  <td><span class="badge badge-green">${r.status}</span></td>
-                  <td>${new Date(r.created_at).toLocaleDateString('ja-JP')}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        `;
-      }
+let adminPw = '';
+let allRes   = [];
+let allShops = [];
+let resPage  = 1;
+let shopPage = 1;
 
-      // 가게 목록
-      if (data.shops.length === 0) {
-        document.getElementById('shopTable').innerHTML = '<div class="empty">登録店舗はまだありません</div>';
-      } else {
-        document.getElementById('shopTable').innerHTML = `
-          <table>
-            <thead>
-              <tr>
-                <th>店舗名</th>
-                <th>業種</th>
-                <th>メール</th>
-                <th>ステータス</th>
-                <th>登録日</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${data.shops.map(s => `
-                <tr>
-                  <td>${s.shop_name}</td>
-                  <td>${s.business_type}</td>
-                  <td>${s.owner_email}</td>
-                  <td><span class="badge ${s.is_active ? 'badge-green' : 'badge-gray'}">${s.is_active ? '稼働中' : '停止中'}</span></td>
-                  <td>${new Date(s.created_at).toLocaleDateString('ja-JP')}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        `;
-      }
+// ─── ヘッダー生成 ─────────────────────────────────────────
+function hdr(json) {
+  const h = { 'x-admin-password': adminPw };
+  if (json) h['Content-Type'] = 'application/json';
+  return h;
+}
 
-    } catch (e) {
-      console.error(e);
+// ─── 認証 ─────────────────────────────────────────────────
+async function doLogin() {
+  const pw    = document.getElementById('pwInput').value;
+  const btn   = document.getElementById('loginBtn');
+  const errEl = document.getElementById('loginError');
+  if (!pw) return;
+
+  errEl.style.display = 'none';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/dashboard', { headers: { 'x-admin-password': pw } });
+    if (res.status === 401) {
+      errEl.style.display = 'block';
+      document.getElementById('pwInput').value = '';
+      return;
     }
+    const data = await res.json();
+    adminPw = pw;
+    localStorage.setItem('admin_pw', pw);
+    renderDashboard(data);
+  } catch (e) {
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem('admin_pw');
+  adminPw = '';
+  document.getElementById('dashboardScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display     = 'flex';
+  document.getElementById('pwInput').value = '';
+}
+
+// ─── 起動時: 保存パスワードで自動ログイン ─────────────────
+async function init() {
+  document.getElementById('currentDate').textContent =
+    new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  // Enter キー対応
+  document.getElementById('pwInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  const saved = localStorage.getItem('admin_pw');
+  if (!saved) return;
+
+  try {
+    const res = await fetch('/api/dashboard', { headers: { 'x-admin-password': saved } });
+    if (res.status === 401) { localStorage.removeItem('admin_pw'); return; }
+    const data = await res.json();
+    adminPw = saved;
+    renderDashboard(data);
+  } catch (e) {
+    // ネットワーク不可時: ログイン画面のまま
+  }
+}
+
+// ─── ダッシュボード描画 ────────────────────────────────────
+function renderDashboard(data) {
+  document.getElementById('loginScreen').style.display     = 'none';
+  document.getElementById('dashboardScreen').style.display = 'block';
+
+  allRes   = data.reservations || [];
+  allShops = data.shops        || [];
+  resPage  = 1;
+  shopPage = 1;
+
+  updateStats(data.todayReservations);
+  renderReservations();
+  renderShops();
+}
+
+function updateStats(todayCount) {
+  const paid = allShops.filter(s => s.is_paid).length;
+  document.getElementById('sTotal').textContent = allRes.length;
+  document.getElementById('sToday').textContent = todayCount != null ? todayCount : '-';
+  document.getElementById('sShops').textContent = allShops.length;
+  document.getElementById('sPaid').textContent  = paid;
+  document.getElementById('sMRR').textContent   = '¥' + (paid * BASE_PRICE).toLocaleString();
+}
+
+// ─── 予約テーブル ──────────────────────────────────────────
+function renderReservations() {
+  const wrap = document.getElementById('reservationTable');
+
+  if (allRes.length === 0) {
+    wrap.innerHTML = '<div class="empty">予約はまだありません</div>';
+    document.getElementById('resPager').innerHTML = '';
+    return;
   }
 
-  loadDashboard();
-</script>
+  const slice = allRes.slice((resPage - 1) * PAGE_SIZE, resPage * PAGE_SIZE);
+  const tbl   = document.createElement('table');
 
+  // thead
+  const hrow = tbl.createTHead().insertRow();
+  ['お客様名', 'サービス', '予約日', '時間', '状態', '登録日'].forEach(text => {
+    const th = document.createElement('th');
+    th.textContent = text;
+    hrow.appendChild(th);
+  });
+
+  // tbody
+  const tbody = tbl.createTBody();
+  slice.forEach(r => {
+    const tr = tbody.insertRow();
+
+    // テキストセル (XSS安全)
+    [
+      r.customer_name  || '-',
+      r.service_type   || '-',
+      r.reservation_date || '-',
+      r.reservation_time ? r.reservation_time.slice(0, 5) : '-',
+    ].forEach(v => { tr.insertCell().textContent = v; });
+
+    // 状態バッジ
+    const stTd  = tr.insertCell();
+    const badge = document.createElement('span');
+    const isConf = r.status === 'confirmed';
+    badge.className   = 'badge ' + (isConf ? 'b-active' : 'b-canceled');
+    badge.textContent = isConf ? '確定' : (r.status || '-');
+    stTd.appendChild(badge);
+
+    // 登録日
+    const dtTd = tr.insertCell();
+    try { dtTd.textContent = new Date(r.created_at).toLocaleDateString('ja-JP'); }
+    catch { dtTd.textContent = '-'; }
+  });
+
+  wrap.innerHTML = '';
+  wrap.appendChild(tbl);
+  renderPager('resPager', allRes.length, resPage, p => { resPage = p; renderReservations(); });
+}
+
+// ─── 店舗テーブル ──────────────────────────────────────────
+function renderShops() {
+  const wrap = document.getElementById('shopTable');
+
+  if (allShops.length === 0) {
+    wrap.innerHTML = '<div class="empty">登録店舗はまだありません</div>';
+    document.getElementById('shopPager').innerHTML = '';
+    return;
+  }
+
+  const slice = allShops.slice((shopPage - 1) * PAGE_SIZE, shopPage * PAGE_SIZE);
+  const tbl   = document.createElement('table');
+
+  const hrow = tbl.createTHead().insertRow();
+  ['店舗名', '業種', 'メール', 'プラン状態', '操作', '登録日'].forEach(text => {
+    const th = document.createElement('th');
+    th.textContent = text;
+    hrow.appendChild(th);
+  });
+
+  const tbody = tbl.createTBody();
+  slice.forEach(s => {
+    const tr = tbody.insertRow();
+
+    [s.shop_name || '-', s.business_type || '-', s.owner_email || '-'].forEach(v => {
+      tr.insertCell().textContent = v;
+    });
+
+    // プラン状態バッジ (is_paid + plan_status を両方確認)
+    const planTd  = tr.insertCell();
+    const [label, cls] = PLAN_MAP[s.plan_status] || [s.plan_status || '-', 'b-canceled'];
+    const planBadge = document.createElement('span');
+    planBadge.className   = 'badge ' + cls;
+    planBadge.textContent = label;
+    planTd.appendChild(planBadge);
+
+    // 活性化/停止ボタン
+    const actTd = tr.insertCell();
+    const btn   = document.createElement('button');
+    btn.className   = 'toggle-btn ' + (s.is_paid ? 'btn-deactivate' : 'btn-activate');
+    btn.textContent = s.is_paid ? '停止する' : '有効化する';
+    btn.addEventListener('click', () => toggleShop(s.id, !s.is_paid, btn));
+    actTd.appendChild(btn);
+
+    // 登録日
+    const dtTd = tr.insertCell();
+    try { dtTd.textContent = new Date(s.created_at).toLocaleDateString('ja-JP'); }
+    catch { dtTd.textContent = '-'; }
+  });
+
+  wrap.innerHTML = '';
+  wrap.appendChild(tbl);
+  renderPager('shopPager', allShops.length, shopPage, p => { shopPage = p; renderShops(); });
+}
+
+// ─── 店舗 活性化/停止 ─────────────────────────────────────
+async function toggleShop(shopId, activate, btn) {
+  const label = activate ? '有効化' : '停止';
+  if (!confirm(`この店舗を${label}しますか？`)) return;
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/admin/activate-shop', {
+      method: 'POST',
+      headers: hdr(true),
+      body: JSON.stringify({ shopId, activate }),
+    });
+
+    if (res.status === 401) { doLogout(); return; }
+
+    const data = await res.json();
+    if (!data.success) {
+      alert('操作に失敗しました。もう一度お試しください。');
+      btn.disabled = false;
+      return;
+    }
+
+    // ローカルデータを更新して再描画
+    const shop = allShops.find(s => s.id === shopId);
+    if (shop) {
+      shop.is_paid     = activate;
+      shop.plan_status = activate ? 'active' : 'suspended';
+    }
+    const paid = allShops.filter(s => s.is_paid).length;
+    document.getElementById('sPaid').textContent = paid;
+    document.getElementById('sMRR').textContent  = '¥' + (paid * BASE_PRICE).toLocaleString();
+    renderShops();
+
+  } catch (e) {
+    alert('通信エラーが発生しました。');
+    btn.disabled = false;
+  }
+}
+
+// ─── ページネーション ──────────────────────────────────────
+function renderPager(id, total, current, onPage) {
+  const wrap = document.getElementById(id);
+  wrap.innerHTML = '';
+  if (total <= PAGE_SIZE) return;
+
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  const prev = document.createElement('button');
+  prev.className   = 'page-btn';
+  prev.textContent = '＜ 前へ';
+  prev.disabled    = current <= 1;
+  prev.addEventListener('click', () => onPage(current - 1));
+  wrap.appendChild(prev);
+
+  const info = document.createElement('span');
+  info.className   = 'page-info';
+  info.textContent = `${current} / ${totalPages} ページ (全${total}件)`;
+  wrap.appendChild(info);
+
+  const next = document.createElement('button');
+  next.className   = 'page-btn';
+  next.textContent = '次へ ＞';
+  next.disabled    = current >= totalPages;
+  next.addEventListener('click', () => onPage(current + 1));
+  wrap.appendChild(next);
+}
+
+// ─── 更新ボタン ────────────────────────────────────────────
+async function reloadReservations() {
+  const btn = document.getElementById('refreshResBtn');
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/dashboard', { headers: hdr() });
+    if (res.status === 401) { doLogout(); return; }
+    const data = await res.json();
+    allRes  = data.reservations || [];
+    resPage = 1;
+    document.getElementById('sTotal').textContent = allRes.length;
+    document.getElementById('sToday').textContent = data.todayReservations;
+    renderReservations();
+  } catch (e) {
+    alert('更新に失敗しました。');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function reloadShops() {
+  const btn = document.getElementById('refreshShopBtn');
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/dashboard', { headers: hdr() });
+    if (res.status === 401) { doLogout(); return; }
+    const data = await res.json();
+    allShops  = data.shops || [];
+    shopPage  = 1;
+    const paid = allShops.filter(s => s.is_paid).length;
+    document.getElementById('sShops').textContent = allShops.length;
+    document.getElementById('sPaid').textContent  = paid;
+    document.getElementById('sMRR').textContent   = '¥' + (paid * BASE_PRICE).toLocaleString();
+    renderShops();
+  } catch (e) {
+    alert('更新に失敗しました。');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
 </body>
 </html>
