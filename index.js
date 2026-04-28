@@ -5,6 +5,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 const line = require('@line/bot-sdk');
 const Anthropic = require('@anthropic-ai/sdk');
 const { createClient } = require('@supabase/supabase-js');
@@ -12,7 +13,22 @@ const path = require('path');
 const ical = require('ical-generator').default;
 const cron = require('node-cron');
 
+// ✅ 필수 환경변수 — 미설정 시 즉시 종료 (fallback 없음)
+const REQUIRED_ENV = [
+  'SESSION_SECRET', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET',
+  'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'ANTHROPIC_API_KEY',
+  'ADMIN_PASSWORD', 'PADDLE_WEBHOOK_SECRET',
+];
+const missingEnv = REQUIRED_ENV.filter(k => !process.env[k]);
+if (missingEnv.length > 0) {
+  console.error(`❌ 필수 환경변수 미설정: ${missingEnv.join(', ')}`);
+  process.exit(1);
+}
+
 const app = express();
+
+// ✅ Railway 리버스 프록시 신뢰 설정 (rate limit IP 정확도)
+app.set('trust proxy', 1);
 
 // ✅ Paddle webhook은 raw body 필요 - 반드시 먼저
 app.use('/paddle/webhook', express.raw({ type: 'application/json' }));
@@ -28,7 +44,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const JWT_SECRET = process.env.SESSION_SECRET || 'fallback-secret';
+const JWT_SECRET = process.env.SESSION_SECRET; // fallback 없음 — 위 REQUIRED_ENV 검증으로 보장
 const JWT_EXPIRES = '7d';
 
 // ✅ JWT 쿠키 발급 함수
@@ -92,9 +108,10 @@ passport.deserializeUser((user, done) => done(null, user));
 app.use(passport.initialize());
 
 // ✅ 운영자 인증 미들웨어
+// query string 지원 제거 — 서버 로그에 패스워드 평문 노출 방지
 function adminAuth(req, res, next) {
-  const pw = req.headers['x-admin-password'] || req.query.adminPassword;
-  if (pw !== process.env.ADMIN_PASSWORD) {
+  const pw = req.headers['x-admin-password'];
+  if (!pw || pw !== process.env.ADMIN_PASSWORD) {
     return res.status(401).json({ error: '認証が必要です' });
   }
   next();
@@ -108,15 +125,10 @@ function validateRegisterInput({ email, shopName, businessType, channelSecret, c
   return true;
 }
 
-// ✅ XSS 방지
-function escapeHtml(str) {
+// ✅ iCal 텍스트 정제 (HTML 이스케이프 금지 — iCal은 평문, 라이브러리가 자체 처리)
+function sanitizeIcalText(str) {
   if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+  return String(str).replace(/[\r\n\t]/g, ' ').slice(0, 200);
 }
 
 // ✅ 시간 정규화
@@ -253,6 +265,24 @@ async function sendReminders() {
 cron.schedule('0 0 * * *', sendReminders, { timezone: 'UTC' });
 cron.schedule('0 1 * * 1', cleanOldConversations, { timezone: 'UTC' });
 console.log('⏰ 스케줄러 시작');
+
+// ✅ Rate Limiting
+// 회원가입: IP당 15분에 10회
+const registerLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'リクエストが多すぎます。しばらくしてから再試行してください。' },
+});
+// 관리자 API: IP당 5분에 30회
+const adminLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'リクエストが多すぎます。' },
+});
 
 // ============================
 // ✅ Google OAuth 라우트 (JWT 방식)
@@ -399,10 +429,18 @@ app.post('/paddle/webhook', async (req, res) => {
       if (!shopId && !customerEmail) {
         console.warn('⚠️ shopId も email もなし — スキップ');
       } else {
+        // effective_at: 실제 서비스 종료 시점(청구 주기 말) — 이 날짜까지 서비스 유지
+        // canceled_at: 취소 요청 시점 — effective_at 없을 때만 fallback
+        const endDate =
+          body.data?.scheduled_change?.effective_at ||
+          body.data?.effective_at ||
+          body.data?.canceled_at ||
+          new Date().toISOString();
         const q = buildQuery('shops', {
           plan_status: 'canceled',
-          subscription_end_date: body.data?.canceled_at || new Date().toISOString(),
+          subscription_end_date: endDate,
         });
+        console.log(`  → 서비스 종료 예정일: ${endDate}`);
         if (q) {
           const { error } = await q;
           if (error) console.error('subscription.canceled 업데이트 실패:', error);
@@ -437,24 +475,7 @@ app.post('/paddle/webhook', async (req, res) => {
 // ============================
 // API
 // ============================
-app.get('/api/shop-login', async (req, res) => {
-  const { email } = req.query;
-  if (!email || !email.includes('@')) return res.json({ success: false });
-  try {
-    const { data: shop } = await supabase.from('shops').select('*').eq('owner_email', email).single();
-    if (!shop) return res.json({ success: false });
-    if (shop.subscription_end_date && new Date(shop.subscription_end_date) < new Date()) {
-      await supabase.from('shops').update({ is_paid: false, plan_status: 'expired' }).eq('id', shop.id);
-      shop.is_paid = false;
-    }
-    const { line_channel_secret, line_channel_access_token, ...safeShop } = shop;
-    res.json({ success: true, shop: safeShop });
-  } catch (e) {
-    res.json({ success: false });
-  }
-});
-
-app.post('/api/admin/activate-shop', adminAuth, async (req, res) => {
+app.post('/api/admin/activate-shop', adminLimiter, adminAuth, async (req, res) => {
   const { shopId, activate } = req.body;
   try {
     await supabase.from('shops').update({
@@ -521,6 +542,10 @@ app.post('/api/shop-update', requireJWT, async (req, res) => {
     const allowedFields = ['shop_description', 'business_hours', 'menu_items', 'closed_days', 'reservation_interval'];
     const safeUpdate = {};
     allowedFields.forEach(f => { if (updateData[f] !== undefined) safeUpdate[f] = updateData[f]; });
+    // ✅ shop_description 길이 제한 — AI 시스템 프롬프트 토큰 폭증 방지
+    if (typeof safeUpdate.shop_description === 'string' && safeUpdate.shop_description.length > 500) {
+      return res.status(400).json({ success: false, reason: 'description_too_long' });
+    }
     const { error } = await supabase.from('shops').update(safeUpdate).eq('id', shopId);
     if (error) throw error;
     res.json({ success: true });
@@ -529,13 +554,15 @@ app.post('/api/shop-update', requireJWT, async (req, res) => {
   }
 });
 
-app.get('/api/dashboard', adminAuth, async (req, res) => {
+app.get('/api/dashboard', adminLimiter, adminAuth, async (_req, res) => {
   try {
     const jstToday = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().split('T')[0];
-    const { data: reservations } = await supabase.from('reservations').select('*').order('created_at', { ascending: false });
+    // 최대 1000건으로 제한 — 대량 데이터 로드 시 메모리/타임아웃 방지
+    const { data: reservations } = await supabase.from('reservations').select('*')
+      .order('created_at', { ascending: false }).limit(1000);
     const { data: shops } = await supabase.from('shops')
       .select('id, shop_name, business_type, owner_email, is_paid, plan_status, created_at')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false }).limit(1000);
     const safeReservations = reservations || [];
     const safeShops = shops || [];
     res.json({
@@ -550,7 +577,7 @@ app.get('/api/dashboard', adminAuth, async (req, res) => {
   }
 });
 
-app.post('/api/register', requireJWT, async (req, res) => {
+app.post('/api/register', registerLimiter, requireJWT, async (req, res) => {
   // ✅ JWT から email を取得 — body の email は使わない (なりすまし防止)
   const email = req.user.email;
   const { shopName, businessType, channelSecret, channelToken } = req.body;
@@ -589,7 +616,7 @@ app.get('/api/calendar/:shopId', async (req, res) => {
       const endDate = new Date(startDate.getTime() + (r.duration_minutes || 60) * 60 * 1000);
       calendar.createEvent({
         start: startDate, end: endDate, timezone: 'Asia/Tokyo',
-        summary: `${escapeHtml(r.customer_name) || 'お客様'} - ${escapeHtml(r.service_type) || '予約'}`,
+        summary: `${sanitizeIcalText(r.customer_name) || 'お客様'} - ${sanitizeIcalText(r.service_type) || '予約'}`,
       });
     });
     res.set('Content-Type', 'text/calendar; charset=utf-8');
@@ -608,7 +635,7 @@ app.get('/api/calendar', adminAuth, async (req, res) => {
       const startDate = new Date(`${r.reservation_date}T${r.reservation_time}+09:00`);
       const endDate = new Date(startDate.getTime() + (r.duration_minutes || 60) * 60 * 1000);
       calendar.createEvent({ start: startDate, end: endDate, timezone: 'Asia/Tokyo',
-        summary: `${r.customer_name || 'お客様'} - ${r.service_type || '予約'}` });
+        summary: `${sanitizeIcalText(r.customer_name) || 'お客様'} - ${sanitizeIcalText(r.service_type) || '予約'}` });
     });
     res.set('Content-Type', 'text/calendar; charset=utf-8');
     res.send(calendar.toString());
@@ -649,6 +676,15 @@ async function handleEvent(event, shop, template) {
   const today = jstNow.toISOString().split('T')[0];
   const lineUserId = event.source.userId;
   const userMessage = event.message.text;
+
+  // ✅ 메시지 길이 제한 — AI 비용 폭증 방지
+  if (userMessage.length > 2000) {
+    await client.replyMessage({
+      replyToken: event.replyToken,
+      messages: [{ type: 'text', text: 'メッセージが長すぎます。2000文字以内でお願いします。' }],
+    });
+    return;
+  }
   const history = await getConversationHistory(lineUserId, shop.id);
   const extraInfo = await getShopExtraInfo(shop.id);
   const systemPrompt = template?.system_prompt || `あなたは${shop.shop_name}の親切なAI予約アシスタントです。`;
@@ -679,8 +715,15 @@ async function handleEvent(event, shop, template) {
       const reservationData = JSON.parse(reservationMatch[1]);
       const normalizedTime = normalizeTime(reservationData.time);
       const invalidNames = ['お客様名', 'お客様', '名前', 'name'];
+
       if (!reservationData.name || invalidNames.includes(reservationData.name)) {
         replyText = cleanReply || 'ご予約のお名前を教えていただけますか？';
+      } else if (!normalizedTime) {
+        // ✅ time が null/不正形式 → DB に null を入れない
+        replyText = cleanReply || 'ご予約の時間を正しくお知らせください。（例：14:00）';
+      } else if (!reservationData.date || !/^\d{4}-\d{2}-\d{2}$/.test(reservationData.date)) {
+        // ✅ YYYY-MM-DD 形式でなければ拒否
+        replyText = cleanReply || 'ご予約の日付を正しくお知らせください。（例：2026-05-01）';
       } else if (isPastDate(reservationData.date, normalizedTime)) {
         replyText = '申し訳ございません。過去の日時は予約できません。改めてご希望の日時をお聞かせください。';
       } else {
@@ -688,13 +731,16 @@ async function handleEvent(event, shop, template) {
         if (conflict) {
           replyText = `申し訳ございません。${reservationData.date} ${normalizedTime}はすでに予約が入っております。他のお時間はいかがでしょうか？`;
         } else {
+          // ✅ 필드 길이 제한 — AI 출력 이상값 방지
+          const customerName = String(reservationData.name).slice(0, 100);
+          const serviceType  = String(reservationData.service || '予約').slice(0, 100);
           await supabase.from('reservations').insert({
             line_user_id: lineUserId, shop_id: shop.id,
-            customer_name: reservationData.name, service_type: reservationData.service,
+            customer_name: customerName, service_type: serviceType,
             reservation_date: reservationData.date, reservation_time: normalizedTime,
             status: 'confirmed', reminder_sent: false,
           });
-          replyText = cleanReply || `ご予約を承りました！\n📅 ${reservationData.date} ${normalizedTime}\n✂️ ${reservationData.service}\nお待ちしております。`;
+          replyText = cleanReply || `ご予約を承りました！\n📅 ${reservationData.date} ${normalizedTime}\n✂️ ${serviceType}\nお待ちしております。`;
         }
       }
     } catch (e) {

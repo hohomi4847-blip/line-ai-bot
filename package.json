@@ -18,6 +18,7 @@
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.4.1",
     "express-session": "^1.19.0",
     "ical-generator": "^10.2.0",
     "jsonwebtoken": "^9.0.3",
