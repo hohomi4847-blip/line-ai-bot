@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LINE AI予約ボット - 自動生成サービス</title>
+  <meta name="description" content="AIを活用したLINE予約ボットで、24時間自動予約対応。美容室・飲食店・整骨院など11業種対応。月額¥2,980〜">
+  <meta property="og:title" content="LINE AI予約ボット - 自動生成サービス">
+  <meta property="og:description" content="AIを活用したLINE予約ボットで、24時間自動予約対応。月額¥2,980〜">
+  <meta property="og:type" content="website">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
   <style>
@@ -35,13 +39,16 @@
       font-size: 16px; font-weight: bold; cursor: pointer; transition: opacity 0.2s;
     }
     .btn:hover { opacity: 0.9; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-green { background: #06C755; color: white; }
     .btn-google {
       background: white; color: #333; border: 2px solid #e0e0e0;
       display: flex; align-items: center; justify-content: center; gap: 12px;
       margin-bottom: 16px; width: 100%; padding: 16px;
       border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;
+      transition: opacity 0.2s;
     }
+    .btn-google:hover { opacity: 0.8; }
     .price-box {
       background: #f8fff9; border: 2px solid #06C755;
       border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 24px;
@@ -65,6 +72,18 @@
       border-radius: 12px; padding: 24px; text-align: center; margin-top: 16px;
     }
     .success-box h3 { color: #06C755; font-size: 22px; margin-bottom: 12px; }
+    .webhook-box {
+      background: #f0f9f4; border: 2px solid #06C755;
+      border-radius: 8px; padding: 16px; margin-top: 16px;
+    }
+    .webhook-box p { font-size: 13px; color: #666; margin-bottom: 8px; }
+    .webhook-box code {
+      background: #e0f0e8; padding: 8px 12px; border-radius: 4px;
+      font-size: 12px; word-break: break-all; display: block;
+    }
+    .error-msg {
+      color: #e53e3e; font-size: 13px; margin-top: 8px; display: none;
+    }
   </style>
 </head>
 <body>
@@ -94,7 +113,8 @@
   <!-- Step 1: 구글 로그인 -->
   <div class="card" id="step1">
     <h2>① Googleでログイン</h2>
-    <button class="btn-google" onclick="loginWithGoogle()">
+    <!-- ✅ 로그인 전에만 버튼 표시 -->
+    <button class="btn-google" id="googleBtn" onclick="loginWithGoogle()">
       <img src="https://www.google.com/favicon.ico" alt="Google" width="24">
       Googleでログイン
     </button>
@@ -109,7 +129,7 @@
     <h2>② お店の情報を入力</h2>
     <div class="form-group">
       <label>お店の名前</label>
-      <input type="text" id="shopName" placeholder="例：山田美容室">
+      <input type="text" id="shopName" placeholder="例：山田美容室" maxlength="100">
     </div>
     <div class="form-group">
       <label>業種を選択</label>
@@ -136,17 +156,26 @@
       <label>LINE Channel Access Token</label>
       <input type="text" id="channelToken" placeholder="LINEデベロッパーコンソールから取得">
     </div>
-    <button class="btn btn-green" onclick="register()">次へ → 決済へ進む</button>
+    <p class="error-msg" id="registerError"></p>
+    <button class="btn btn-green" id="registerBtn" onclick="register()">次へ → 決済へ進む</button>
   </div>
 
   <!-- Step 3: 결제 -->
   <div class="card" id="step3" style="display:none;">
     <h2>③ 決済情報を入力</h2>
-    <p style="color:#666; font-size:14px; margin-bottom:20px;">30日間無料でお試しいただけます。<br>無料期間中の解約は料金が発生しません。</p>
-    <button class="btn btn-green" onclick="startPayment()">🚀 30日間無料で始める</button>
+    <p style="color:#666; font-size:14px; margin-bottom:20px;">
+      30日間無料でお試しいただけます。<br>無料期間中の解約は料金が発生しません。
+    </p>
+    <button class="btn btn-green" id="payBtn" onclick="startPayment()">🚀 30日間無料で始める</button>
+
+    <!-- ✅ 결제 완료 후 성공 화면 + webhook URL 안내 -->
     <div class="success-box" id="successBox">
       <h3>✅ 登録完了！</h3>
       <p>AIボットが起動しました。<br>LINEでメッセージを送ってみてください！</p>
+      <div class="webhook-box" id="webhookBox" style="margin-top:16px; text-align:left;">
+        <p>📌 LINEデベロッパーコンソールのWebhook URLに以下を設定してください：</p>
+        <code id="webhookUrl"></code>
+      </div>
     </div>
   </div>
 
@@ -154,24 +183,47 @@
 
 <script>
   const { createClient } = supabase;
+
+  // ✅ Supabase 초기화 - detectSessionInUrl로 구글 로그인 후 토큰 자동 처리
   const supabaseClient = createClient(
     'https://acotulmvutzpkgilfons.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjb3R1bG12dXR6cGtnaWxmb25zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU3MDI0NjQsImV4cCI6MjA2MTI3ODQ2NH0.yBCKsqFRGsS3WxiHFx4QeP7JVzJqvtNkPYexqwDvASA'
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjb3R1bG12dXR6cGtnaWxmb25zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU3MDI0NjQsImV4cCI6MjA2MTI3ODQ2NH0.yBCKsqFRGsS3WxiHFx4QeP7JVzJqvtNkPYexqwDvASA',
+    {
+      auth: {
+        detectSessionInUrl: true,
+        persistSession: true,
+        autoRefreshToken: true,
+      }
+    }
   );
 
-  Paddle.Initialize({
-    token: 'live_f85c45d01df1d11366f81a2083b',
-    eventCallback: function(data) {
-      if (data.name === 'checkout.completed') {
-        document.getElementById('successBox').style.display = 'block';
-        document.getElementById('step3').scrollIntoView({ behavior: 'smooth' });
+  let currentUser = null;
+  let currentShopId = null;
+
+  // ✅ 로그인 상태 감지 - INITIAL_SESSION + SIGNED_IN 모두 처리
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
+      currentUser = session.user;
+      showUserInfo(session.user);
+      enableStep2();
+      // ✅ URL 해시 제거
+      if (window.location.hash && window.location.hash.includes('access_token')) {
+        window.history.replaceState(null, '', window.location.pathname);
       }
+    } else if (event === 'SIGNED_OUT') {
+      currentUser = null;
+      currentShopId = null;
+      document.getElementById('userInfo').style.display = 'none';
+      document.getElementById('googleBtn').style.display = 'flex';
+      document.getElementById('step2').style.opacity = '0.5';
+      document.getElementById('step2').style.pointerEvents = 'none';
+      document.getElementById('step3').style.display = 'none';
     }
   });
 
-  let currentUser = null;
-
   function showUserInfo(user) {
+    // ✅ 로그인 후 구글 버튼 숨김
+    document.getElementById('googleBtn').style.display = 'none';
     document.getElementById('userInfo').style.display = 'block';
     document.getElementById('userEmail').textContent = `✅ ${user.email} でログイン中`;
   }
@@ -181,33 +233,19 @@
     document.getElementById('step2').style.pointerEvents = 'auto';
   }
 
-  // ✅ 핵심 수정: URL의 #access_token 해시를 Supabase가 처리하도록 기다림
-  supabaseClient.auth.onAuthStateChange((event, session) => {
-    console.log('Auth event:', event, session);
-    if (session?.user) {
-      currentUser = session.user;
-      showUserInfo(session.user);
-      enableStep2();
-      // 로그인 성공 후 URL에서 토큰 제거 (깔끔하게)
-      if (window.location.hash.includes('access_token')) {
-        window.history.replaceState(null, '', window.location.pathname);
-      }
-    } else {
-      currentUser = null;
-      document.getElementById('userInfo').style.display = 'none';
-      document.getElementById('step2').style.opacity = '0.5';
-      document.getElementById('step2').style.pointerEvents = 'none';
-    }
-  });
-
   async function loginWithGoogle() {
+    const btn = document.getElementById('googleBtn');
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
     const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: window.location.origin
-      }
+      options: { redirectTo: window.location.origin }
     });
-    if (error) alert('ログインに失敗しました: ' + error.message);
+    if (error) {
+      alert('ログインに失敗しました: ' + error.message);
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    }
   }
 
   async function logout() {
@@ -215,19 +253,26 @@
   }
 
   async function register() {
-    const shopName = document.getElementById('shopName').value;
+    const shopName = document.getElementById('shopName').value.trim();
     const businessType = document.getElementById('businessType').value;
-    const channelSecret = document.getElementById('channelSecret').value;
-    const channelToken = document.getElementById('channelToken').value;
+    const channelSecret = document.getElementById('channelSecret').value.trim();
+    const channelToken = document.getElementById('channelToken').value.trim();
+    const errorEl = document.getElementById('registerError');
+    errorEl.style.display = 'none';
 
     if (!currentUser) {
       alert('まずGoogleでログインしてください。');
       return;
     }
     if (!shopName || !businessType || !channelSecret || !channelToken) {
-      alert('すべての項目を入力してください。');
+      errorEl.textContent = 'すべての項目を入力してください。';
+      errorEl.style.display = 'block';
       return;
     }
+
+    const btn = document.getElementById('registerBtn');
+    btn.disabled = true;
+    btn.textContent = '登録中...';
 
     try {
       const response = await fetch('/api/register', {
@@ -239,14 +284,39 @@
         })
       });
       const data = await response.json();
+
       if (data.success) {
+        currentShopId = data.shopId;
         document.getElementById('step3').style.display = 'block';
         document.getElementById('step3').scrollIntoView({ behavior: 'smooth' });
+      } else if (data.reason === 'already_registered') {
+        // ✅ 결제 완료 여부에 따라 다른 안내
+        if (data.isPaid) {
+          alert('すでに登録済みです。ダッシュボードからログインしてください。');
+          window.location.href = '/shop-dashboard.html';
+        } else {
+          // 결제 미완료 - 결제 단계로 이동
+          currentShopId = data.shopId;
+          document.getElementById('step3').style.display = 'block';
+          document.getElementById('step3').scrollIntoView({ behavior: 'smooth' });
+          alert('登録済みですが、決済が完了していません。決済を完了してください。');
+        }
+      } else if (data.reason === 'invalid_input') {
+        errorEl.textContent = '入力内容に誤りがあります。確認してください。';
+        errorEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = '次へ → 決済へ進む';
       } else {
-        alert('エラーが発生しました。もう一度お試しください。');
+        errorEl.textContent = 'エラーが発生しました。もう一度お試しください。';
+        errorEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = '次へ → 決済へ進む';
       }
     } catch (e) {
-      alert('エラーが発生しました。もう一度お試しください。');
+      errorEl.textContent = 'エラーが発生しました。もう一度お試しください。';
+      errorEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = '次へ → 決済へ進む';
     }
   }
 
@@ -255,12 +325,50 @@
       alert('ログインが必要です。再度ログインしてください。');
       return;
     }
+
+    const btn = document.getElementById('payBtn');
+    btn.disabled = true;
+    btn.textContent = '決済画面を開いています...';
+
     Paddle.Checkout.open({
       items: [{ priceId: 'pri_01kq8rg1516ndq78xsvt9zgwch', quantity: 1 }],
       customer: { email: currentUser.email },
+      customData: { shop_id: String(currentShopId) },
       settings: { locale: 'ja' }
     });
+
+    // ✅ 5초 후 버튼 복구 (결제창 닫은 경우)
+    setTimeout(() => {
+      if (document.getElementById('successBox').style.display === 'none') {
+        btn.disabled = false;
+        btn.textContent = '🚀 30日間無料で始める';
+      }
+    }, 5000);
   }
+
+  // ✅ 결제 완료 후 webhook URL 표시
+  function showWebhookUrl(shopId) {
+    const url = `${window.location.origin}/webhook/${shopId}`;
+    document.getElementById('webhookUrl').textContent = url;
+    document.getElementById('webhookBox').style.display = 'block';
+  }
+
+  // ✅ Paddle 초기화 (1회만)
+  Paddle.Initialize({
+    token: 'live_f85c45d01df1d11366f81a2083b',
+    eventCallback: function(data) {
+      if (data.name === 'checkout.completed') {
+        document.getElementById('payBtn').style.display = 'none';
+        document.getElementById('successBox').style.display = 'block';
+        document.getElementById('step3').scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('step2').style.opacity = '0.5';
+        document.getElementById('step2').style.pointerEvents = 'none';
+        document.getElementById('registerBtn').disabled = true;
+        // ✅ webhook URL 표시
+        if (currentShopId) showWebhookUrl(currentShopId);
+      }
+    }
+  });
 </script>
 
 </body>
