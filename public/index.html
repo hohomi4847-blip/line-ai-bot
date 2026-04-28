@@ -42,16 +42,6 @@
       margin-bottom: 16px; width: 100%; padding: 16px;
       border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;
     }
-    .divider {
-      text-align: center; color: #aaa; font-size: 14px;
-      margin: 16px 0; position: relative;
-    }
-    .divider::before, .divider::after {
-      content: ''; position: absolute; top: 50%;
-      width: 45%; height: 1px; background: #e0e0e0;
-    }
-    .divider::before { left: 0; }
-    .divider::after { right: 0; }
     .price-box {
       background: #f8fff9; border: 2px solid #06C755;
       border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 24px;
@@ -75,13 +65,6 @@
       border-radius: 12px; padding: 24px; text-align: center; margin-top: 16px;
     }
     .success-box h3 { color: #06C755; font-size: 22px; margin-bottom: 12px; }
-    .step-indicator {
-      display: flex; justify-content: center; gap: 8px; margin-bottom: 24px;
-    }
-    .step-dot {
-      width: 12px; height: 12px; border-radius: 50%; background: #e0e0e0;
-    }
-    .step-dot.active { background: #06C755; }
   </style>
 </head>
 <body>
@@ -170,45 +153,44 @@
 </div>
 
 <script>
-  // Supabase 초기화
   const { createClient } = supabase;
   const supabaseClient = createClient(
     'https://acotulmvutzpkgilfons.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjb3R1bG12dXR6cGtnaWxmb25zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU3MDI0NjQsImV4cCI6MjA2MTI3ODQ2NH0.yBCKsqFRGsS3WxiHFx4QeP7JVzJqvtNkPYexqwDvASA'
   );
 
-  // Paddle 초기화
   Paddle.Initialize({
     token: 'live_f85c45d01df1d11366f81a2083b'
   });
 
   let currentUser = null;
-  let registeredShopEmail = null;
 
-  async function checkUser() {
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (user) {
-      currentUser = user;
-      showUserInfo(user);
+  // 인증 상태 변화 감지 (구글 로그인 후 돌아올 때 자동 처리)
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (session?.user) {
+      currentUser = session.user;
+      showUserInfo(session.user);
       enableStep2();
+    } else {
+      currentUser = null;
+      document.getElementById('userInfo').style.display = 'none';
+      document.getElementById('step2').style.opacity = '0.5';
+      document.getElementById('step2').style.pointerEvents = 'none';
     }
-  }
+  });
 
   async function loginWithGoogle() {
     const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.href }
+      options: {
+        redirectTo: window.location.origin
+      }
     });
-    if (error) alert('ログインに失敗しました');
+    if (error) alert('ログインに失敗しました: ' + error.message);
   }
 
   async function logout() {
     await supabaseClient.auth.signOut();
-    currentUser = null;
-    document.getElementById('userInfo').style.display = 'none';
-    document.getElementById('step2').style.opacity = '0.5';
-    document.getElementById('step2').style.pointerEvents = 'none';
-    document.getElementById('step3').style.display = 'none';
   }
 
   function showUserInfo(user) {
@@ -247,7 +229,6 @@
       });
       const data = await response.json();
       if (data.success) {
-        registeredShopEmail = currentUser.email;
         document.getElementById('step3').style.display = 'block';
         document.getElementById('step3').scrollIntoView({ behavior: 'smooth' });
       } else {
@@ -268,8 +249,6 @@
       }
     });
   }
-
-  checkUser();
 </script>
 
 </body>
