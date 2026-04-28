@@ -5,32 +5,191 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>プライバシーポリシー - LINE AI予約ボット</title>
   <style>
-    body { font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #333; line-height: 1.8; }
-    h1 { color: #06C755; border-bottom: 2px solid #06C755; padding-bottom: 10px; }
-    h2 { color: #333; margin-top: 32px; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f8fafb; color: #333; line-height: 1.85; }
+
+    /* ヘッダー */
+    header {
+      background: linear-gradient(135deg, #06C755, #00B341);
+      padding: 14px 24px;
+    }
+    .header-inner {
+      max-width: 800px; margin: 0 auto;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .back-link {
+      color: rgba(255,255,255,0.9); text-decoration: none; font-size: 14px;
+      display: flex; align-items: center; gap: 4px; white-space: nowrap;
+    }
+    .back-link:hover { color: white; }
+    .page-label {
+      color: white; font-size: 17px; font-weight: bold;
+    }
+
+    /* コンテンツ */
+    .container {
+      max-width: 800px; margin: 40px auto 60px;
+      padding: 0 24px;
+    }
+    h1 {
+      font-size: 28px; color: #06C755;
+      border-bottom: 3px solid #06C755; padding-bottom: 12px; margin-bottom: 6px;
+    }
+    .updated { font-size: 13px; color: #888; margin-bottom: 36px; }
+
+    .section { margin-bottom: 36px; }
+    .section h2 {
+      font-size: 17px; color: #06C755; margin-bottom: 12px;
+      padding-left: 12px; border-left: 4px solid #06C755;
+    }
+    .section p { font-size: 15px; color: #444; margin-bottom: 10px; }
+    .section ul {
+      padding-left: 24px; font-size: 15px; color: #444;
+    }
+    .section ul li { margin-bottom: 6px; }
+
+    /* 事業者情報テーブル */
+    .info-table { width: 100%; border-collapse: collapse; font-size: 15px; margin-top: 8px; }
+    .info-table th, .info-table td {
+      padding: 10px 14px; border: 1px solid #e0e0e0; text-align: left; vertical-align: top;
+    }
+    .info-table th { background: #f0f9f4; color: #333; width: 35%; font-weight: bold; }
+    .info-table td { background: white; }
+
+    /* フッター */
+    footer {
+      background: #2d2d2d; color: #ccc; padding: 28px 24px; text-align: center;
+    }
+    .legal-nav {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 20px;
+      margin-bottom: 14px;
+    }
+    .legal-nav a {
+      color: #aaa; text-decoration: none; font-size: 13px;
+    }
+    .legal-nav a:hover { color: #06C755; }
+    .legal-nav a.current { color: #06C755; font-weight: bold; }
+    footer p { font-size: 12px; color: #666; }
   </style>
 </head>
 <body>
+
+<header>
+  <div class="header-inner">
+    <a href="/" class="back-link">← トップへ</a>
+    <span class="page-label">プライバシーポリシー</span>
+  </div>
+</header>
+
+<div class="container">
   <h1>プライバシーポリシー</h1>
-  <p>最終更新日：2026年4月27日</p>
+  <p class="updated">最終更新日：2026年4月28日</p>
 
-  <h2>第1条（収集する情報）</h2>
-  <p>本サービスは以下の情報を収集します：メールアドレス、店舗名、業種、LINEユーザーID、予約情報。</p>
+  <div class="section">
+    <h2>第1条（事業者情報）</h2>
+    <table class="info-table">
+      <tr><th>販売業者名</th><td>キム・テヒョン</td></tr>
+      <tr><th>所在地</th><td>韓国 慶尚南道 梁山市 金梧16キル 100</td></tr>
+      <tr><th>メールアドレス</th><td>hohomi4847@gmail.com</td></tr>
+    </table>
+  </div>
 
-  <h2>第2条（情報の利用目的）</h2>
-  <p>収集した情報は、サービスの提供・改善、お問い合わせへの対応、請求処理のために使用します。</p>
+  <div class="section">
+    <h2>第2条（収集する情報）</h2>
+    <p>本サービス（LINE AI予約ボット）は、以下の情報を収集・取得します。</p>
+    <ul>
+      <li><strong>アカウント情報：</strong>Googleアカウントのメールアドレス・氏名（Google OAuthによる認証時）</li>
+      <li><strong>店舗情報：</strong>店舗名、業種、営業時間、メニュー・料金情報、店舗紹介文</li>
+      <li><strong>LINE連携情報：</strong>LINEチャネルシークレット、チャネルアクセストークン</li>
+      <li><strong>LINEユーザー情報：</strong>エンドユーザーのLINEユーザーID、会話履歴、予約情報</li>
+      <li><strong>決済情報：</strong>サブスクリプション状態（カード番号等の決済詳細はPaddleが管理し、当社は保持しません）</li>
+      <li><strong>アクセス情報：</strong>IPアドレス、ブラウザ情報、利用ログ</li>
+    </ul>
+  </div>
 
-  <h2>第3条（第三者への提供）</h2>
-  <p>法令に基づく場合を除き、ご利用者の同意なく第三者に個人情報を提供することはありません。</p>
+  <div class="section">
+    <h2>第3条（情報の利用目的）</h2>
+    <ul>
+      <li>LINE AI予約ボットサービスの提供・運営・改善</li>
+      <li>AIによる自動予約応答処理</li>
+      <li>予約リマインダーの送信</li>
+      <li>お問い合わせへの対応</li>
+      <li>サブスクリプション管理・請求処理</li>
+      <li>不正利用・セキュリティ違反の防止</li>
+    </ul>
+  </div>
 
-  <h2>第4条（情報の管理）</h2>
-  <p>収集した情報はSupabase（データベース）に安全に保管され、不正アクセスを防ぐための適切な措置を講じています。</p>
+  <div class="section">
+    <h2>第4条（利用する第三者サービス）</h2>
+    <p>本サービスは以下の第三者サービスを利用しており、各社のプライバシーポリシーが適用されます。</p>
+    <ul>
+      <li><strong>Google LLC：</strong>OAuth認証（<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Googleプライバシーポリシー</a>）</li>
+      <li><strong>LINE株式会社：</strong>Messaging API（<a href="https://line.me/ja/terms/policy/" target="_blank" rel="noopener">LINEプライバシーポリシー</a>）</li>
+      <li><strong>Supabase Inc.：</strong>データベース・バックエンド（米国）</li>
+      <li><strong>Anthropic PBC：</strong>AIメッセージ処理（Claude API、米国）</li>
+      <li><strong>Paddle.com Market Limited：</strong>決済処理・サブスクリプション管理</li>
+      <li><strong>Railway Corp：</strong>サーバーホスティング（米国）</li>
+    </ul>
+  </div>
 
-  <h2>第5条（Cookieの使用）</h2>
-  <p>本サービスはサービス改善のためCookieを使用することがあります。</p>
+  <div class="section">
+    <h2>第5条（第三者への情報提供）</h2>
+    <p>当社は、以下の場合を除き、お客様の個人情報を第三者に提供しません。</p>
+    <ul>
+      <li>お客様本人の同意がある場合</li>
+      <li>法令に基づき開示が必要な場合</li>
+      <li>サービス提供に必要な業務委託先への提供（守秘義務を課した上で）</li>
+      <li>合併・事業承継に伴う承継先への提供</li>
+    </ul>
+  </div>
 
-  <h2>第6条（お問い合わせ）</h2>
-  <p>プライバシーに関するお問い合わせは下記までご連絡ください。</p>
-  <p>Email: support@line-ai-bot.com</p>
+  <div class="section">
+    <h2>第6条（Cookieおよびセッション）</h2>
+    <p>本サービスは、ログイン状態の維持のためにJWT認証クッキー（<code>auth_token</code>）を使用します。このクッキーはHttpOnly属性を持ち、JavaScriptからアクセスできません。クッキーはブラウザの設定で無効にすることができますが、その場合サービスの一部機能が使用できなくなります。</p>
+  </div>
+
+  <div class="section">
+    <h2>第7条（データの保存と保持期間）</h2>
+    <ul>
+      <li>会話履歴：30日間保持後、自動削除</li>
+      <li>予約情報：お客様のアカウント存続期間中保持</li>
+      <li>アカウント情報：退会後30日以内に削除</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>第8条（個人情報の開示・訂正・削除）</h2>
+    <p>お客様は、当社が保有するご自身の個人情報について、開示・訂正・削除・利用停止を請求する権利を有します。ご希望の場合は下記メールアドレスまでご連絡ください。本人確認の上、合理的な期間内に対応いたします。</p>
+  </div>
+
+  <div class="section">
+    <h2>第9条（セキュリティ）</h2>
+    <p>当社は、収集した個人情報の安全管理のため、SSL/TLS暗号化通信、Row Level Security（Supabase RLS）、HTTPOnlyクッキー等の技術的・組織的安全管理措置を講じています。ただし、インターネット上の完全な安全性を保証するものではありません。</p>
+  </div>
+
+  <div class="section">
+    <h2>第10条（プライバシーポリシーの変更）</h2>
+    <p>当社は、法令の変更やサービス内容の変更に伴い、本ポリシーを改定することがあります。重要な変更は本ページおよびサービス内でお知らせします。</p>
+  </div>
+
+  <div class="section">
+    <h2>第11条（お問い合わせ）</h2>
+    <p>個人情報の取り扱いに関するお問い合わせは、下記までご連絡ください。</p>
+    <p><strong>メールアドレス：</strong>hohomi4847@gmail.com</p>
+    <p><strong>対応時間：</strong>平日 10:00〜18:00（韓国時間）</p>
+  </div>
+</div>
+
+<footer>
+  <nav class="legal-nav">
+    <a href="/">トップページ</a>
+    <a href="/terms.html">利用規約</a>
+    <a href="/privacy.html" class="current">プライバシーポリシー</a>
+    <a href="/refund.html">返金ポリシー</a>
+    <a href="/tokusho.html">特定商取引法に基づく表記</a>
+  </nav>
+  <p>© 2026 LINE AI予約ボット（キム・テヒョン）</p>
+</footer>
+
 </body>
 </html>

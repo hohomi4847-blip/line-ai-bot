@@ -5,29 +5,153 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>返金ポリシー - LINE AI予約ボット</title>
   <style>
-    body { font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #333; line-height: 1.8; }
-    h1 { color: #06C755; border-bottom: 2px solid #06C755; padding-bottom: 10px; }
-    h2 { color: #333; margin-top: 32px; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f8fafb; color: #333; line-height: 1.85; }
+
+    header {
+      background: linear-gradient(135deg, #06C755, #00B341);
+      padding: 14px 24px;
+    }
+    .header-inner {
+      max-width: 800px; margin: 0 auto;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .back-link {
+      color: rgba(255,255,255,0.9); text-decoration: none; font-size: 14px;
+      display: flex; align-items: center; gap: 4px; white-space: nowrap;
+    }
+    .back-link:hover { color: white; }
+    .page-label { color: white; font-size: 17px; font-weight: bold; }
+
+    .container {
+      max-width: 800px; margin: 40px auto 60px; padding: 0 24px;
+    }
+    h1 {
+      font-size: 28px; color: #06C755;
+      border-bottom: 3px solid #06C755; padding-bottom: 12px; margin-bottom: 6px;
+    }
+    .updated { font-size: 13px; color: #888; margin-bottom: 36px; }
+
+    .section { margin-bottom: 36px; }
+    .section h2 {
+      font-size: 17px; color: #06C755; margin-bottom: 12px;
+      padding-left: 12px; border-left: 4px solid #06C755;
+    }
+    .section p { font-size: 15px; color: #444; margin-bottom: 10px; }
+    .section ul { padding-left: 24px; font-size: 15px; color: #444; }
+    .section ul li { margin-bottom: 6px; }
+
+    /* ハイライトボックス */
+    .highlight-box {
+      background: #e6f9ed; border: 1px solid #b3e5c8; border-radius: 10px;
+      padding: 18px 20px; margin: 16px 0; font-size: 15px; color: #333;
+    }
+    .highlight-box strong { color: #06C755; }
+
+    .warn-box {
+      background: #fff8e6; border: 1px solid #ffe080; border-radius: 10px;
+      padding: 18px 20px; margin: 16px 0; font-size: 15px; color: #555;
+    }
+
+    footer {
+      background: #2d2d2d; color: #ccc; padding: 28px 24px; text-align: center;
+    }
+    .legal-nav {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 20px;
+      margin-bottom: 14px;
+    }
+    .legal-nav a { color: #aaa; text-decoration: none; font-size: 13px; }
+    .legal-nav a:hover { color: #06C755; }
+    .legal-nav a.current { color: #06C755; font-weight: bold; }
+    footer p { font-size: 12px; color: #666; }
   </style>
 </head>
 <body>
+
+<header>
+  <div class="header-inner">
+    <a href="/" class="back-link">← トップへ</a>
+    <span class="page-label">返金ポリシー</span>
+  </div>
+</header>
+
+<div class="container">
   <h1>返金ポリシー</h1>
-  <p>最終更新日：2026年4月27日</p>
+  <p class="updated">最終更新日：2026年4月28日</p>
 
-  <h2>第1条（初月無料トライアル）</h2>
-  <p>本サービスは初月無料でご利用いただけます。無料期間中に解約された場合、料金は一切発生しません。</p>
+  <div class="section">
+    <h2>第1条（30日間無料トライアル）</h2>
+    <div class="highlight-box">
+      <strong>新規登録から30日間は完全無料</strong>でご利用いただけます。無料期間中に解約された場合、料金は一切発生しません。
+    </div>
+    <p>無料トライアル期間終了後、自動的に有料プランへ移行します。トライアル期間中にいつでも解約可能です。</p>
+  </div>
 
-  <h2>第2条（返金条件）</h2>
-  <p>以下の場合に返金対応いたします：サービス開始後7日以内のご請求、システム障害によりサービスが利用できなかった場合。</p>
+  <div class="section">
+    <h2>第2条（デジタルサービスの性質について）</h2>
+    <div class="warn-box">
+      本サービスはデジタルコンテンツ・SaaSサービスのため、<strong>利用開始後の月額料金は原則として返金いたしません。</strong>ご購入前に無料トライアルにて十分ご確認ください。
+    </div>
+  </div>
 
-  <h2>第3条（返金の対象外）</h2>
-  <p>以下の場合は返金対象外となります：7日を超えた利用後の解約、お客様の操作ミスによるもの。</p>
+  <div class="section">
+    <h2>第3条（返金が認められる場合）</h2>
+    <p>以下の場合に限り、返金対応を検討いたします。</p>
+    <ul>
+      <li>当社側の重大なシステム障害により、連続して5日以上サービスが利用できなかった場合</li>
+      <li>当社の責に帰すべき事由により、サービスの主要機能が提供できなかった場合</li>
+      <li>請求金額に明らかな誤りがあった場合</li>
+    </ul>
+    <p>返金の可否は、個別の状況を確認した上で当社が判断します。</p>
+  </div>
 
-  <h2>第4条（返金手続き）</h2>
-  <p>返金をご希望の場合は、下記メールアドレスまでご連絡ください。確認後、5〜10営業日以内に返金処理を行います。</p>
+  <div class="section">
+    <h2>第4条（返金対象外）</h2>
+    <p>以下の場合は返金対象外となります。</p>
+    <ul>
+      <li>お客様の都合による解約（利用期間中のキャンセル）</li>
+      <li>サービスの使い方の誤りや操作ミスによるもの</li>
+      <li>LINEアカウントの凍結・停止等、第三者の行為によるサービス利用不可</li>
+      <li>お客様のインターネット環境・デバイスの問題によるもの</li>
+      <li>すでに利用済みの期間に対する請求</li>
+    </ul>
+  </div>
 
-  <h2>第5条（お問い合わせ）</h2>
-  <p>返金に関するお問い合わせは下記までご連絡ください。</p>
-  <p>Email: support@line-ai-bot.com</p>
+  <div class="section">
+    <h2>第5条（解約について）</h2>
+    <p>解約はいつでも可能です。解約後は、<strong>次の請求サイクル開始時点</strong>からサービスが停止します。解約月の残り期間は引き続きご利用いただけます。</p>
+    <p>解約はダッシュボードの解約手続き、またはPaddleのサブスクリプション管理ページから行えます。</p>
+  </div>
+
+  <div class="section">
+    <h2>第6条（返金手続き）</h2>
+    <p>返金をご希望の場合は、以下の情報を記載の上、メールにてお問い合わせください。</p>
+    <ul>
+      <li>登録メールアドレス</li>
+      <li>返金理由</li>
+      <li>請求日時・金額</li>
+    </ul>
+    <p>ご連絡後、内容を確認の上5営業日以内にご回答します。返金が承認された場合、Paddle経由で10営業日以内にご登録のクレジットカードへ返金されます。</p>
+  </div>
+
+  <div class="section">
+    <h2>第7条（お問い合わせ）</h2>
+    <p><strong>メールアドレス：</strong>hohomi4847@gmail.com</p>
+    <p><strong>対応時間：</strong>平日 10:00〜18:00（韓国時間）</p>
+    <p>お問い合わせには通常2営業日以内にご返答いたします。</p>
+  </div>
+</div>
+
+<footer>
+  <nav class="legal-nav">
+    <a href="/">トップページ</a>
+    <a href="/terms.html">利用規約</a>
+    <a href="/privacy.html">プライバシーポリシー</a>
+    <a href="/refund.html" class="current">返金ポリシー</a>
+    <a href="/tokusho.html">特定商取引法に基づく表記</a>
+  </nav>
+  <p>© 2026 LINE AI予約ボット（キム・テヒョン）</p>
+</footer>
+
 </body>
 </html>
