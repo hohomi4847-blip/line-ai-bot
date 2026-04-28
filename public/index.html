@@ -179,9 +179,15 @@
 </div>
 
 <script>
-  // ✅ Paddle 초기화
+  // ✅ Paddle 초기화 — settings는 Initialize 레벨에서 지정 (Checkout.open에 settings를 넣으면 400 오류 발생)
   Paddle.Initialize({
     token: 'live_f85c45d01df1d11366f81a2083b',
+    checkout: {
+      settings: {
+        displayMode: 'overlay',
+        locale: 'ja-JP'
+      }
+    },
     eventCallback: function(data) {
       if (data.name === 'checkout.completed') {
         document.getElementById('payBtn').style.display = 'none';
@@ -193,6 +199,12 @@
         if (currentShopId) {
           document.getElementById('webhookUrl').textContent =
             window.location.origin + '/webhook/' + currentShopId;
+        }
+      } else if (data.name === 'checkout.closed' || data.name === 'checkout.error') {
+        var btn = document.getElementById('payBtn');
+        if (btn && btn.disabled) {
+          btn.disabled = false;
+          btn.textContent = '🚀 30日間無料で始める';
         }
       }
     }
@@ -303,17 +315,9 @@
 
     Paddle.Checkout.open({
       items: [{ priceId: 'pri_01kq8rg1516ndq78xsvt9zgwch', quantity: 1 }],
-      customer: { email: currentUser.email },
-      customData: { shop_id: String(currentShopId) },
-      settings: { locale: 'ja' }
+      customer: { email: currentUser.email.trim() },
+      customData: { shop_id: String(currentShopId) }
     });
-
-    setTimeout(function() {
-      if (document.getElementById('successBox').style.display === 'none') {
-        btn.disabled = false;
-        btn.textContent = '🚀 30日間無料で始める';
-      }
-    }, 5000);
   }
 </script>
 
