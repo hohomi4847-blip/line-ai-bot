@@ -171,21 +171,27 @@
 
   let currentUser = null;
 
-  // ✅ 핵심 수정: 페이지 로드 시 기존 세션 복원 (구글 로그인 후 돌아올 때 처리)
-  supabaseClient.auth.getSession().then(({ data: { session } }) => {
-    if (session?.user) {
-      currentUser = session.user;
-      showUserInfo(session.user);
-      enableStep2();
-    }
-  });
+  function showUserInfo(user) {
+    document.getElementById('userInfo').style.display = 'block';
+    document.getElementById('userEmail').textContent = `✅ ${user.email} でログイン中`;
+  }
 
-  // 인증 상태 변화 감지
+  function enableStep2() {
+    document.getElementById('step2').style.opacity = '1';
+    document.getElementById('step2').style.pointerEvents = 'auto';
+  }
+
+  // ✅ 핵심 수정: URL의 #access_token 해시를 Supabase가 처리하도록 기다림
   supabaseClient.auth.onAuthStateChange((event, session) => {
+    console.log('Auth event:', event, session);
     if (session?.user) {
       currentUser = session.user;
       showUserInfo(session.user);
       enableStep2();
+      // 로그인 성공 후 URL에서 토큰 제거 (깔끔하게)
+      if (window.location.hash.includes('access_token')) {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
     } else {
       currentUser = null;
       document.getElementById('userInfo').style.display = 'none';
@@ -206,16 +212,6 @@
 
   async function logout() {
     await supabaseClient.auth.signOut();
-  }
-
-  function showUserInfo(user) {
-    document.getElementById('userInfo').style.display = 'block';
-    document.getElementById('userEmail').textContent = `✅ ${user.email} でログイン中`;
-  }
-
-  function enableStep2() {
-    document.getElementById('step2').style.opacity = '1';
-    document.getElementById('step2').style.pointerEvents = 'auto';
   }
 
   async function register() {
