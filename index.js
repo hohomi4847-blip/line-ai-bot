@@ -310,40 +310,80 @@ app.post('/paddle/webhook', async (req, res) => {
   try {
     const body = JSON.parse(req.body.toString());
     const eventType = body.event_type;
-    console.log('📦 Paddle webhook:', eventType);
+
+    // Paddle v2 webhook: customData は custom_data (snake_case) で届く
+    // camelCase フォールバックも念のため確認
+    const shopId = body.data?.custom_data?.shopId
+                || body.data?.customData?.shopId
+                || null;
+    const customerEmail = body.data?.customer?.email || null;
+
+    console.log(`📦 Paddle webhook: ${eventType} | shopId=${shopId} | email=${customerEmail}`);
+
+    // shopId が優先 — なければ email にフォールバック
+    function buildQuery(table, updateData) {
+      const q = supabase.from(table).update(updateData);
+      if (shopId) {
+        console.log(`  → match by shopId: ${shopId}`);
+        return q.eq('id', shopId);
+      }
+      if (customerEmail) {
+        console.log(`  → match by email (fallback): ${customerEmail}`);
+        return q.eq('owner_email', customerEmail);
+      }
+      return null;
+    }
 
     if (eventType === 'transaction.completed' || eventType === 'subscription.created') {
-      const customerEmail = body.data?.customer?.email;
-      if (customerEmail) {
+      if (!shopId && !customerEmail) {
+        console.warn('⚠️ shopId も email もなし — スキップ');
+      } else {
         const trialEnd = new Date();
         trialEnd.setDate(trialEnd.getDate() + 30);
-        await supabase.from('shops').update({
+        const q = buildQuery('shops', {
           is_paid: true,
           plan_status: 'active',
           paddle_subscription_id: body.data?.subscription_id || body.data?.id || null,
           trial_started_at: new Date().toISOString(),
           subscription_end_date: trialEnd.toISOString(),
-        }).eq('owner_email', customerEmail);
-        console.log(`✅ shop 활성화: ${customerEmail}`);
+        });
+        if (q) {
+          const { error } = await q;
+          if (error) console.error('shop 활성화 실패:', error);
+          else console.log(`✅ shop 활성화 완료`);
+        }
       }
     }
 
     if (eventType === 'subscription.canceled') {
-      const customerEmail = body.data?.customer?.email;
-      if (customerEmail) {
-        await supabase.from('shops').update({
+      if (!shopId && !customerEmail) {
+        console.warn('⚠️ shopId も email もなし — スキップ');
+      } else {
+        const q = buildQuery('shops', {
           plan_status: 'canceled',
           subscription_end_date: body.data?.canceled_at || new Date().toISOString(),
-        }).eq('owner_email', customerEmail);
+        });
+        if (q) {
+          const { error } = await q;
+          if (error) console.error('subscription.canceled 업데이트 실패:', error);
+          else console.log(`🚫 구독 취소 완료`);
+        }
       }
     }
 
     if (eventType === 'transaction.refunded') {
-      const customerEmail = body.data?.customer?.email;
-      if (customerEmail) {
-        await supabase.from('shops').update({
-          is_paid: false, plan_status: 'refunded',
-        }).eq('owner_email', customerEmail);
+      if (!shopId && !customerEmail) {
+        console.warn('⚠️ shopId も email もなし — スキップ');
+      } else {
+        const q = buildQuery('shops', {
+          is_paid: false,
+          plan_status: 'refunded',
+        });
+        if (q) {
+          const { error } = await q;
+          if (error) console.error('transaction.refunded 업데이트 실패:', error);
+          else console.log(`💰 환불 완료`);
+        }
       }
     }
 
