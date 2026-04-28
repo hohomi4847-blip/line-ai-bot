@@ -14,9 +14,14 @@
     "@anthropic-ai/sdk": "^0.91.1",
     "@line/bot-sdk": "^11.0.0",
     "@supabase/supabase-js": "^2.104.1",
+    "connect-pg-simple": "^10.0.0",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-session": "^1.19.0",
     "ical-generator": "^10.2.0",
-    "node-cron": "^4.2.1"
+    "node-cron": "^4.2.1",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0"
   }
 }
