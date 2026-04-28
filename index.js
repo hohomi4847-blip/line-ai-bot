@@ -4,6 +4,7 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const line = require('@line/bot-sdk');
 const Anthropic = require('@anthropic-ai/sdk');
 const { createClient } = require('@supabase/supabase-js');
@@ -306,8 +307,42 @@ app.get('/auth/logout', (req, res) => {
 // ============================
 // Paddle Webhook
 // ============================
+// ✅ Paddle v2 웹훅 서명 검증 (HMAC-SHA256)
+function verifyPaddleSignature(rawBody, signatureHeader, secret) {
+  if (!signatureHeader) return false;
+  const parts = {};
+  signatureHeader.split(';').forEach(part => {
+    const idx = part.indexOf('=');
+    if (idx !== -1) parts[part.slice(0, idx)] = part.slice(idx + 1);
+  });
+  const ts = parts['ts'];
+  const h1 = parts['h1'];
+  if (!ts || !h1) return false;
+  const computed = crypto
+    .createHmac('sha256', secret)
+    .update(`${ts}:${rawBody}`)
+    .digest('hex');
+  try {
+    return crypto.timingSafeEqual(Buffer.from(computed, 'hex'), Buffer.from(h1, 'hex'));
+  } catch {
+    return false;
+  }
+}
+
 app.post('/paddle/webhook', async (req, res) => {
   try {
+    // ✅ 서명 검증 — PADDLE_WEBHOOK_SECRET이 설정된 경우 강제 검증
+    const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET;
+    if (webhookSecret) {
+      const sig = req.headers['paddle-signature'];
+      if (!verifyPaddleSignature(req.body.toString(), sig, webhookSecret)) {
+        console.warn('⚠️ Paddle webhook 서명 검증 실패 — 무시');
+        return res.status(400).json({ error: 'Invalid signature' });
+      }
+    } else {
+      console.warn('⚠️ PADDLE_WEBHOOK_SECRET 미설정 — 서명 검증 건너뜀');
+    }
+
     const body = JSON.parse(req.body.toString());
     const eventType = body.event_type;
 
@@ -510,8 +545,10 @@ app.get('/api/dashboard', adminAuth, async (req, res) => {
   }
 });
 
-app.post('/api/register', async (req, res) => {
-  const { email, shopName, businessType, channelSecret, channelToken } = req.body;
+app.post('/api/register', requireJWT, async (req, res) => {
+  // ✅ JWT から email を取得 — body の email は使わない (なりすまし防止)
+  const email = req.user.email;
+  const { shopName, businessType, channelSecret, channelToken } = req.body;
   if (!validateRegisterInput({ email, shopName, businessType, channelSecret, channelToken })) {
     return res.json({ success: false, reason: 'invalid_input' });
   }

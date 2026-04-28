@@ -951,16 +951,22 @@
     // successUrl リダイレクト後に shopId を復元するために保存
     localStorage.setItem('paddle_shop_id', String(currentShopId));
 
-    Paddle.Checkout.open({
-      settings: {
-        displayMode: 'overlay',
-        locale: 'ja',
-        successUrl: window.location.origin + '/?payment=success'
-      },
-      items: [{ priceId: 'pri_01kq8rg1516ndq78xsvt9zgwch', quantity: 1 }],
-      customer: { email: currentUser.email.trim() },
-      customData: { shopId: String(currentShopId) }
-    });
+    try {
+      Paddle.Checkout.open({
+        settings: {
+          displayMode: 'overlay',
+          locale: 'ja',
+          successUrl: window.location.origin + '/?payment=success'
+        },
+        items: [{ priceId: 'pri_01kq8rg1516ndq78xsvt9zgwch', quantity: 1 }],
+        customer: { email: currentUser.email.trim() },
+        customData: { shopId: String(currentShopId) }
+      });
+    } catch (e) {
+      console.error('Paddle.Checkout.open error:', e);
+      btn.disabled = false;
+      btn.textContent = '🚀 30日間無料で始める';
+    }
   }
 </script>
 
