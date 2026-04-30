@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LINE AI予約ボット - 予約対応、もうAIに任せませんか？</title>
-  <meta name="description" content="LINE・Google・Instagram、集客から予約まで全部おまかせ。AI予約ボット月額¥2,980〜。7日間無料体験。">
-  <meta property="og:title" content="LINE AI予約ボット - 予約対応、もうAIに任せませんか？">
-  <meta property="og:description" content="LINE・Google・Instagram、集客から予約まで全部おまかせ。AI予約ボット月額¥2,980〜。">
+  <title>AI予約Pro — 予約対応を、AIへ。</title>
+  <meta name="description" content="24時間365日、自然な会話でお客様の予約を自動受付。電話対応・予約管理・経営分析まで、月額¥2,980で完結。">
+  <meta property="og:title" content="AI予約Pro — 予約対応を、AIへ。">
+  <meta property="og:description" content="24時間365日、自然な会話でお客様の予約を自動受付。月額¥2,980。7日間無料体験。">
   <meta property="og:type" content="website">
   <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
@@ -19,288 +19,906 @@
     :root {
       --green:        #06C755;
       --green-d:      #05A847;
-      --green-light:  #F0FDF4;
-      --green-border: #BBF7D0;
-      --bg:           #F9FAFB;
-      --white:        #FFFFFF;
-      --text:         #111827;
-      --text2:        #4B5563;
-      --text3:        #9CA3AF;
-      --border:       #E5E7EB;
+      --green-glow:   rgba(6,199,85,0.18);
+      --green-glow2:  rgba(6,199,85,0.08);
+      --gold:         #C9A84C;
+      --gold-light:   rgba(201,168,76,0.15);
+      --gold-border:  rgba(201,168,76,0.5);
+      --dark:         #0A0A0A;
+      --dark2:        #111827;
+      --dark3:        #1A2537;
+      --card-bg:      #141E2D;
+      --card-border:  rgba(255,255,255,0.07);
+      --white:        #FAFAFA;
+      --text:         #F1F5F9;
+      --text2:        #94A3B8;
+      --text3:        #475569;
       --radius:       14px;
-      --shadow-sm:    0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-      --shadow-md:    0 4px 20px rgba(0,0,0,0.08);
-      --shadow-lg:    0 12px 40px rgba(0,0,0,0.12);
+      --font-serif:   'Noto Serif JP', 'Georgia', serif;
+      --font-sans:    'Noto Sans JP', 'Helvetica Neue', Arial, sans-serif;
     }
 
     body {
-      font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-      background: var(--bg);
+      font-family: var(--font-sans);
+      background: var(--dark);
       color: var(--text);
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── GRID BG ─────────────────────────────────────────── */
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(6,199,85,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(6,199,85,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
     }
 
     /* ── NAVBAR ─────────────────────────────────────────── */
     .navbar {
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--border);
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      background: transparent;
+      transition: background 0.35s, backdrop-filter 0.35s, border-color 0.35s;
+      border-bottom: 1px solid transparent;
+    }
+    .navbar.scrolled {
+      background: rgba(10,10,10,0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom-color: var(--card-border);
     }
     .navbar-inner {
-      max-width: 1100px; margin: 0 auto; padding: 0 24px;
+      max-width: 1160px; margin: 0 auto; padding: 0 28px;
       display: flex; align-items: center; justify-content: space-between;
-      height: 62px;
+      height: 68px;
     }
-    .navbar-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-    .logo-icon { width: 36px; height: 36px; background: var(--green); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-    .logo-text { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
-    .logo-text em { color: var(--green); font-style: normal; }
-    .navbar-links { display: flex; align-items: center; gap: 4px; }
-    .nav-link { color: var(--text2); text-decoration: none; font-size: 14px; font-weight: 500; padding: 7px 12px; border-radius: 8px; transition: background 0.15s, color 0.15s; }
-    .nav-link:hover { background: var(--bg); color: var(--text); }
-    .nav-cta { background: var(--green); color: white; text-decoration: none; font-size: 14px; font-weight: 600; padding: 9px 20px; border-radius: 9px; margin-left: 8px; transition: background 0.15s, box-shadow 0.15s; box-shadow: 0 2px 8px rgba(6,199,85,0.3); }
-    .nav-cta:hover { background: var(--green-d); box-shadow: 0 4px 14px rgba(6,199,85,0.4); }
-    .nav-mypage { color: var(--text2); text-decoration: none; font-size: 14px; font-weight: 500; padding: 7px 12px; border-radius: 8px; transition: background 0.15s, color 0.15s; display: none; }
-    .nav-mypage:hover { background: var(--bg); color: var(--text); }
-    .nav-logout-btn { background: none; border: 1.5px solid var(--border); color: var(--text2); font-size: 13px; font-weight: 500; padding: 7px 14px; border-radius: 8px; cursor: pointer; margin-left: 6px; transition: border-color 0.15s, color 0.15s; display: none; }
+    .navbar-logo {
+      display: flex; align-items: center; gap: 11px; text-decoration: none;
+    }
+    .logo-mark {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--green) 0%, #04923E 100%);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+      box-shadow: 0 0 20px var(--green-glow);
+    }
+    .logo-wordmark {
+      font-family: var(--font-serif);
+      font-size: 17px; font-weight: 700;
+      color: var(--white);
+      letter-spacing: 0.03em;
+    }
+    .logo-wordmark em { color: var(--green); font-style: normal; }
+    .navbar-links { display: flex; align-items: center; gap: 2px; }
+    .nav-link {
+      color: var(--text2); text-decoration: none; font-size: 14px; font-weight: 500;
+      padding: 8px 14px; border-radius: 8px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-link:hover { color: var(--white); background: rgba(255,255,255,0.05); }
+    .nav-consult {
+      background: transparent; border: 1.5px solid var(--green);
+      color: var(--green); font-size: 14px; font-weight: 600;
+      padding: 8px 18px; border-radius: 9px; margin-left: 6px;
+      text-decoration: none; transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    }
+    .nav-consult:hover { background: var(--green); color: white; box-shadow: 0 0 18px var(--green-glow); }
+    .nav-cta {
+      background: var(--green); color: white;
+      font-size: 14px; font-weight: 700;
+      padding: 9px 22px; border-radius: 9px; margin-left: 6px;
+      text-decoration: none;
+      transition: background 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 18px var(--green-glow);
+    }
+    .nav-cta:hover { background: var(--green-d); box-shadow: 0 0 28px rgba(6,199,85,0.35); }
+    .nav-mypage {
+      color: var(--text2); text-decoration: none; font-size: 14px; font-weight: 500;
+      padding: 8px 14px; border-radius: 8px; display: none;
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-mypage:hover { color: var(--white); }
+    .nav-logout-btn {
+      background: none; border: 1.5px solid var(--card-border);
+      color: var(--text2); font-size: 13px; font-weight: 500;
+      padding: 7px 14px; border-radius: 8px; cursor: pointer; margin-left: 6px;
+      font-family: var(--font-sans);
+      transition: border-color 0.15s, color 0.15s; display: none;
+    }
     .nav-logout-btn:hover { border-color: #EF4444; color: #EF4444; }
 
     /* ── HERO ───────────────────────────────────────────── */
-    .hero { background: var(--white); border-bottom: 1px solid var(--border); padding: 90px 24px 80px; text-align: center; }
-    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--green-light); border: 1px solid var(--green-border); color: #16a34a; font-size: 13px; font-weight: 600; padding: 5px 15px; border-radius: 100px; margin-bottom: 30px; }
-    .badge-dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
-    .hero h1 { font-size: clamp(30px, 5.5vw, 58px); font-weight: 800; line-height: 1.12; letter-spacing: -0.04em; color: var(--text); margin-bottom: 22px; }
-    .hero h1 .hl { color: var(--green); }
-    .hero-sub { font-size: clamp(15px, 1.8vw, 18px); color: var(--text2); max-width: 560px; margin: 0 auto 44px; line-height: 1.75; }
-    .hero-actions { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
-    .btn-hero { display: inline-flex; align-items: center; gap: 9px; background: var(--green); color: white; font-size: 16px; font-weight: 700; padding: 16px 34px; border-radius: 12px; text-decoration: none; border: none; cursor: pointer; transition: background 0.15s, transform 0.12s, box-shadow 0.15s; box-shadow: 0 4px 18px rgba(6,199,85,0.38); }
-    .btn-hero:hover { background: var(--green-d); box-shadow: 0 6px 24px rgba(6,199,85,0.48); transform: translateY(-1px); }
-    .btn-hero:active { transform: none; }
-    .btn-outline-hero { display: inline-flex; align-items: center; gap: 9px; background: var(--white); color: var(--text); font-size: 15px; font-weight: 600; padding: 15px 28px; border-radius: 12px; text-decoration: none; border: 1.5px solid var(--border); transition: border-color 0.15s, background 0.15s; }
-    .btn-outline-hero:hover { border-color: var(--green); background: var(--green-light); color: #16a34a; }
-    .hero-note { font-size: 13px; color: var(--text3); margin-bottom: 56px; }
-    .hero-stats { display: inline-flex; gap: 0; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; background: var(--white); box-shadow: var(--shadow-sm); }
-    .hero-stat { padding: 20px 36px; border-right: 1px solid var(--border); text-align: center; }
-    .hero-stat:last-child { border-right: none; }
-    .stat-num { font-size: 26px; font-weight: 800; color: var(--text); letter-spacing: -0.04em; line-height: 1; }
-    .stat-num em { color: var(--green); font-style: normal; }
-    .stat-lbl { font-size: 12px; color: var(--text3); margin-top: 5px; font-weight: 500; }
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      position: relative;
+      overflow: hidden;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(6,199,85,0.12) 0%, transparent 65%),
+                  linear-gradient(180deg, #0A0A0A 0%, #0D1520 100%);
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(6,199,85,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(6,199,85,0.04) 1px, transparent 1px);
+      background-size: 56px 56px;
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(6,199,85,0.1);
+      border: 1px solid rgba(6,199,85,0.3);
+      color: var(--green);
+      font-size: 13px; font-weight: 500;
+      padding: 6px 18px; border-radius: 100px;
+      margin-bottom: 36px;
+      letter-spacing: 0.03em;
+    }
+    .badge-pulse {
+      width: 7px; height: 7px; background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(0.85)} }
+
+    .hero-title {
+      font-family: var(--font-serif);
+      font-size: clamp(42px, 7vw, 86px);
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+      color: var(--white);
+      margin-bottom: 28px;
+      position: relative;
+    }
+    .typing-cursor {
+      display: inline-block;
+      width: 3px; height: 0.8em;
+      background: var(--green);
+      vertical-align: middle;
+      margin-left: 4px;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    .hero-sub {
+      font-size: clamp(15px, 1.8vw, 18px);
+      color: var(--text2);
+      max-width: 560px;
+      margin: 0 auto 48px;
+      line-height: 2;
+    }
+    .hero-actions {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; flex-wrap: wrap; margin-bottom: 20px;
+    }
+    .btn-hero-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--green);
+      color: white; font-size: 16px; font-weight: 700;
+      padding: 18px 40px; border-radius: 12px;
+      text-decoration: none; border: none; cursor: pointer;
+      font-family: var(--font-sans);
+      transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+      box-shadow: 0 0 32px rgba(6,199,85,0.4);
+    }
+    .btn-hero-primary:hover { background: var(--green-d); box-shadow: 0 0 48px rgba(6,199,85,0.55); transform: translateY(-2px); }
+    .btn-hero-outline {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: transparent;
+      color: var(--text); font-size: 15px; font-weight: 600;
+      padding: 17px 34px; border-radius: 12px;
+      text-decoration: none;
+      border: 1.5px solid var(--card-border);
+      transition: border-color 0.2s, background 0.2s, color 0.2s;
+    }
+    .btn-hero-outline:hover { border-color: var(--green); color: var(--green); background: var(--green-glow2); }
+    .hero-note { font-size: 13px; color: var(--text3); margin-bottom: 72px; }
+
+    /* counters */
+    .hero-counters {
+      display: flex; gap: 0;
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(8px);
+      overflow: hidden;
+    }
+    .hero-counter {
+      padding: 22px 44px;
+      border-right: 1px solid var(--card-border);
+      text-align: center;
+    }
+    .hero-counter:last-child { border-right: none; }
+    .ctr-num {
+      font-family: var(--font-serif);
+      font-size: 30px; font-weight: 700;
+      color: var(--white);
+      line-height: 1; letter-spacing: -0.03em;
+    }
+    .ctr-num span { color: var(--green); }
+    .ctr-lbl { font-size: 12px; color: var(--text3); margin-top: 6px; font-weight: 500; }
 
     /* ── SECTION COMMON ─────────────────────────────────── */
-    .section-wrap { max-width: 1100px; margin: 0 auto; padding: 88px 24px; }
-    .section-tag { display: inline-block; font-size: 12px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
-    .section-title { font-size: clamp(24px, 3.5vw, 38px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.18; margin-bottom: 14px; }
-    .section-sub { font-size: 16px; color: var(--text2); line-height: 1.72; max-width: 500px; margin-bottom: 52px; }
+    .section-wrap { max-width: 1160px; margin: 0 auto; padding: 100px 28px; }
+    .section-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--gold);
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 16px;
+    }
+    .section-eyebrow::before {
+      content: '';
+      display: inline-block; width: 28px; height: 1px;
+      background: var(--gold);
+    }
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: clamp(26px, 3.8vw, 44px);
+      font-weight: 700; line-height: 1.22;
+      letter-spacing: -0.01em;
+      color: var(--white);
+      margin-bottom: 16px;
+    }
+    .section-sub {
+      font-size: 16px; color: var(--text2);
+      line-height: 1.8; max-width: 500px;
+    }
 
-    /* ── PAIN POINTS ────────────────────────────────────── */
-    .problems-bg { background: var(--bg); border-bottom: 1px solid var(--border); }
-    .problems-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-    .problem-card { display: flex; align-items: flex-start; gap: 14px; background: #FFF7ED; border: 1.5px solid #FED7AA; border-radius: var(--radius); padding: 22px 24px; transition: box-shadow 0.2s; }
-    .problem-card:hover { box-shadow: 0 4px 16px rgba(234,88,12,0.1); }
-    .problem-icon { font-size: 28px; flex-shrink: 0; line-height: 1.3; }
-    .problem-text { font-size: 15px; font-weight: 600; color: #9A3412; line-height: 1.55; margin-top: 2px; }
+    /* ── PROBLEMS ───────────────────────────────────────── */
+    .problems-section {
+      background: var(--dark2);
+      border-top: 1px solid var(--card-border);
+      border-bottom: 1px solid var(--card-border);
+    }
+    .problems-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 16px; margin-top: 52px;
+    }
+    .problem-card {
+      display: flex; align-items: flex-start; gap: 16px;
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 24px 26px;
+      transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+    }
+    .problem-card:hover {
+      border-color: var(--green);
+      box-shadow: 0 0 24px var(--green-glow2);
+      transform: translateY(-2px);
+    }
+    .problem-icon { font-size: 30px; flex-shrink: 0; line-height: 1.4; }
+    .problem-text { font-size: 15px; font-weight: 500; color: var(--text2); line-height: 1.65; margin-top: 4px; }
+
+    /* ── IMPACT ─────────────────────────────────────────── */
+    .impact-section {
+      background: linear-gradient(135deg, #061A10 0%, #0A2A18 50%, #061A10 100%);
+      border-top: 1px solid rgba(6,199,85,0.15);
+      border-bottom: 1px solid rgba(6,199,85,0.15);
+      text-align: center;
+    }
+    .impact-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 2px; margin-top: 60px;
+      border: 1px solid rgba(6,199,85,0.2); border-radius: 20px; overflow: hidden;
+    }
+    .impact-item {
+      padding: 44px 32px;
+      background: rgba(6,199,85,0.04);
+      border-right: 1px solid rgba(6,199,85,0.12);
+    }
+    .impact-item:last-child { border-right: none; }
+    .impact-from {
+      font-size: 14px; color: var(--text3);
+      margin-bottom: 10px; font-weight: 500;
+    }
+    .impact-arrow { font-size: 22px; color: var(--green); margin: 8px 0; }
+    .impact-to {
+      font-family: var(--font-serif);
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 700; color: var(--green);
+      letter-spacing: -0.02em; line-height: 1;
+    }
+    .impact-label { font-size: 13px; color: var(--text2); margin-top: 10px; }
 
     /* ── COMPARISON ─────────────────────────────────────── */
-    .compare-bg { background: var(--white); border-bottom: 1px solid var(--border); }
-    .compare-table-wrap { overflow-x: auto; border-radius: 16px; border: 1.5px solid var(--border); box-shadow: var(--shadow-sm); }
-    .compare-table { width: 100%; border-collapse: collapse; min-width: 580px; }
-    .compare-table th { padding: 16px 20px; font-size: 14px; font-weight: 700; background: #F9FAFB; border-bottom: 1.5px solid var(--border); }
-    .compare-table th:first-child { text-align: left; border-right: 1px solid var(--border); }
-    .compare-table th.our { background: var(--green); color: white; }
-    .compare-table td { padding: 13px 20px; font-size: 14px; text-align: center; border-bottom: 1px solid var(--border); background: var(--white); }
+    .compare-section {
+      background: var(--dark);
+      border-bottom: 1px solid var(--card-border);
+    }
+    .compare-table-wrap {
+      overflow-x: auto;
+      border-radius: 18px;
+      border: 1px solid var(--card-border);
+      margin-top: 52px;
+    }
+    .compare-table {
+      width: 100%; border-collapse: collapse; min-width: 600px;
+    }
+    .compare-table thead tr {
+      background: rgba(255,255,255,0.03);
+    }
+    .compare-table th {
+      padding: 18px 22px; font-size: 14px; font-weight: 700;
+      color: var(--text2);
+      border-bottom: 1px solid var(--card-border);
+    }
+    .compare-table th:first-child { text-align: left; color: var(--text3); }
+    .compare-table th.our-col {
+      background: var(--gold-light);
+      color: var(--gold);
+      border-left: 2px solid var(--gold-border);
+      border-right: 2px solid var(--gold-border);
+    }
+    .compare-table td {
+      padding: 14px 22px; font-size: 14px; text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      color: var(--text2);
+    }
     .compare-table tr:last-child td { border-bottom: none; }
-    .compare-table td:first-child { text-align: left; font-weight: 500; color: var(--text); border-right: 1px solid var(--border); }
-    .compare-table td.our { background: var(--green-light); font-weight: 600; }
-    .cmp-yes { color: #16a34a; font-size: 18px; font-weight: 700; }
-    .cmp-no { color: #D1D5DB; font-size: 18px; }
-    .cmp-price-theirs { color: var(--text2); font-weight: 700; font-size: 16px; }
-    .cmp-price-ours { color: var(--green); font-weight: 800; font-size: 18px; }
-    .compare-note { font-size: 12px; color: var(--text3); margin-top: 14px; }
+    .compare-table td:first-child {
+      text-align: left; font-weight: 500; color: var(--text);
+    }
+    .compare-table td.our-col {
+      background: rgba(201,168,76,0.05);
+      border-left: 2px solid var(--gold-border);
+      border-right: 2px solid var(--gold-border);
+    }
+    .compare-table tr:last-child td.our-col {
+      border-bottom-left-radius: 0; border-bottom-right-radius: 0;
+    }
+    .cmp-yes { color: var(--green); font-size: 17px; font-weight: 700; }
+    .cmp-no { color: var(--text3); font-size: 15px; }
+    .cmp-price-theirs { color: var(--text2); font-weight: 700; font-size: 15px; }
+    .cmp-price-ours {
+      color: var(--gold); font-weight: 800; font-size: 19px;
+      font-family: var(--font-serif);
+    }
+    .compare-footnote {
+      font-size: 12px; color: var(--text3);
+      margin-top: 16px; text-align: right;
+    }
+    .compare-tagline {
+      text-align: center;
+      font-family: var(--font-serif);
+      font-size: 20px; font-weight: 700;
+      color: var(--gold); margin-top: 32px;
+      letter-spacing: 0.02em;
+    }
 
-    /* ── SERVICES ───────────────────────────────────────── */
-    .services-bg { background: var(--bg); border-bottom: 1px solid var(--border); }
-    .services-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-    .svc-card { background: var(--white); border: 1.5px solid var(--border); border-radius: 18px; padding: 32px; position: relative; transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
-    .svc-card:hover { border-color: var(--green-border); box-shadow: var(--shadow-md); transform: translateY(-2px); }
-    .svc-card.featured { background: var(--green-light); border-color: var(--green); border-width: 2px; }
-    .svc-hot-badge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--green); color: white; font-size: 12px; font-weight: 700; padding: 4px 18px; border-radius: 100px; white-space: nowrap; box-shadow: 0 4px 12px rgba(6,199,85,0.4); }
-    .svc-icon { font-size: 36px; margin-bottom: 12px; display: block; }
-    .svc-name { font-size: 17px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
-    .svc-subtitle { font-size: 13px; color: var(--text3); margin-bottom: 16px; font-weight: 500; }
-    .svc-features { list-style: none; margin-bottom: 20px; }
-    .svc-features li { display: flex; align-items: flex-start; gap: 8px; font-size: 13.5px; color: var(--text2); padding: 4px 0; line-height: 1.55; }
-    .svc-features li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
-    .svc-price-area { margin-bottom: 20px; border-top: 1px solid var(--border); padding-top: 16px; }
-    .svc-card.featured .svc-price-area { border-color: var(--green-border); }
-    .svc-original { font-size: 12px; color: var(--text3); text-decoration: line-through; margin-bottom: 3px; }
-    .svc-price-main { font-size: 26px; font-weight: 800; color: var(--text); letter-spacing: -0.03em; }
-    .svc-price-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
-    .btn-dm { display: block; width: 100%; padding: 13px 20px; background: var(--text); color: white; text-align: center; font-size: 14px; font-weight: 700; border-radius: 10px; text-decoration: none; transition: background 0.15s, transform 0.12s, box-shadow 0.15s; }
-    .btn-dm:hover { background: #1F2937; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-    .svc-card.featured .btn-dm { background: var(--green); box-shadow: 0 4px 14px rgba(6,199,85,0.3); }
-    .svc-card.featured .btn-dm:hover { background: var(--green-d); box-shadow: 0 6px 20px rgba(6,199,85,0.4); }
+    /* ── SERVICES TABS ──────────────────────────────────── */
+    .services-section {
+      background: var(--dark2);
+      border-bottom: 1px solid var(--card-border);
+    }
+    .svc-tabs {
+      display: flex; gap: 4px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--card-border);
+      border-radius: 12px; padding: 4px;
+      width: fit-content;
+      margin: 48px 0 40px;
+    }
+    .svc-tab-btn {
+      padding: 11px 28px; border-radius: 9px;
+      font-size: 14px; font-weight: 600;
+      color: var(--text2); cursor: pointer;
+      background: none; border: none;
+      font-family: var(--font-sans);
+      transition: background 0.2s, color 0.2s;
+    }
+    .svc-tab-btn.active {
+      background: var(--green); color: white;
+      box-shadow: 0 0 16px rgba(6,199,85,0.3);
+    }
+    .svc-panel { display: none; }
+    .svc-panel.active { display: block; }
 
-    /* ── AI BOT PRICING ─────────────────────────────────── */
-    .pricing-bg { background: var(--bg); border-bottom: 1px solid var(--border); }
-    .pricing-center { display: flex; justify-content: center; }
-    .pricing-card { background: var(--white); border: 1.5px solid var(--border); border-radius: 20px; padding: 44px 42px; width: 100%; max-width: 520px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden; }
-    .pricing-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--green); }
-    .pricing-badge { display: inline-flex; align-items: center; gap: 7px; background: var(--green-light); color: #16a34a; font-size: 12px; font-weight: 700; padding: 5px 13px; border-radius: 6px; margin-bottom: 22px; letter-spacing: 0.02em; }
-    .pricing-price { font-size: 54px; font-weight: 800; color: var(--text); letter-spacing: -0.05em; line-height: 1; }
-    .price-unit { font-size: 18px; font-weight: 500; color: var(--text2); }
-    .pricing-note { font-size: 14px; color: var(--text3); margin-top: 7px; margin-bottom: 28px; }
-    .pricing-divider { height: 1px; background: var(--border); margin: 24px 0; }
-    .pricing-features { list-style: none; margin-bottom: 34px; }
-    .pricing-features li { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; color: var(--text2); padding: 7px 0; }
-    .pricing-features li .pf-icon { color: var(--green); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-    .pricing-cta { display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; padding: 16px; background: var(--green); color: white; font-size: 16px; font-weight: 700; border: none; border-radius: 12px; text-decoration: none; cursor: pointer; transition: background 0.15s, box-shadow 0.15s; box-shadow: 0 4px 16px rgba(6,199,85,0.32); }
-    .pricing-cta:hover { background: var(--green-d); box-shadow: 0 6px 22px rgba(6,199,85,0.42); }
-    .pricing-trial { text-align: center; font-size: 13px; color: var(--text3); margin-top: 14px; }
-    .pricing-cancel-note { margin-top: 16px; background: var(--green-light); border: 1px solid var(--green-border); border-radius: 9px; padding: 12px 16px; font-size: 13px; color: #16a34a; line-height: 1.6; text-align: center; }
+    /* initial packs */
+    .svc-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    .svc-card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      border-radius: 20px; padding: 32px;
+      position: relative;
+      transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+    }
+    .svc-card:hover {
+      border-color: rgba(6,199,85,0.4);
+      box-shadow: 0 0 40px rgba(6,199,85,0.1);
+      transform: translateY(-4px);
+    }
+    .svc-card.featured {
+      border-color: var(--gold-border);
+      background: linear-gradient(160deg, #1A1A0A 0%, var(--card-bg) 100%);
+    }
+    .svc-card.featured:hover {
+      border-color: var(--gold);
+      box-shadow: 0 0 40px rgba(201,168,76,0.15);
+    }
+    .svc-hot-badge {
+      position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(90deg, #B8860B, var(--gold), #B8860B);
+      color: #0A0A0A; font-size: 12px; font-weight: 700;
+      padding: 4px 20px; border-radius: 100px; white-space: nowrap;
+    }
+    .svc-icon { font-size: 38px; margin-bottom: 14px; display: block; }
+    .svc-name {
+      font-family: var(--font-serif);
+      font-size: 18px; font-weight: 700; color: var(--white); margin-bottom: 4px;
+    }
+    .svc-subtitle { font-size: 13px; color: var(--text3); margin-bottom: 18px; }
+    .svc-features { list-style: none; margin-bottom: 24px; }
+    .svc-features li {
+      display: flex; align-items: flex-start; gap: 9px;
+      font-size: 14px; color: var(--text2); padding: 4px 0; line-height: 1.6;
+    }
+    .svc-features li::before {
+      content: '✓'; color: var(--green); font-weight: 700;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .svc-price-area {
+      padding-top: 18px;
+      border-top: 1px solid var(--card-border);
+      margin-bottom: 22px;
+    }
+    .svc-original { font-size: 12px; color: var(--text3); text-decoration: line-through; margin-bottom: 4px; }
+    .svc-price-main {
+      font-family: var(--font-serif);
+      font-size: 28px; font-weight: 700;
+      color: var(--white); letter-spacing: -0.03em;
+    }
+    .svc-card.featured .svc-price-main { color: var(--gold); }
+    .svc-price-tax { font-size: 13px; color: var(--text3); font-weight: 400; font-family: var(--font-sans); }
+    .svc-price-sub { font-size: 12px; color: var(--text3); margin-top: 4px; }
+    .btn-dm {
+      display: block; width: 100%; padding: 13px 20px;
+      background: rgba(255,255,255,0.07);
+      border: 1.5px solid var(--card-border);
+      color: var(--text); text-align: center;
+      font-size: 14px; font-weight: 700;
+      border-radius: 10px; text-decoration: none;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    }
+    .btn-dm:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); transform: translateY(-1px); }
+    .svc-card.featured .btn-dm {
+      background: var(--gold-light); border-color: var(--gold-border); color: var(--gold);
+    }
+    .svc-card.featured .btn-dm:hover { background: rgba(201,168,76,0.25); }
 
-    /* ── BEFORE / AFTER ─────────────────────────────────── */
-    .ba-bg { background: var(--white); border-bottom: 1px solid var(--border); }
-    .ba-grid { display: grid; grid-template-columns: 1fr 60px 1fr; gap: 24px; align-items: center; }
-    .ba-card { border-radius: var(--radius); padding: 28px 28px; }
-    .ba-before { background: #FFF7ED; border: 1.5px solid #FED7AA; }
-    .ba-after  { background: var(--green-light); border: 1.5px solid var(--green-border); }
-    .ba-label { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 16px; display: flex; align-items: center; gap: 6px; }
-    .ba-before .ba-label { color: #EA580C; }
-    .ba-after  .ba-label { color: var(--green-d); }
-    .ba-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 11px; }
+    /* monthly plan panel */
+    .monthly-panel {
+      background: var(--card-bg);
+      border: 1.5px solid var(--gold-border);
+      border-radius: 24px; padding: 56px 48px;
+      position: relative; overflow: hidden;
+      max-width: 760px;
+    }
+    .monthly-panel::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--green), var(--gold));
+    }
+    .monthly-glow {
+      position: absolute; top: -80px; right: -80px;
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(6,199,85,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .monthly-price-row { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 8px; }
+    .monthly-price {
+      font-family: var(--font-serif);
+      font-size: 64px; font-weight: 700;
+      color: var(--white); letter-spacing: -0.05em; line-height: 1;
+    }
+    .monthly-price-unit { font-size: 20px; color: var(--text2); margin-bottom: 10px; }
+    .monthly-trial-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--gold-light); border: 1px solid var(--gold-border);
+      color: var(--gold); font-size: 13px; font-weight: 700;
+      padding: 5px 14px; border-radius: 6px;
+      margin-bottom: 32px; letter-spacing: 0.02em;
+    }
+    .monthly-note { font-size: 14px; color: var(--text3); margin-bottom: 38px; }
+    .monthly-features-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px 32px; margin-bottom: 40px;
+    }
+    .monthly-feature-item {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 15px; color: var(--text2);
+    }
+    .mf-check { color: var(--green); font-size: 15px; flex-shrink: 0; }
+    .monthly-tagline {
+      font-family: var(--font-serif);
+      font-size: 17px; color: var(--gold);
+      text-align: center; margin-bottom: 28px;
+      font-style: italic;
+    }
+    .btn-monthly-cta {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 18px;
+      background: var(--green); color: white;
+      font-size: 17px; font-weight: 700;
+      border: none; border-radius: 12px;
+      text-decoration: none; cursor: pointer;
+      font-family: var(--font-sans);
+      transition: background 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 32px rgba(6,199,85,0.35);
+    }
+    .btn-monthly-cta:hover { background: var(--green-d); box-shadow: 0 0 48px rgba(6,199,85,0.5); }
+
+    /* ── BEFORE/AFTER ───────────────────────────────────── */
+    .ba-section {
+      background: var(--dark);
+      border-bottom: 1px solid var(--card-border);
+    }
+    .ba-grid {
+      display: grid; grid-template-columns: 1fr 56px 1fr;
+      gap: 24px; align-items: center; margin-top: 56px;
+    }
+    .ba-card { border-radius: 18px; padding: 32px; }
+    .ba-before {
+      background: rgba(239,68,68,0.04);
+      border: 1.5px solid rgba(239,68,68,0.15);
+    }
+    .ba-after {
+      background: rgba(6,199,85,0.04);
+      border: 1.5px solid rgba(6,199,85,0.2);
+    }
+    .ba-label {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      margin-bottom: 20px;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .ba-before .ba-label { color: #EF4444; }
+    .ba-after .ba-label { color: var(--green); }
+    .ba-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      margin-bottom: 14px;
+    }
     .ba-item:last-child { margin-bottom: 0; }
-    .ba-dot-bad  { width: 8px; height: 8px; background: #EA580C; border-radius: 50%; flex-shrink: 0; margin-top: 7px; }
-    .ba-dot-good { width: 8px; height: 8px; background: var(--green); border-radius: 50%; flex-shrink: 0; margin-top: 7px; }
-    .ba-item-text { font-size: 14px; color: var(--text); line-height: 1.6; font-weight: 500; }
+    .ba-dot-bad {
+      width: 6px; height: 6px; background: #EF4444;
+      border-radius: 50%; flex-shrink: 0; margin-top: 8px;
+    }
+    .ba-dot-good {
+      width: 6px; height: 6px; background: var(--green);
+      border-radius: 50%; flex-shrink: 0; margin-top: 8px;
+    }
+    .ba-item-text { font-size: 14px; color: var(--text2); line-height: 1.65; }
     .ba-arrow-wrap { display: flex; align-items: center; justify-content: center; }
-    .ba-arrow { font-size: 30px; color: var(--green); line-height: 1; }
+    .ba-arrow {
+      width: 40px; height: 40px;
+      background: rgba(6,199,85,0.1);
+      border: 1px solid rgba(6,199,85,0.3);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--green); font-size: 18px;
+    }
 
     /* ── FLOW ───────────────────────────────────────────── */
-    .flow-bg { background: var(--green-light); border-top: 1px solid var(--green-border); border-bottom: 1px solid var(--green-border); }
-    .flow-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; position: relative; }
-    .flow-steps::before { content: ''; position: absolute; top: 27px; left: calc(12.5% + 14px); right: calc(12.5% + 14px); height: 2px; background: var(--green-border); z-index: 0; }
+    .flow-section {
+      background: var(--dark2);
+      border-bottom: 1px solid var(--card-border);
+    }
+    .flow-steps {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 24px; position: relative; margin-top: 56px;
+    }
+    .flow-steps::before {
+      content: '';
+      position: absolute; top: 27px;
+      left: calc(12.5% + 16px); right: calc(12.5% + 16px);
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--green), transparent);
+      z-index: 0;
+    }
     .flow-step { text-align: center; position: relative; z-index: 1; }
-    .flow-num { width: 54px; height: 54px; background: var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; font-weight: 800; margin: 0 auto 18px; box-shadow: 0 4px 16px rgba(6,199,85,0.38); }
-    .flow-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
-    .flow-desc { font-size: 13px; color: var(--text2); line-height: 1.65; }
+    .flow-num {
+      width: 54px; height: 54px;
+      background: linear-gradient(135deg, var(--green) 0%, #04923E 100%);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+      font-family: var(--font-serif);
+      font-size: 20px; font-weight: 700; color: white;
+      box-shadow: 0 0 24px rgba(6,199,85,0.4);
+    }
+    .flow-title {
+      font-size: 15px; font-weight: 700;
+      color: var(--white); margin-bottom: 10px;
+    }
+    .flow-desc { font-size: 13px; color: var(--text2); line-height: 1.7; }
 
     /* ── FAQ ────────────────────────────────────────────── */
-    .faq-bg { background: var(--bg); border-bottom: 1px solid var(--border); }
-    .faq-list { max-width: 720px; margin: 0 auto; }
-    .faq-item { border: 1.5px solid var(--border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; background: var(--white); transition: border-color 0.2s; }
-    .faq-item:hover, .faq-item.open { border-color: var(--green-border); }
-    .faq-q { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 20px 22px; cursor: pointer; font-size: 15px; font-weight: 600; color: var(--text); background: none; border: none; width: 100%; text-align: left; font-family: inherit; }
-    .faq-q:hover { background: var(--green-light); }
-    .faq-icon { width: 24px; height: 24px; background: var(--green-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--green); font-size: 18px; flex-shrink: 0; transition: transform 0.25s, background 0.2s, color 0.2s; line-height: 1; font-style: normal; }
-    .faq-item.open .faq-icon { transform: rotate(45deg); background: var(--green); color: white; }
-    .faq-a { display: none; padding: 0 22px 20px; font-size: 14px; color: var(--text2); line-height: 1.8; }
+    .faq-section {
+      background: var(--dark);
+      border-bottom: 1px solid var(--card-border);
+    }
+    .faq-list { max-width: 740px; margin: 52px auto 0; }
+    .faq-item {
+      border: 1.5px solid var(--card-border);
+      border-radius: 12px; margin-bottom: 10px;
+      overflow: hidden;
+      background: var(--card-bg);
+      transition: border-color 0.2s;
+    }
+    .faq-item:hover { border-color: rgba(6,199,85,0.25); }
+    .faq-item.open { border-color: rgba(6,199,85,0.4); }
+    .faq-q {
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      padding: 20px 24px; cursor: pointer;
+      font-size: 15px; font-weight: 600;
+      color: var(--text); background: none; border: none;
+      width: 100%; text-align: left;
+      font-family: var(--font-sans);
+      transition: background 0.2s;
+    }
+    .faq-q:hover { background: rgba(255,255,255,0.03); }
+    .faq-icon {
+      width: 26px; height: 26px;
+      background: rgba(6,199,85,0.1);
+      border: 1px solid rgba(6,199,85,0.25);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--green); font-size: 18px; flex-shrink: 0;
+      transition: transform 0.25s, background 0.2s;
+      line-height: 1;
+    }
+    .faq-item.open .faq-icon {
+      transform: rotate(45deg);
+      background: var(--green); color: white; border-color: var(--green);
+    }
+    .faq-a {
+      display: none; padding: 0 24px 22px;
+      font-size: 14px; color: var(--text2); line-height: 1.85;
+    }
     .faq-item.open .faq-a { display: block; }
 
     /* ── CTA ────────────────────────────────────────────── */
-    .cta-bg { background: linear-gradient(135deg, #06C755 0%, #04923E 100%); }
-    .cta-inner { max-width: 640px; margin: 0 auto; padding: 88px 24px; text-align: center; }
-    .cta-title { font-size: clamp(28px, 4.5vw, 46px); font-weight: 800; color: white; letter-spacing: -0.04em; line-height: 1.15; margin-bottom: 18px; }
-    .cta-sub { font-size: 17px; color: rgba(255,255,255,0.88); margin-bottom: 44px; line-height: 1.65; }
-    .btn-cta-white { display: inline-flex; align-items: center; gap: 9px; background: white; color: var(--green); font-size: 16px; font-weight: 800; padding: 17px 44px; border-radius: 12px; text-decoration: none; border: none; cursor: pointer; transition: transform 0.12s, box-shadow 0.15s; box-shadow: 0 4px 20px rgba(0,0,0,0.14); font-family: inherit; }
-    .btn-cta-white:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.2); }
+    .cta-section {
+      background: radial-gradient(ellipse 70% 80% at 50% 50%, rgba(6,199,85,0.14) 0%, transparent 70%),
+                  linear-gradient(180deg, #0A1F12 0%, #0A0A0A 100%);
+      border-top: 1px solid rgba(6,199,85,0.15);
+      text-align: center;
+    }
+    .cta-inner { max-width: 660px; margin: 0 auto; padding: 100px 24px; }
+    .cta-title {
+      font-family: var(--font-serif);
+      font-size: clamp(30px, 5vw, 52px);
+      font-weight: 700; color: var(--white);
+      line-height: 1.2; letter-spacing: -0.02em;
+      margin-bottom: 20px;
+    }
+    .cta-sub {
+      font-size: 16px; color: var(--text2);
+      margin-bottom: 48px; line-height: 1.8;
+    }
+    .btn-cta-main {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--green); color: white;
+      font-size: 18px; font-weight: 700;
+      padding: 20px 56px; border-radius: 14px;
+      text-decoration: none; border: none; cursor: pointer;
+      font-family: var(--font-sans);
+      transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+      box-shadow: 0 0 48px rgba(6,199,85,0.45);
+      margin-bottom: 20px;
+    }
+    .btn-cta-main:hover { background: var(--green-d); box-shadow: 0 0 64px rgba(6,199,85,0.6); transform: translateY(-3px); }
+    .cta-reassure { font-size: 13px; color: var(--text3); line-height: 2; }
 
-    /* ── REGISTER SECTION ───────────────────────────────── */
-    .register-bg { background: var(--bg); border-top: 1px solid var(--border); }
-    .register-wrap { max-width: 620px; margin: 0 auto; padding: 88px 24px; }
-    .register-header { text-align: center; margin-bottom: 48px; }
-    .reg-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; margin-bottom: 14px; box-shadow: var(--shadow-sm); transition: border-color 0.2s, box-shadow 0.2s; }
-    .reg-card:focus-within { border-color: var(--green-border); box-shadow: 0 0 0 3px rgba(6,199,85,0.07); }
-    .reg-card-head { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
-    .reg-num { width: 34px; height: 34px; background: var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: 700; flex-shrink: 0; }
-    .reg-title { font-size: 17px; font-weight: 700; color: var(--text); }
-    .btn-google { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; padding: 14px 20px; background: var(--white); border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; font-weight: 600; color: var(--text); text-decoration: none; transition: border-color 0.15s, box-shadow 0.15s, background 0.15s; }
-    .btn-google:hover { border-color: #4285F4; background: #F8F9FF; box-shadow: 0 2px 10px rgba(66,133,244,0.14); }
-    .user-info-box { background: var(--green-light); border: 1.5px solid var(--green-border); border-radius: 10px; padding: 13px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .user-info-email { font-size: 14px; color: #16a34a; font-weight: 600; word-break: break-all; }
+    /* ── REGISTER ───────────────────────────────────────── */
+    .register-section {
+      background: var(--dark2);
+      border-top: 1px solid var(--card-border);
+    }
+    .register-wrap { max-width: 640px; margin: 0 auto; padding: 100px 24px; }
+    .register-header { text-align: center; margin-bottom: 52px; }
+    .reg-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 34px;
+      margin-bottom: 14px;
+      transition: border-color 0.2s;
+    }
+    .reg-card:focus-within { border-color: rgba(6,199,85,0.4); }
+    .reg-card-head {
+      display: flex; align-items: center; gap: 14px; margin-bottom: 26px;
+    }
+    .reg-num {
+      width: 36px; height: 36px;
+      background: var(--green); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 15px; font-weight: 700; flex-shrink: 0;
+    }
+    .reg-title { font-size: 17px; font-weight: 700; color: var(--white); }
+    .btn-google {
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      width: 100%; padding: 14px 20px;
+      background: rgba(255,255,255,0.06);
+      border: 1.5px solid var(--card-border);
+      border-radius: 10px; font-size: 15px; font-weight: 600;
+      color: var(--text); text-decoration: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .btn-google:hover { border-color: #4285F4; background: rgba(66,133,244,0.08); }
+    .user-info-box {
+      background: rgba(6,199,85,0.08);
+      border: 1.5px solid rgba(6,199,85,0.25);
+      border-radius: 10px; padding: 13px 18px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .user-info-email { font-size: 14px; color: var(--green); font-weight: 600; word-break: break-all; }
     .logout-link { font-size: 13px; color: var(--text3); text-decoration: none; white-space: nowrap; flex-shrink: 0; }
     .logout-link:hover { color: var(--text); }
     .form-group { margin-bottom: 18px; }
     .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 7px; }
-    .form-group input, .form-group select { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 9px; font-size: 15px; color: var(--text); background: var(--white); font-family: inherit; transition: border-color 0.15s, box-shadow 0.15s; }
-    .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(6,199,85,0.1); }
+    .form-group input, .form-group select {
+      width: 100%; padding: 12px 15px;
+      border: 1.5px solid var(--card-border);
+      border-radius: 9px; font-size: 15px;
+      color: var(--white);
+      background: rgba(255,255,255,0.04);
+      font-family: var(--font-sans);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(6,199,85,0.12);
+    }
     .form-group input::placeholder { color: var(--text3); }
+    .form-group select option { background: var(--dark2); }
     .form-hint { font-size: 12px; color: var(--text3); margin-top: 5px; line-height: 1.5; }
-    .error-msg { display: none; color: #DC2626; font-size: 13px; background: #FEF2F2; border: 1px solid #FCA5A5; padding: 9px 13px; border-radius: 8px; margin-top: 12px; }
-    .btn-reg { width: 100%; padding: 15px 20px; background: var(--green); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background 0.15s, transform 0.12s, box-shadow 0.15s; margin-top: 6px; box-shadow: 0 4px 14px rgba(6,199,85,0.3); }
-    .btn-reg:hover:not(:disabled) { background: var(--green-d); box-shadow: 0 6px 20px rgba(6,199,85,0.42); transform: translateY(-1px); }
-    .btn-reg:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; box-shadow: none; }
-    .trial-box { background: var(--green-light); border: 1.5px solid var(--green-border); border-radius: 10px; padding: 16px 18px; margin-bottom: 22px; }
-    .trial-box-title { font-size: 14px; font-weight: 700; color: #16a34a; margin-bottom: 4px; }
-    .trial-box-text { font-size: 13px; color: #16a34a; line-height: 1.6; }
+    .error-msg {
+      display: none; color: #FCA5A5; font-size: 13px;
+      background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25);
+      padding: 9px 13px; border-radius: 8px; margin-top: 12px;
+    }
+    .btn-reg {
+      width: 100%; padding: 15px 20px;
+      background: var(--green); color: white;
+      border: none; border-radius: 10px;
+      font-size: 16px; font-weight: 700; cursor: pointer;
+      font-family: var(--font-sans);
+      transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
+      margin-top: 6px;
+      box-shadow: 0 0 22px rgba(6,199,85,0.3);
+    }
+    .btn-reg:hover:not(:disabled) { background: var(--green-d); box-shadow: 0 0 32px rgba(6,199,85,0.44); transform: translateY(-1px); }
+    .btn-reg:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; box-shadow: none; }
+    .trial-box {
+      background: rgba(6,199,85,0.08);
+      border: 1.5px solid rgba(6,199,85,0.25);
+      border-radius: 10px; padding: 16px 18px; margin-bottom: 22px;
+    }
+    .trial-box-title { font-size: 14px; font-weight: 700; color: var(--green); margin-bottom: 4px; }
+    .trial-box-text { font-size: 13px; color: rgba(6,199,85,0.75); line-height: 1.6; }
     .success-outer { margin-top: 18px; }
-    .success-inner { background: var(--green-light); border: 1.5px solid var(--green-border); border-radius: 12px; padding: 30px 24px; text-align: center; }
+    .success-inner {
+      background: rgba(6,199,85,0.08);
+      border: 1.5px solid rgba(6,199,85,0.3);
+      border-radius: 12px; padding: 30px 24px; text-align: center;
+    }
     .success-icon { font-size: 52px; margin-bottom: 14px; }
-    .success-title { font-size: 22px; font-weight: 800; color: #16a34a; margin-bottom: 8px; letter-spacing: -0.03em; }
-    .success-body { font-size: 15px; color: #16a34a; margin-bottom: 22px; line-height: 1.65; }
-    .webhook-card { background: var(--white); border: 1.5px solid var(--green-border); border-radius: 10px; padding: 16px; text-align: left; }
+    .success-title { font-size: 22px; font-weight: 800; color: var(--green); margin-bottom: 8px; letter-spacing: -0.03em; }
+    .success-body { font-size: 15px; color: rgba(6,199,85,0.8); margin-bottom: 22px; line-height: 1.65; }
+    .webhook-card {
+      background: rgba(255,255,255,0.04); border: 1.5px solid var(--card-border);
+      border-radius: 10px; padding: 16px; text-align: left;
+    }
     .webhook-label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
-    .webhook-url-box { background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 10px 13px; }
-    .webhook-url-box code { font-size: 12px; color: var(--text); word-break: break-all; font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace; }
+    .webhook-url-box { background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); border-radius: 7px; padding: 10px 13px; }
+    .webhook-url-box code { font-size: 12px; color: var(--text); word-break: break-all; font-family: 'SF Mono', 'Cascadia Code', Consolas, monospace; }
     .pw-wrap { position: relative; width: 100%; }
     .pw-wrap input { padding-right: 46px !important; }
-    .pw-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 5px; color: var(--text3); line-height: 0; transition: color 0.15s; border-radius: 5px; flex-shrink: 0; }
+    .pw-toggle {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; padding: 5px;
+      color: var(--text3); line-height: 0;
+      transition: color 0.15s; border-radius: 5px; flex-shrink: 0;
+    }
     .pw-toggle:hover { color: var(--text2); }
     .pw-toggle:focus { outline: 2px solid var(--green); outline-offset: 2px; }
     .security-note { font-size: 11px; color: var(--text3); margin-top: 5px; line-height: 1.5; }
-    .security-badge-row { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 18px; margin-top: 16px; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 9px; }
-    .security-badge-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text3); font-weight: 500; white-space: nowrap; }
-
-    /* ── FADE ANIMATION ─────────────────────────────────── */
-    .fade-up { opacity: 0; transform: translateY(28px); transition: opacity 0.65s ease, transform 0.65s ease; }
-    .fade-up.visible { opacity: 1; transform: none; }
+    .security-badge-row {
+      display: flex; align-items: center; justify-content: center;
+      flex-wrap: wrap; gap: 6px 18px; margin-top: 16px;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--card-border); border-radius: 9px;
+    }
+    .security-badge-item {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11px; color: var(--text3); font-weight: 500; white-space: nowrap;
+    }
 
     /* ── FOOTER ─────────────────────────────────────────── */
-    footer { background: #111827; color: #9CA3AF; padding: 42px 24px; text-align: center; }
-    .footer-nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 24px; margin-bottom: 20px; }
-    .footer-nav a { color: #6B7280; text-decoration: none; font-size: 13px; transition: color 0.15s; }
+    footer {
+      background: #050505;
+      border-top: 1px solid var(--card-border);
+      padding: 48px 24px; text-align: center;
+    }
+    .footer-logo {
+      font-family: var(--font-serif);
+      font-size: 16px; font-weight: 700; color: var(--text2);
+      margin-bottom: 20px;
+    }
+    .footer-logo em { color: var(--green); font-style: normal; }
+    .footer-nav {
+      display: flex; flex-wrap: wrap; justify-content: center;
+      gap: 8px 24px; margin-bottom: 20px;
+    }
+    .footer-nav a { color: var(--text3); text-decoration: none; font-size: 13px; transition: color 0.15s; }
     .footer-nav a:hover { color: var(--green); }
-    .footer-copy { font-size: 12px; color: #4B5563; }
+    .footer-copy { font-size: 12px; color: var(--text3); }
+
+    /* ── ANIMATIONS ─────────────────────────────────────── */
+    .fade-up { opacity: 0; transform: translateY(32px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .fade-up.visible { opacity: 1; transform: none; }
 
     /* ── RESPONSIVE ─────────────────────────────────────── */
-    @media (max-width: 900px) {
-      .services-grid { grid-template-columns: 1fr; max-width: 520px; margin: 0 auto; }
+    @media (max-width: 960px) {
+      .svc-grid { grid-template-columns: 1fr; max-width: 500px; }
       .problems-grid { grid-template-columns: 1fr; }
       .ba-grid { grid-template-columns: 1fr; }
       .ba-arrow-wrap { transform: rotate(90deg); }
       .flow-steps { grid-template-columns: repeat(2, 1fr); }
       .flow-steps::before { display: none; }
-      .nav-link { display: none; }
+      .impact-grid { grid-template-columns: 1fr; }
+      .impact-item { border-right: none; border-bottom: 1px solid rgba(6,199,85,0.12); }
+      .impact-item:last-child { border-bottom: none; }
+      .navbar-links .nav-link { display: none; }
+      .monthly-features-grid { grid-template-columns: 1fr; }
+      .monthly-panel { padding: 36px 28px; }
     }
-    @media (max-width: 600px) {
-      .hero { padding: 60px 20px 52px; }
-      .hero-stats { flex-direction: column; border: none; background: transparent; box-shadow: none; gap: 8px; }
-      .hero-stat { border: 1px solid var(--border); border-radius: 12px; padding: 16px 24px; border-right: 1px solid var(--border) !important; }
-      .pricing-card { padding: 32px 22px; }
-      .reg-card { padding: 22px 18px; }
+    @media (max-width: 640px) {
+      .hero { padding: 100px 20px 64px; }
+      .hero-counters { flex-direction: column; border: none; background: transparent; gap: 10px; }
+      .hero-counter {
+        border: 1px solid var(--card-border);
+        border-radius: 12px; padding: 16px 28px;
+        border-right: 1px solid var(--card-border) !important;
+        background: rgba(255,255,255,0.03);
+      }
+      .section-wrap { padding: 68px 20px; }
+      .reg-card { padding: 24px 18px; }
+      .compare-tagline { font-size: 16px; }
       .flow-steps { grid-template-columns: 1fr; }
-      .section-wrap { padding: 60px 20px; }
-      .cta-inner { padding: 64px 20px; }
+      .svc-tabs { width: 100%; }
+      .svc-tab-btn { flex: 1; padding: 11px 12px; font-size: 13px; }
+      .cta-inner { padding: 72px 20px; }
     }
   </style>
 </head>
 <body>
 
 <!-- ══ NAVBAR ═══════════════════════════════════════════════ -->
-<nav class="navbar">
+<nav class="navbar" id="navbar">
   <div class="navbar-inner">
     <a href="/" class="navbar-logo">
-      <div class="logo-icon">🤖</div>
-      <span class="logo-text">LINE <em>AI予約</em>ボット</span>
+      <div class="logo-mark">⚡</div>
+      <span class="logo-wordmark">AI予約<em>Pro</em></span>
     </a>
     <div class="navbar-links">
       <a href="#services" class="nav-link">サービス</a>
-      <a href="#comparison" class="nav-link">比較</a>
-      <a href="#pricing" class="nav-link">料金</a>
-      <a href="/shop-dashboard.html" class="nav-link">ダッシュボード</a>
+      <a href="#comparison" class="nav-link">料金比較</a>
+      <a href="#flow" class="nav-link">導入の流れ</a>
+      <a href="#cta" class="nav-link nav-consult">お問い合わせ</a>
       <a href="#start" id="navCta" class="nav-cta">無料で始める</a>
       <a href="/shop-dashboard.html" id="navMyPage" class="nav-mypage">マイページ</a>
       <button id="navLogout" class="nav-logout-btn" onclick="location.href='/auth/logout'">ログアウト</button>
@@ -309,76 +927,102 @@
 </nav>
 
 <!-- ══ HERO ════════════════════════════════════════════════ -->
-<section class="hero">
+<section class="hero" id="hero">
   <div class="hero-badge">
-    <span class="badge-dot"></span>
-    7日間無料体験実施中
+    <span class="badge-pulse"></span>
+    7日間無料体験 実施中
   </div>
-  <h1>予約対応、<br><span class="hl">もうAIに任せませんか？</span></h1>
+  <h1 class="hero-title" id="heroTitle"></h1>
   <p class="hero-sub">
-    LINE・Google・Instagram、集客から予約まで全部おまかせ。<br>
-    24時間・365日、あなたのお店に代わって自動対応します。
+    24時間365日、自然な会話でお客様の予約を自動受付。<br>
+    電話対応・予約管理・経営分析まで、月額¥2,980で完結。
   </p>
   <div class="hero-actions">
-    <a href="#start" class="btn-hero">7日間無料で試す →</a>
-    <a href="#services" class="btn-outline-hero">サービスを見る</a>
+    <a href="#start" class="btn-hero-primary">7日間無料で試す →</a>
+    <a href="#services" class="btn-hero-outline">サービス詳細を見る</a>
   </div>
-  <p class="hero-note">クレジットカード不要 &middot; いつでも解約可能 &middot; 設定5分</p>
-  <div class="hero-stats">
-    <div class="hero-stat">
-      <div class="stat-num">24<em>h</em></div>
-      <div class="stat-lbl">自動対応</div>
+  <p class="hero-note">クレジットカード登録で7日間無料 &middot; いつでも解約可能 &middot; 解約手数料¥0</p>
+  <div class="hero-counters">
+    <div class="hero-counter">
+      <div class="ctr-num"><span id="ctr1">0</span>時間対応</div>
+      <div class="ctr-lbl">AIが休まず稼働</div>
     </div>
-    <div class="hero-stat">
-      <div class="stat-num">11<em>+</em></div>
-      <div class="stat-lbl">対応業種</div>
+    <div class="hero-counter">
+      <div class="ctr-num">¥<span id="ctr2">0</span>/月</div>
+      <div class="ctr-lbl">驚きの低価格</div>
     </div>
-    <div class="hero-stat">
-      <div class="stat-num">¥<em>2,980</em></div>
-      <div class="stat-lbl">AI月額〜</div>
-    </div>
-    <div class="hero-stat">
-      <div class="stat-num">7<em>日</em></div>
-      <div class="stat-lbl">無料体験</div>
+    <div class="hero-counter">
+      <div class="ctr-num"><span id="ctr3">0</span>分 電話対応</div>
+      <div class="ctr-lbl">完全自動化</div>
     </div>
   </div>
 </section>
 
 <!-- ══ PAIN POINTS ══════════════════════════════════════════ -->
-<div class="problems-bg">
+<div class="problems-section">
   <div class="section-wrap">
     <div class="fade-up">
-      <div class="section-tag">Problems</div>
-      <h2 class="section-title">こんなお悩みありませんか？</h2>
+      <div class="section-eyebrow">Problems</div>
+      <h2 class="section-title">こんなお悩み、ありませんか？</h2>
     </div>
-    <div class="problems-grid fade-up">
-      <div class="problem-card">
+    <div class="problems-grid">
+      <div class="problem-card fade-up">
         <div class="problem-icon">📞</div>
-        <div class="problem-text">電話対応に追われて施術に集中できない</div>
+        <div class="problem-text">電話対応に追われて、施術に集中できない</div>
       </div>
-      <div class="problem-card">
-        <div class="problem-icon">😔</div>
+      <div class="problem-card fade-up">
+        <div class="problem-icon">🌙</div>
         <div class="problem-text">営業時間外の予約を取りこぼしている</div>
       </div>
-      <div class="problem-card">
-        <div class="problem-icon">😰</div>
-        <div class="problem-text">SNSやGoogleの設定がわからない</div>
+      <div class="problem-card fade-up">
+        <div class="problem-icon">📊</div>
+        <div class="problem-text">経営状況を数字で把握できていない</div>
       </div>
-      <div class="problem-card">
-        <div class="problem-icon">📋</div>
-        <div class="problem-text">予約管理が手作業で大変・ミスが怖い</div>
+      <div class="problem-card fade-up">
+        <div class="problem-icon">📱</div>
+        <div class="problem-text">SNS・Googleの設定がわからない</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ IMPACT NUMBERS ═══════════════════════════════════════ -->
+<div class="impact-section">
+  <div class="section-wrap" style="text-align:center;">
+    <div class="fade-up">
+      <div class="section-eyebrow" style="justify-content:center;">Results</div>
+      <h2 class="section-title">数字で見る、導入効果</h2>
+    </div>
+    <div class="impact-grid fade-up">
+      <div class="impact-item">
+        <div class="impact-from">月50時間の電話対応が</div>
+        <div class="impact-arrow">↓</div>
+        <div class="impact-to">0時間</div>
+        <div class="impact-label">AIが完全自動対応</div>
+      </div>
+      <div class="impact-item">
+        <div class="impact-from">営業時間外の機会損失が</div>
+        <div class="impact-arrow">↓</div>
+        <div class="impact-to">¥0</div>
+        <div class="impact-label">24時間予約受付</div>
+      </div>
+      <div class="impact-item">
+        <div class="impact-from">月額¥2,980の投資で</div>
+        <div class="impact-arrow">↑</div>
+        <div class="impact-to">ROI 3,000%+</div>
+        <div class="impact-label">圧倒的なコスパ</div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- ══ COMPARISON ═══════════════════════════════════════════ -->
-<div class="compare-bg" id="comparison">
+<div class="compare-section" id="comparison">
   <div class="section-wrap">
     <div class="fade-up">
-      <div class="section-tag">Comparison</div>
-      <h2 class="section-title">他社サービスとの比較</h2>
-      <p class="section-sub">同価格帯の他サービスと比べて、圧倒的な機能を提供しています。</p>
+      <div class="section-eyebrow">Comparison</div>
+      <h2 class="section-title">なぜ当サービスが選ばれるのか</h2>
+      <p class="section-sub">同カテゴリの競合サービスと徹底比較</p>
     </div>
     <div class="compare-table-wrap fade-up">
       <table class="compare-table">
@@ -387,7 +1031,7 @@
             <th>機能</th>
             <th>PecoChat</th>
             <th>RESERVA</th>
-            <th class="our">当サービス</th>
+            <th class="our-col">AI予約Pro ★</th>
           </tr>
         </thead>
         <tbody>
@@ -395,207 +1039,200 @@
             <td>月額料金</td>
             <td><span class="cmp-price-theirs">¥9,800</span></td>
             <td><span class="cmp-price-theirs">¥5,500</span></td>
-            <td class="our"><span class="cmp-price-ours">¥2,980</span></td>
+            <td class="our-col"><span class="cmp-price-ours">¥2,980</span></td>
           </tr>
           <tr>
             <td>AI自然言語会話</td>
             <td><span class="cmp-yes">✅</span></td>
             <td><span class="cmp-no">❌</span></td>
-            <td class="our"><span class="cmp-yes">✅</span></td>
+            <td class="our-col"><span class="cmp-yes">✅</span></td>
           </tr>
           <tr>
             <td>LINE予約完結</td>
             <td><span class="cmp-yes">✅</span></td>
             <td><span class="cmp-no">❌</span></td>
-            <td class="our"><span class="cmp-yes">✅</span></td>
+            <td class="our-col"><span class="cmp-yes">✅</span></td>
           </tr>
           <tr>
-            <td>取消・変更LINE完結</td>
+            <td>取消・変更LINEで完結</td>
             <td><span class="cmp-no">❌</span></td>
             <td><span class="cmp-no">❌</span></td>
-            <td class="our"><span class="cmp-yes">✅</span></td>
+            <td class="our-col"><span class="cmp-yes">✅</span></td>
           </tr>
           <tr>
             <td>経営分析ダッシュボード</td>
             <td><span class="cmp-no">❌</span></td>
             <td><span class="cmp-no">❌</span></td>
-            <td class="our"><span class="cmp-yes">✅</span></td>
+            <td class="our-col"><span class="cmp-yes">✅</span></td>
           </tr>
           <tr>
             <td>顧客カルテ自動蓄積</td>
             <td><span class="cmp-no">❌</span></td>
             <td><span class="cmp-no">❌</span></td>
-            <td class="our"><span class="cmp-yes">✅</span></td>
+            <td class="our-col"><span class="cmp-yes">✅</span></td>
           </tr>
           <tr>
             <td>Googleクチコミ自動化</td>
             <td><span class="cmp-no">❌</span></td>
             <td><span class="cmp-no">❌</span></td>
-            <td class="our"><span class="cmp-yes">✅</span></td>
+            <td class="our-col"><span class="cmp-yes">✅</span></td>
           </tr>
           <tr>
             <td>リピート促進メッセージ</td>
             <td><span class="cmp-no">❌</span></td>
             <td><span class="cmp-no">❌</span></td>
-            <td class="our"><span class="cmp-yes">✅</span></td>
+            <td class="our-col"><span class="cmp-yes">✅</span></td>
+          </tr>
+          <tr>
+            <td>解約後データ保持</td>
+            <td><span class="cmp-no">❌</span></td>
+            <td><span class="cmp-no">❌</span></td>
+            <td class="our-col"><span class="cmp-yes">✅</span></td>
           </tr>
         </tbody>
       </table>
     </div>
-    <p class="compare-note fade-up">※2026年4月調査時点の公開情報に基づく比較です。</p>
+    <p class="compare-footnote fade-up">※2026年4月時点の公開情報に基づく比較です。</p>
+    <p class="compare-tagline fade-up">「同じ価格帯で、これだけの差があります。」</p>
   </div>
 </div>
 
 <!-- ══ SERVICES ═════════════════════════════════════════════ -->
-<div class="services-bg" id="services">
+<div class="services-section" id="services">
   <div class="section-wrap">
     <div class="fade-up">
-      <div class="section-tag">Services</div>
-      <h2 class="section-title">サービス一覧</h2>
-      <p class="section-sub">初期設定から集客まで、必要なものだけをお選びいただけます。</p>
+      <div class="section-eyebrow">Services</div>
+      <h2 class="section-title">集客から予約まで、ワンストップで</h2>
     </div>
-    <div class="services-grid">
-
-      <!-- Card 1: LINE -->
-      <div class="svc-card fade-up">
-        <span class="svc-icon">💬</span>
-        <div class="svc-name">LINEスタートパック</div>
-        <div class="svc-subtitle">LINE公式アカウント + リッチメニュー作成</div>
-        <ul class="svc-features">
-          <li>LINE公式アカウント開設</li>
-          <li>リッチメニューデザイン制作</li>
-          <li>AI予約ボットとの連携設定</li>
-          <li>動作確認まで完全サポート</li>
-        </ul>
-        <div class="svc-price-area">
-          <div class="svc-price-main">¥19,800<span style="font-size:14px;font-weight:500;color:var(--text3);">（税込）</span></div>
-          <div class="svc-price-sub">一回限り</div>
-        </div>
-        <a href="#cta" class="btn-dm">お申し込みはDMで →</a>
-      </div>
-
-      <!-- Card 2: Google -->
-      <div class="svc-card fade-up">
-        <span class="svc-icon">🗺️</span>
-        <div class="svc-name">Googleパック</div>
-        <div class="svc-subtitle">Googleビジネスプロフィール設定</div>
-        <ul class="svc-features">
-          <li>アカウント開設・オーナー認証</li>
-          <li>基本情報・写真登録</li>
-          <li>カテゴリ・営業時間最適化</li>
-          <li>Googleマップへの表示確認</li>
-        </ul>
-        <div class="svc-price-area">
-          <div class="svc-original">通常 ¥15,000〜¥40,000</div>
-          <div class="svc-price-main">¥9,800<span style="font-size:14px;font-weight:500;color:var(--text3);">（税込）</span></div>
-          <div class="svc-price-sub">一回限り</div>
-        </div>
-        <a href="#cta" class="btn-dm">お申し込みはDMで →</a>
-      </div>
-
-      <!-- Card 3: Instagram -->
-      <div class="svc-card fade-up">
-        <span class="svc-icon">📸</span>
-        <div class="svc-name">Instagramパック</div>
-        <div class="svc-subtitle">Instagramアカウント開設・初期設定</div>
-        <ul class="svc-features">
-          <li>アカウント作成・プロフィール設定</li>
-          <li>ハイライト作成</li>
-          <li>LINE予約への導線設定</li>
-          <li>最初の3投稿作成サポート</li>
-        </ul>
-        <div class="svc-price-area">
-          <div class="svc-original">通常 ¥30,000〜¥80,000</div>
-          <div class="svc-price-main">¥14,800<span style="font-size:14px;font-weight:500;color:var(--text3);">（税込）</span></div>
-          <div class="svc-price-sub">一回限り</div>
-        </div>
-        <a href="#cta" class="btn-dm">お申し込みはDMで →</a>
-      </div>
-
-      <!-- Card 4: Full Pack (featured) -->
-      <div class="svc-card featured fade-up">
-        <div class="svc-hot-badge">🔥 最もお得</div>
-        <span class="svc-icon">🚀</span>
-        <div class="svc-name">集客フルパック</div>
-        <div class="svc-subtitle">LINE + Google + Instagram 全部まとめて</div>
-        <ul class="svc-features">
-          <li>上記3パックすべて含む</li>
-          <li>優先対応・セット割引</li>
-          <li>集客導線を一括で完成</li>
-        </ul>
-        <div class="svc-price-area">
-          <div class="svc-original">通常 ¥95,000〜¥270,000</div>
-          <div class="svc-price-main">¥39,800<span style="font-size:14px;font-weight:500;color:var(--text3);">（税込）</span></div>
-          <div class="svc-price-sub">一回限り</div>
-        </div>
-        <a href="#cta" class="btn-dm">お申し込みはDMで →</a>
-      </div>
-
+    <div class="svc-tabs fade-up">
+      <button class="svc-tab-btn active" onclick="switchSvcTab('initial', this)">初期導入サービス（一回限り）</button>
+      <button class="svc-tab-btn" onclick="switchSvcTab('monthly', this)">AI予約ボット（月額）</button>
     </div>
-  </div>
-</div>
 
-<!-- ══ AI BOT PRICING ═══════════════════════════════════════ -->
-<div class="pricing-bg" id="pricing">
-  <div class="section-wrap" style="text-align:center;">
-    <div class="fade-up">
-      <div class="section-tag">Monthly Plan</div>
-      <h2 class="section-title">AI予約ボット 月額プラン</h2>
-      <p class="section-sub" style="margin:14px auto 52px; text-align:center; max-width:440px;">
-        まずは7日間、無料でお試しください。<br>いつでもキャンセル可能です。
-      </p>
-    </div>
-    <div class="pricing-center fade-up">
-      <div class="pricing-card">
-        <div class="pricing-badge">✦ 7日間 無料体験</div>
-        <div class="pricing-price">¥2,980<span class="price-unit"> / 月</span></div>
-        <p class="pricing-note">税込・月次自動更新・いつでも解約可</p>
-        <div class="pricing-divider"></div>
-        <ul class="pricing-features">
-          <li><span class="pf-icon">✅</span> 24時間AI自動予約受付</li>
-          <li><span class="pf-icon">✅</span> キャンセル・変更もLINEで完結</li>
-          <li><span class="pf-icon">✅</span> 経営分析ダッシュボード</li>
-          <li><span class="pf-icon">✅</span> 顧客カルテ自動蓄積</li>
-          <li><span class="pf-icon">✅</span> Googleクチコミ自動化</li>
-          <li><span class="pf-icon">✅</span> リピート促進メッセージ</li>
-          <li><span class="pf-icon">✅</span> Googleカレンダー連携</li>
-          <li><span class="pf-icon">✅</span> 解約後もデータ保持・再開即復元</li>
-        </ul>
-        <a href="#start" class="pricing-cta">7日間無料で始める →</a>
-        <p class="pricing-trial">無料期間中に解約しても費用は一切かかりません</p>
-        <div class="pricing-cancel-note">
-          解約後もデータは保持されます。<br>再開するといつでも元通りに復元可能です。
+    <!-- Tab 1: Initial packs -->
+    <div class="svc-panel active" id="svc-initial">
+      <div class="svc-grid">
+        <div class="svc-card fade-up">
+          <span class="svc-icon">💬</span>
+          <div class="svc-name">LINEスタートパック</div>
+          <div class="svc-subtitle">LINE公式アカウント + AI予約ボット連携</div>
+          <ul class="svc-features">
+            <li>LINE公式アカウント開設</li>
+            <li>リッチメニューデザイン制作</li>
+            <li>AI予約ボット連携設定</li>
+            <li>動作確認まで完全サポート</li>
+          </ul>
+          <div class="svc-price-area">
+            <div class="svc-original">市場相場 ¥50,000〜¥150,000</div>
+            <div class="svc-price-main">¥19,800<span class="svc-price-tax">（税込）</span></div>
+            <div class="svc-price-sub">一回限り</div>
+          </div>
+          <a href="#" class="btn-dm">お申し込みはDMで →</a>
         </div>
+        <div class="svc-card fade-up">
+          <span class="svc-icon">🗺️</span>
+          <div class="svc-name">Googleパック</div>
+          <div class="svc-subtitle">Googleビジネスプロフィール完全設定</div>
+          <ul class="svc-features">
+            <li>アカウント開設・オーナー認証</li>
+            <li>基本情報・写真登録</li>
+            <li>営業時間・カテゴリ最適化</li>
+          </ul>
+          <div class="svc-price-area">
+            <div class="svc-original">市場相場 ¥15,000〜¥40,000</div>
+            <div class="svc-price-main">¥9,800<span class="svc-price-tax">（税込）</span></div>
+            <div class="svc-price-sub">一回限り</div>
+          </div>
+          <a href="#" class="btn-dm">お申し込みはDMで →</a>
+        </div>
+        <div class="svc-card fade-up">
+          <span class="svc-icon">📸</span>
+          <div class="svc-name">Instagramパック</div>
+          <div class="svc-subtitle">Instagramアカウント開設・集客導線設定</div>
+          <ul class="svc-features">
+            <li>アカウント作成・プロフィール設定</li>
+            <li>ハイライト作成</li>
+            <li>LINE予約導線設定</li>
+            <li>最初の3投稿作成</li>
+          </ul>
+          <div class="svc-price-area">
+            <div class="svc-original">市場相場 ¥30,000〜¥80,000</div>
+            <div class="svc-price-main">¥14,800<span class="svc-price-tax">（税込）</span></div>
+            <div class="svc-price-sub">一回限り</div>
+          </div>
+          <a href="#" class="btn-dm">お申し込みはDMで →</a>
+        </div>
+        <div class="svc-card featured fade-up">
+          <div class="svc-hot-badge">🔥 最もお得</div>
+          <span class="svc-icon">🚀</span>
+          <div class="svc-name">集客フルパック</div>
+          <div class="svc-subtitle">LINE + Google + Instagram 全部まとめて</div>
+          <ul class="svc-features">
+            <li>上記3パック全て含む</li>
+            <li>優先対応</li>
+          </ul>
+          <div class="svc-price-area">
+            <div class="svc-original">市場相場 ¥95,000〜¥270,000</div>
+            <div class="svc-price-main">¥39,800<span class="svc-price-tax">（税込）</span></div>
+            <div class="svc-price-sub">一回限り &nbsp;|&nbsp; ¥55,400 お得</div>
+          </div>
+          <a href="#" class="btn-dm">お申し込みはDMで →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: Monthly -->
+    <div class="svc-panel" id="svc-monthly">
+      <div class="monthly-panel fade-up">
+        <div class="monthly-glow"></div>
+        <div class="monthly-trial-badge">✦ 7日間 無料体験</div>
+        <div class="monthly-price-row">
+          <div class="monthly-price">¥2,980</div>
+          <div class="monthly-price-unit">/ 月</div>
+        </div>
+        <p class="monthly-note">税込・月次自動更新・いつでも解約可</p>
+        <div class="monthly-features-grid">
+          <div class="monthly-feature-item"><span class="mf-check">✅</span> 24時間AI自動予約受付</div>
+          <div class="monthly-feature-item"><span class="mf-check">✅</span> キャンセル・変更もLINEで完結</div>
+          <div class="monthly-feature-item"><span class="mf-check">✅</span> 経営分析ダッシュボード</div>
+          <div class="monthly-feature-item"><span class="mf-check">✅</span> 顧客カルテ自動蓄積</div>
+          <div class="monthly-feature-item"><span class="mf-check">✅</span> Googleクチコミ自動化</div>
+          <div class="monthly-feature-item"><span class="mf-check">✅</span> リピート促進メッセージ</div>
+          <div class="monthly-feature-item"><span class="mf-check">✅</span> Googleカレンダー連携</div>
+          <div class="monthly-feature-item"><span class="mf-check">✅</span> 解約後もデータ保持・即復元</div>
+        </div>
+        <p class="monthly-tagline">「競合の1/3の価格で、競合以上の機能を。」</p>
+        <a href="#start" class="btn-monthly-cta">今すぐ無料で始める →</a>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══ BEFORE / AFTER ═══════════════════════════════════════ -->
-<div class="ba-bg">
+<!-- ══ BEFORE/AFTER ══════════════════════════════════════════ -->
+<div class="ba-section">
   <div class="section-wrap">
-    <div class="fade-up" style="text-align:center; margin-bottom:52px;">
-      <div class="section-tag">Results</div>
-      <h2 class="section-title">導入するとこう変わる</h2>
+    <div class="fade-up" style="text-align:center; margin-bottom:56px;">
+      <div class="section-eyebrow" style="justify-content:center;">Before / After</div>
+      <h2 class="section-title">導入後の変化</h2>
     </div>
     <div class="ba-grid fade-up">
       <div class="ba-card ba-before">
-        <div class="ba-label">😓 Before</div>
+        <div class="ba-label">😰 Before</div>
         <div class="ba-item">
           <div class="ba-dot-bad"></div>
-          <div class="ba-item-text">電話対応に1日2時間、月50時間のロス</div>
+          <div class="ba-item-text">電話に出るために施術を中断</div>
         </div>
         <div class="ba-item">
           <div class="ba-dot-bad"></div>
-          <div class="ba-item-text">営業時間外の予約を毎月取りこぼし</div>
+          <div class="ba-item-text">営業時間外は予約取りこぼし</div>
         </div>
         <div class="ba-item">
           <div class="ba-dot-bad"></div>
-          <div class="ba-item-text">手書き・口頭管理でミスが発生</div>
+          <div class="ba-item-text">予約帳を手書きで管理</div>
         </div>
         <div class="ba-item">
           <div class="ba-dot-bad"></div>
-          <div class="ba-item-text">リピーター管理が追いつかない</div>
+          <div class="ba-item-text">経営数字が全く見えない</div>
         </div>
       </div>
       <div class="ba-arrow-wrap">
@@ -605,19 +1242,19 @@
         <div class="ba-label">✨ After</div>
         <div class="ba-item">
           <div class="ba-dot-good"></div>
-          <div class="ba-item-text">AIが24時間自動対応、月50時間を施術に集中</div>
+          <div class="ba-item-text">AIが24時間自動対応</div>
         </div>
         <div class="ba-item">
           <div class="ba-dot-good"></div>
-          <div class="ba-item-text">深夜・早朝の予約もすべて自動受付</div>
+          <div class="ba-item-text">深夜でも予約が入る</div>
         </div>
         <div class="ba-item">
           <div class="ba-dot-good"></div>
-          <div class="ba-item-text">ダッシュボードで予約を一元管理</div>
+          <div class="ba-item-text">売上・リピート率が一目で</div>
         </div>
         <div class="ba-item">
           <div class="ba-dot-good"></div>
-          <div class="ba-item-text">顧客カルテ自動蓄積でリピート促進</div>
+          <div class="ba-item-text">お客様データが自動で蓄積</div>
         </div>
       </div>
     </div>
@@ -625,104 +1262,109 @@
 </div>
 
 <!-- ══ FLOW ══════════════════════════════════════════════════ -->
-<div class="flow-bg">
+<div class="flow-section" id="flow">
   <div class="section-wrap" style="text-align:center;">
     <div class="fade-up">
-      <div class="section-tag">How it works</div>
-      <h2 class="section-title" style="margin-bottom:52px;">ご利用の流れ</h2>
+      <div class="section-eyebrow" style="justify-content:center;">How it works</div>
+      <h2 class="section-title" style="margin-bottom:0;">導入まで最短翌日</h2>
     </div>
     <div class="flow-steps fade-up">
       <div class="flow-step">
         <div class="flow-num">1</div>
-        <div class="flow-title">SNSのDMにてお問い合わせ</div>
-        <p class="flow-desc">まずはお気軽にDMでご相談ください。最短即日お返事いたします。</p>
+        <div class="flow-title">SNSのDMでお問い合わせ</div>
+        <p class="flow-desc">まずはお気軽にDMでご相談ください。</p>
       </div>
       <div class="flow-step">
         <div class="flow-num">2</div>
-        <div class="flow-title">ご希望のサービスをお申し込み</div>
-        <p class="flow-desc">LINEパック・Googleパック・Instagramパックなどご希望をお選びください。</p>
+        <div class="flow-title">ご希望サービスをお申し込み</div>
+        <p class="flow-desc">ご希望のプランをお選びいただきます。</p>
       </div>
       <div class="flow-step">
         <div class="flow-num">3</div>
-        <div class="flow-title">最短翌日から設定・納品</div>
-        <p class="flow-desc">必要情報をお送りいただくだけ。設定はすべて代行します。</p>
+        <div class="flow-title">最短翌日に設定・納品完了</div>
+        <p class="flow-desc">設定はすべて代行。確認するだけです。</p>
       </div>
       <div class="flow-step">
         <div class="flow-num">4</div>
-        <div class="flow-title">AI予約ボット7日間無料体験スタート</div>
-        <p class="flow-desc">設定完了後すぐにAIが起動。まず7日間無料でお試しいただけます。</p>
+        <div class="flow-title">7日間無料体験スタート</div>
+        <p class="flow-desc">AIボット即起動。まず無料で試せます。</p>
       </div>
     </div>
   </div>
 </div>
 
 <!-- ══ FAQ ═══════════════════════════════════════════════════ -->
-<div class="faq-bg">
+<div class="faq-section">
   <div class="section-wrap">
-    <div class="fade-up" style="text-align:center; margin-bottom:52px;">
-      <div class="section-tag">FAQ</div>
+    <div class="fade-up" style="text-align:center; margin-bottom:0;">
+      <div class="section-eyebrow" style="justify-content:center;">FAQ</div>
       <h2 class="section-title">よくあるご質問</h2>
     </div>
     <div class="faq-list fade-up">
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">
-          LINEの設定は難しくないですか？
+          LINEの設定は自分でやる必要がありますか？
           <span class="faq-icon">+</span>
         </button>
-        <div class="faq-a">全て代行いたします。お客様は店舗名・業種・LINE Channel情報をお送りいただくだけです。専門知識は一切不要です。</div>
+        <div class="faq-a">いいえ、全て代行いたします。必要な情報をお送りいただくだけで、設定から動作確認まで完全サポートします。</div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">
           解約したらデータはどうなりますか？
           <span class="faq-icon">+</span>
         </button>
-        <div class="faq-a">データは保持されます。解約後も予約データ・顧客カルテはそのまま保管され、再開するといつでも元通りになります。</div>
+        <div class="faq-a">データは削除されません。解約後も安全に保持され、再開するといつでも元通りに復元されます。</div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">
-          対応業種はどこですか？
+          対応している業種を教えてください。
           <span class="faq-icon">+</span>
         </button>
-        <div class="faq-a">美容室・整骨院・ネイルサロン・マッサージ・飲食店・歯科医院・ジム・ペットサロン・アイブロウサロン・ヨガ・鍼灸院など11業種以上に対応しています。</div>
+        <div class="faq-a">美容室・ネイルサロン・整骨院・マッサージ・鍼灸院・ペットサロン・飲食店など、予約が必要なあらゆる業種に対応しています。</div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">
-          サポートはありますか？
+          サポート体制はどうなっていますか？
           <span class="faq-icon">+</span>
         </button>
-        <div class="faq-a">LINEまたはSNSのDMにていつでもお問い合わせいただけます。設定後も安心してご利用いただけるよう、継続的にサポートいたします。</div>
+        <div class="faq-a">LINEまたはSNSのDMにて随時対応いたします。設定後も不明な点はいつでもご相談ください。</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          途中でプランを変更できますか？
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">はい、いつでも変更・解約が可能です。最低契約期間はありません。</div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- ══ CTA ═══════════════════════════════════════════════════ -->
-<div class="cta-bg" id="cta">
+<div class="cta-section" id="cta">
   <div class="cta-inner fade-up">
-    <h2 class="cta-title">まずは無料相談から</h2>
+    <h2 class="cta-title">まず、7日間試してみてください。</h2>
     <p class="cta-sub">
-      どのサービスが合っているか迷ったら、お気軽にDMでご相談ください。<br>
-      最短翌日からご対応いたします。
+      クレジットカード登録で7日間無料。いつでも解約できます。
     </p>
-    <button class="btn-cta-white" onclick="alert('SNSのDMリンクは準備中です。しばらくお待ちください。')">
-      💬 DMでお問い合わせ
-    </button>
+    <a href="#start" class="btn-cta-main">無料体験を始める →</a>
+    <p class="cta-reassure">初期費用¥0 &nbsp;·&nbsp; 解約手数料¥0 &nbsp;·&nbsp; データ永久保持</p>
   </div>
 </div>
 
 <!-- ══ REGISTRATION ═════════════════════════════════════════ -->
-<div class="register-bg" id="start">
+<div class="register-section" id="start">
   <div class="register-wrap">
-    <div class="register-header">
-      <div class="section-tag">Get Started</div>
+    <div class="register-header fade-up">
+      <div class="section-eyebrow" style="justify-content:center;">Get Started</div>
       <h2 class="section-title">今すぐ無料で始める</h2>
       <p style="font-size:15px; color:var(--text2); margin-top:12px; line-height:1.7;">
         以下の3ステップに従って、5分でAI予約ボットを起動できます。
       </p>
     </div>
 
-    <!-- Step 1: Google Login -->
-    <div class="reg-card" id="step1">
+    <!-- Step 1 -->
+    <div class="reg-card fade-up" id="step1">
       <div class="reg-card-head">
         <div class="reg-num">1</div>
         <div class="reg-title">Googleアカウントでログイン</div>
@@ -744,8 +1386,8 @@
       </div>
     </div>
 
-    <!-- Step 2: Shop Info -->
-    <div class="reg-card" id="step2" style="opacity:0.5; pointer-events:none;">
+    <!-- Step 2 -->
+    <div class="reg-card fade-up" id="step2" style="opacity:0.5; pointer-events:none;">
       <div class="reg-card-head">
         <div class="reg-num">2</div>
         <div class="reg-title">お店の情報を入力</div>
@@ -813,8 +1455,8 @@
       </div>
     </div>
 
-    <!-- Step 3: Payment -->
-    <div class="reg-card" id="step3" style="display:none;">
+    <!-- Step 3 -->
+    <div class="reg-card fade-up" id="step3" style="display:none;">
       <div class="reg-card-head">
         <div class="reg-num">3</div>
         <div class="reg-title">7日間無料体験開始</div>
@@ -848,6 +1490,7 @@
 
 <!-- ══ FOOTER ══════════════════════════════════════════════ -->
 <footer>
+  <div class="footer-logo">AI予約<em>Pro</em></div>
   <nav class="footer-nav">
     <a href="/">トップページ</a>
     <a href="/terms.html">利用規約</a>
@@ -855,10 +1498,69 @@
     <a href="/refund.html">返金ポリシー</a>
     <a href="/tokusho.html">特定商取引法に基づく表記</a>
   </nav>
-  <p class="footer-copy">&copy; 2026 LINE AI予約ボット（キム・テヒョン）</p>
+  <p class="footer-copy">&copy; 2026 AI予約Pro（キム・テヒョン）</p>
 </footer>
 
 <script>
+  /* ── Navbar scroll ── */
+  (function() {
+    var nav = document.getElementById('navbar');
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 40) { nav.classList.add('scrolled'); }
+      else { nav.classList.remove('scrolled'); }
+    }, { passive: true });
+  })();
+
+  /* ── Typing animation ── */
+  (function() {
+    var el = document.getElementById('heroTitle');
+    var text = '予約対応を、AIへ。';
+    var cursor = '<span class="typing-cursor"></span>';
+    var i = 0;
+    function type() {
+      if (i <= text.length) {
+        el.innerHTML = text.slice(0, i) + cursor;
+        i++;
+        setTimeout(type, i === 1 ? 400 : 95);
+      }
+    }
+    setTimeout(type, 600);
+  })();
+
+  /* ── Counter animation ── */
+  function animateCounter(el, target, duration, suffix) {
+    var start = 0;
+    var step = target / (duration / 16);
+    function tick() {
+      start = Math.min(start + step, target);
+      el.textContent = (suffix === 'price' ? start.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') : Math.round(start));
+      if (start < target) requestAnimationFrame(tick);
+    }
+    tick();
+  }
+  var countersStarted = false;
+  function startCounters() {
+    if (countersStarted) return;
+    countersStarted = true;
+    animateCounter(document.getElementById('ctr1'), 24, 1200, '');
+    animateCounter(document.getElementById('ctr2'), 2980, 1400, 'price');
+    animateCounter(document.getElementById('ctr3'), 0, 800, '');
+  }
+  if (window.IntersectionObserver) {
+    var ctrObs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) { if (e.isIntersecting) { startCounters(); ctrObs.disconnect(); } });
+    }, { threshold: 0.3 });
+    ctrObs.observe(document.querySelector('.hero-counters'));
+  } else { startCounters(); }
+
+  /* ── Service tabs ── */
+  function switchSvcTab(tab, btn) {
+    document.querySelectorAll('.svc-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('.svc-panel').forEach(function(p) { p.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('svc-' + tab).classList.add('active');
+  }
+
   /* ── パスワード表示切替 ── */
   function togglePw(inputId, btn) {
     var input = document.getElementById(inputId);
