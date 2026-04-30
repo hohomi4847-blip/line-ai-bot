@@ -95,6 +95,12 @@
       border-radius: 8px; color: #DC2626;
       font-size: 13px; font-weight: 600; text-align: center;
     }
+    #lockMsg {
+      display: none; margin-top: 14px; padding: 10px 14px;
+      background: #FFFBEB; border: 1px solid #FDE68A;
+      border-radius: 8px; color: #B45309;
+      font-size: 13px; font-weight: 600; text-align: center;
+    }
 
     /* ── HEADER ─────────────────────────────────────────── */
     .admin-header {
@@ -194,6 +200,8 @@
     .b-canceled { background: var(--bg); color: var(--text3); border: 1px solid var(--border); }
     .b-expired  { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; }
     .b-refunded { background: #F5F3FF; color: #7C3AED; border: 1px solid #DDD6FE; }
+    .b-dev      { background: #DBEAFE; color: #1D4ED8; border: 1px solid #BFDBFE; }
+    .dev-row td { background: #EFF6FF !important; }
 
     /* ── TOGGLE BUTTONS ─────────────────────────────────── */
     .toggle-btn {
@@ -259,6 +267,7 @@
     <input type="password" id="pwInput" class="login-input" placeholder="管理者パスワード">
     <button class="login-btn" id="loginBtn" onclick="doLogin()">ログイン</button>
     <div id="loginError">パスワードが正しくありません</div>
+    <div id="lockMsg"></div>
   </div>
 </div>
 
@@ -347,6 +356,8 @@ const PLAN_MAP = {
   refunded:  ['返金済み',   'b-refunded'],
 };
 
+const DEVELOPER_EMAIL = 'hohomi4847@gmail.com';
+
 let adminPw = '';
 let allRes   = [];
 let allShops = [];
@@ -362,21 +373,45 @@ function hdr(json) {
 
 // ─── 認証 ─────────────────────────────────────────────────
 async function doLogin() {
+  // ブルートフォース保護: 5回失敗 → 30分ロック
+  const lockUntil = parseInt(localStorage.getItem('admin_lock_until') || '0', 10);
+  if (Date.now() < lockUntil) {
+    const remaining = Math.ceil((lockUntil - Date.now()) / 60000);
+    const lockMsgEl = document.getElementById('lockMsg');
+    lockMsgEl.textContent = `ログイン試行回数が上限に達しました。${remaining}分後に再試行してください。`;
+    lockMsgEl.style.display = 'block';
+    return;
+  }
+
   const pw    = document.getElementById('pwInput').value;
   const btn   = document.getElementById('loginBtn');
   const errEl = document.getElementById('loginError');
   if (!pw) return;
 
   errEl.style.display = 'none';
+  document.getElementById('lockMsg').style.display = 'none';
   btn.disabled = true;
 
   try {
     const res = await fetch('/api/dashboard', { headers: { 'x-admin-password': pw } });
     if (res.status === 401) {
-      errEl.style.display = 'block';
+      const fails = parseInt(localStorage.getItem('admin_fail_count') || '0', 10) + 1;
+      if (fails >= 5) {
+        localStorage.setItem('admin_lock_until', String(Date.now() + 30 * 60 * 1000));
+        localStorage.setItem('admin_fail_count', '0');
+        document.getElementById('lockMsg').textContent = 'ログイン試行回数が上限に達しました。30分後に再試行してください。';
+        document.getElementById('lockMsg').style.display = 'block';
+        errEl.style.display = 'none';
+      } else {
+        localStorage.setItem('admin_fail_count', String(fails));
+        errEl.textContent = `パスワードが正しくありません（${fails}/5回）`;
+        errEl.style.display = 'block';
+      }
       document.getElementById('pwInput').value = '';
       return;
     }
+    localStorage.setItem('admin_fail_count', '0');
+    localStorage.removeItem('admin_lock_until');
     const data = await res.json();
     adminPw = pw;
     localStorage.setItem('admin_pw', pw);
@@ -405,6 +440,14 @@ async function init() {
   document.getElementById('pwInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') doLogin();
   });
+
+  // ロック状態の表示
+  const lockUntil = parseInt(localStorage.getItem('admin_lock_until') || '0', 10);
+  if (Date.now() < lockUntil) {
+    const remaining = Math.ceil((lockUntil - Date.now()) / 60000);
+    document.getElementById('lockMsg').textContent = `ログイン試行回数が上限に達しました。${remaining}分後に再試行してください。`;
+    document.getElementById('lockMsg').style.display = 'block';
+  }
 
   const saved = localStorage.getItem('admin_pw');
   if (!saved) return;
@@ -519,13 +562,27 @@ function renderShops() {
 
   const tbody = tbl.createTBody();
   slice.forEach(s => {
-    const tr = tbody.insertRow();
+    const tr    = tbody.insertRow();
+    const isDev = s.owner_email === DEVELOPER_EMAIL;
 
-    [s.shop_name || '-', s.business_type || '-', s.owner_email || '-'].forEach(v => {
+    if (isDev) tr.classList.add('dev-row');
+
+    // 店舗名 (開発者店舗はバッジ付き)
+    const nameTd = tr.insertCell();
+    nameTd.textContent = s.shop_name || '-';
+    if (isDev) {
+      const devBadge = document.createElement('span');
+      devBadge.className   = 'badge b-dev';
+      devBadge.textContent = '🔧 開発者';
+      devBadge.style.marginLeft = '6px';
+      nameTd.appendChild(devBadge);
+    }
+
+    [s.business_type || '-', s.owner_email || '-'].forEach(v => {
       tr.insertCell().textContent = v;
     });
 
-    // プラン状態バッジ (is_paid + plan_status を両方確認)
+    // プラン状態バッジ
     const planTd  = tr.insertCell();
     const [label, cls] = PLAN_MAP[s.plan_status] || [s.plan_status || '-', 'b-canceled'];
     const planBadge = document.createElement('span');
@@ -533,13 +590,20 @@ function renderShops() {
     planBadge.textContent = label;
     planTd.appendChild(planBadge);
 
-    // 活性化/停止ボタン
+    // 操作ボタン (開発者店舗は完全に操作不可)
     const actTd = tr.insertCell();
-    const btn   = document.createElement('button');
-    btn.className   = 'toggle-btn ' + (s.is_paid ? 'btn-deactivate' : 'btn-activate');
-    btn.textContent = s.is_paid ? '停止する' : '有効化する';
-    btn.addEventListener('click', () => toggleShop(s.id, !s.is_paid, btn));
-    actTd.appendChild(btn);
+    if (isDev) {
+      const noOp = document.createElement('span');
+      noOp.textContent = '開発者専用・操作不可';
+      noOp.style.cssText = 'font-size:12px; color:#1D4ED8; font-weight:600;';
+      actTd.appendChild(noOp);
+    } else {
+      const btn = document.createElement('button');
+      btn.className   = 'toggle-btn ' + (s.is_paid ? 'btn-deactivate' : 'btn-activate');
+      btn.textContent = s.is_paid ? '停止する' : '有効化する';
+      btn.addEventListener('click', () => toggleShop(s.id, !s.is_paid, btn, s.shop_name));
+      actTd.appendChild(btn);
+    }
 
     // 登録日
     const dtTd = tr.insertCell();
@@ -553,9 +617,10 @@ function renderShops() {
 }
 
 // ─── 店舗 活性化/停止 ─────────────────────────────────────
-async function toggleShop(shopId, activate, btn) {
-  const label = activate ? '有効化' : '停止';
-  if (!confirm(`この店舗を${label}しますか？`)) return;
+async function toggleShop(shopId, activate, btn, shopName) {
+  const label       = activate ? '有効化' : '停止';
+  const displayName = shopName || shopId;
+  if (!confirm(`「${displayName}」を${label}しますか？`)) return;
   btn.disabled = true;
 
   try {
@@ -566,6 +631,11 @@ async function toggleShop(shopId, activate, btn) {
     });
 
     if (res.status === 401) { doLogout(); return; }
+    if (res.status === 403) {
+      alert('この店舗は開発者保護のため操作できません。');
+      btn.disabled = false;
+      return;
+    }
 
     const data = await res.json();
     if (!data.success) {

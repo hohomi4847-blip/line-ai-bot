@@ -409,7 +409,7 @@ app.post('/paddle/webhook', async (req, res) => {
         console.warn('⚠️ shopId も email もなし — スキップ');
       } else {
         const trialEnd = new Date();
-        trialEnd.setDate(trialEnd.getDate() + 30);
+        trialEnd.setDate(trialEnd.getDate() + 7);
         const q = buildQuery('shops', {
           is_paid: true,
           plan_status: 'active',
@@ -478,6 +478,14 @@ app.post('/paddle/webhook', async (req, res) => {
 app.post('/api/admin/activate-shop', adminLimiter, adminAuth, async (req, res) => {
   const { shopId, activate } = req.body;
   try {
+    // 개발자 테스트 가게는 비활성화 불가 — 서버 이중 차단
+    if (!activate) {
+      const { data: shopCheck } = await supabase.from('shops')
+        .select('owner_email').eq('id', shopId).single();
+      if (shopCheck?.owner_email === 'hohomi4847@gmail.com') {
+        return res.status(403).json({ success: false, reason: 'dev_shop_protected' });
+      }
+    }
     await supabase.from('shops').update({
       is_paid: activate,
       plan_status: activate ? 'active' : 'suspended',
