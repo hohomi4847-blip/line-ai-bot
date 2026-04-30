@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LINE AI予約ボット - 24時間自動予約対応</title>
-  <meta name="description" content="AIを活用したLINE予約ボットで、24時間自動予約対応。美容室・飲食店・整骨院など11業種対応。月額¥2,980〜">
-  <meta property="og:title" content="LINE AI予約ボット - 24時間自動予約対応">
-  <meta property="og:description" content="AIを活用したLINE予約ボットで、24時間自動予約対応。月額¥2,980〜">
+  <title>LINE AI予約ボット - 予約対応、もうAIに任せませんか？</title>
+  <meta name="description" content="LINE・Google・Instagram、集客から予約まで全部おまかせ。AI予約ボット月額¥2,980〜。7日間無料体験。">
+  <meta property="og:title" content="LINE AI予約ボット - 予約対応、もうAIに任せませんか？">
+  <meta property="og:description" content="LINE・Google・Instagram、集客から予約まで全部おまかせ。AI予約ボット月額¥2,980〜。">
   <meta property="og:type" content="website">
   <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,6 +14,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
 
     :root {
       --green:        #06C755;
@@ -53,417 +54,236 @@
       display: flex; align-items: center; justify-content: space-between;
       height: 62px;
     }
-    .navbar-logo {
-      display: flex; align-items: center; gap: 10px;
-      text-decoration: none;
-    }
-    .logo-icon {
-      width: 36px; height: 36px; background: var(--green);
-      border-radius: 10px; display: flex; align-items: center;
-      justify-content: center; font-size: 18px; flex-shrink: 0;
-    }
-    .logo-text {
-      font-size: 15px; font-weight: 700; color: var(--text);
-      letter-spacing: -0.02em;
-    }
+    .navbar-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-icon { width: 36px; height: 36px; background: var(--green); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .logo-text { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
     .logo-text em { color: var(--green); font-style: normal; }
     .navbar-links { display: flex; align-items: center; gap: 4px; }
-    .nav-link {
-      color: var(--text2); text-decoration: none; font-size: 14px;
-      font-weight: 500; padding: 7px 12px; border-radius: 8px;
-      transition: background 0.15s, color 0.15s;
-    }
+    .nav-link { color: var(--text2); text-decoration: none; font-size: 14px; font-weight: 500; padding: 7px 12px; border-radius: 8px; transition: background 0.15s, color 0.15s; }
     .nav-link:hover { background: var(--bg); color: var(--text); }
-    .nav-cta {
-      background: var(--green); color: white; text-decoration: none;
-      font-size: 14px; font-weight: 600; padding: 9px 20px;
-      border-radius: 9px; margin-left: 8px;
-      transition: background 0.15s, box-shadow 0.15s;
-      box-shadow: 0 2px 8px rgba(6,199,85,0.3);
-    }
+    .nav-cta { background: var(--green); color: white; text-decoration: none; font-size: 14px; font-weight: 600; padding: 9px 20px; border-radius: 9px; margin-left: 8px; transition: background 0.15s, box-shadow 0.15s; box-shadow: 0 2px 8px rgba(6,199,85,0.3); }
     .nav-cta:hover { background: var(--green-d); box-shadow: 0 4px 14px rgba(6,199,85,0.4); }
-    .nav-mypage {
-      color: var(--text2); text-decoration: none; font-size: 14px;
-      font-weight: 500; padding: 7px 12px; border-radius: 8px;
-      transition: background 0.15s, color 0.15s; display: none;
-    }
+    .nav-mypage { color: var(--text2); text-decoration: none; font-size: 14px; font-weight: 500; padding: 7px 12px; border-radius: 8px; transition: background 0.15s, color 0.15s; display: none; }
     .nav-mypage:hover { background: var(--bg); color: var(--text); }
-    .nav-logout-btn {
-      background: none; border: 1.5px solid var(--border); color: var(--text2);
-      font-size: 13px; font-weight: 500; padding: 7px 14px; border-radius: 8px;
-      cursor: pointer; margin-left: 6px; transition: border-color 0.15s, color 0.15s;
-      display: none;
-    }
+    .nav-logout-btn { background: none; border: 1.5px solid var(--border); color: var(--text2); font-size: 13px; font-weight: 500; padding: 7px 14px; border-radius: 8px; cursor: pointer; margin-left: 6px; transition: border-color 0.15s, color 0.15s; display: none; }
     .nav-logout-btn:hover { border-color: #EF4444; color: #EF4444; }
 
     /* ── HERO ───────────────────────────────────────────── */
-    .hero {
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
-      padding: 90px 24px 80px;
-      text-align: center;
-    }
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--green-light); border: 1px solid var(--green-border);
-      color: #16a34a; font-size: 13px; font-weight: 600;
-      padding: 5px 15px; border-radius: 100px; margin-bottom: 30px;
-    }
-    .badge-dot {
-      width: 7px; height: 7px; background: var(--green);
-      border-radius: 50%; animation: pulse 2s ease-in-out infinite;
-    }
+    .hero { background: var(--white); border-bottom: 1px solid var(--border); padding: 90px 24px 80px; text-align: center; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--green-light); border: 1px solid var(--green-border); color: #16a34a; font-size: 13px; font-weight: 600; padding: 5px 15px; border-radius: 100px; margin-bottom: 30px; }
+    .badge-dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
-    .hero h1 {
-      font-size: clamp(30px, 5.5vw, 58px);
-      font-weight: 800; line-height: 1.12; letter-spacing: -0.04em;
-      color: var(--text); margin-bottom: 22px;
-    }
+    .hero h1 { font-size: clamp(30px, 5.5vw, 58px); font-weight: 800; line-height: 1.12; letter-spacing: -0.04em; color: var(--text); margin-bottom: 22px; }
     .hero h1 .hl { color: var(--green); }
-    .hero-sub {
-      font-size: clamp(15px, 1.8vw, 18px); color: var(--text2);
-      max-width: 540px; margin: 0 auto 44px; line-height: 1.75;
-    }
-    .hero-actions {
-      display: flex; align-items: center; justify-content: center;
-      gap: 14px; flex-wrap: wrap; margin-bottom: 16px;
-    }
-    .btn-hero {
-      display: inline-flex; align-items: center; gap: 9px;
-      background: var(--green); color: white;
-      font-size: 16px; font-weight: 700; padding: 16px 34px;
-      border-radius: 12px; text-decoration: none; border: none; cursor: pointer;
-      transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
-      box-shadow: 0 4px 18px rgba(6,199,85,0.38);
-    }
+    .hero-sub { font-size: clamp(15px, 1.8vw, 18px); color: var(--text2); max-width: 560px; margin: 0 auto 44px; line-height: 1.75; }
+    .hero-actions { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+    .btn-hero { display: inline-flex; align-items: center; gap: 9px; background: var(--green); color: white; font-size: 16px; font-weight: 700; padding: 16px 34px; border-radius: 12px; text-decoration: none; border: none; cursor: pointer; transition: background 0.15s, transform 0.12s, box-shadow 0.15s; box-shadow: 0 4px 18px rgba(6,199,85,0.38); }
     .btn-hero:hover { background: var(--green-d); box-shadow: 0 6px 24px rgba(6,199,85,0.48); transform: translateY(-1px); }
     .btn-hero:active { transform: none; }
-    .btn-outline-hero {
-      display: inline-flex; align-items: center; gap: 9px;
-      background: var(--white); color: var(--text);
-      font-size: 15px; font-weight: 600; padding: 15px 28px;
-      border-radius: 12px; text-decoration: none;
-      border: 1.5px solid var(--border);
-      transition: border-color 0.15s, background 0.15s;
-    }
+    .btn-outline-hero { display: inline-flex; align-items: center; gap: 9px; background: var(--white); color: var(--text); font-size: 15px; font-weight: 600; padding: 15px 28px; border-radius: 12px; text-decoration: none; border: 1.5px solid var(--border); transition: border-color 0.15s, background 0.15s; }
     .btn-outline-hero:hover { border-color: var(--green); background: var(--green-light); color: #16a34a; }
     .hero-note { font-size: 13px; color: var(--text3); margin-bottom: 56px; }
-    .hero-stats {
-      display: inline-flex; gap: 0; border: 1px solid var(--border);
-      border-radius: 16px; overflow: hidden; background: var(--white);
-      box-shadow: var(--shadow-sm);
-    }
-    .hero-stat {
-      padding: 20px 36px; border-right: 1px solid var(--border); text-align: center;
-    }
+    .hero-stats { display: inline-flex; gap: 0; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; background: var(--white); box-shadow: var(--shadow-sm); }
+    .hero-stat { padding: 20px 36px; border-right: 1px solid var(--border); text-align: center; }
     .hero-stat:last-child { border-right: none; }
-    .stat-num {
-      font-size: 26px; font-weight: 800; color: var(--text);
-      letter-spacing: -0.04em; line-height: 1;
-    }
+    .stat-num { font-size: 26px; font-weight: 800; color: var(--text); letter-spacing: -0.04em; line-height: 1; }
     .stat-num em { color: var(--green); font-style: normal; }
     .stat-lbl { font-size: 12px; color: var(--text3); margin-top: 5px; font-weight: 500; }
 
     /* ── SECTION COMMON ─────────────────────────────────── */
     .section-wrap { max-width: 1100px; margin: 0 auto; padding: 88px 24px; }
-    .section-tag {
-      display: inline-block; font-size: 12px; font-weight: 700;
-      color: var(--green); text-transform: uppercase; letter-spacing: 0.1em;
-      margin-bottom: 12px;
-    }
-    .section-title {
-      font-size: clamp(24px, 3.5vw, 38px); font-weight: 800;
-      letter-spacing: -0.035em; line-height: 1.18; margin-bottom: 14px;
-    }
-    .section-sub {
-      font-size: 16px; color: var(--text2); line-height: 1.72;
-      max-width: 500px; margin-bottom: 52px;
-    }
+    .section-tag { display: inline-block; font-size: 12px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+    .section-title { font-size: clamp(24px, 3.5vw, 38px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.18; margin-bottom: 14px; }
+    .section-sub { font-size: 16px; color: var(--text2); line-height: 1.72; max-width: 500px; margin-bottom: 52px; }
 
-    /* ── FEATURES ───────────────────────────────────────── */
-    .features-bg { background: var(--bg); border-bottom: 1px solid var(--border); }
-    .features-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
-    }
-    .feat-card {
-      background: var(--white); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 28px 24px;
-      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-    }
-    .feat-card:hover { border-color: var(--green-border); box-shadow: var(--shadow-md); transform: translateY(-2px); }
-    .feat-icon {
-      width: 48px; height: 48px; background: var(--green-light);
-      border-radius: 12px; display: flex; align-items: center;
-      justify-content: center; font-size: 24px; margin-bottom: 18px;
-    }
-    .feat-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
-    .feat-desc { font-size: 14px; color: var(--text2); line-height: 1.68; }
+    /* ── PAIN POINTS ────────────────────────────────────── */
+    .problems-bg { background: var(--bg); border-bottom: 1px solid var(--border); }
+    .problems-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .problem-card { display: flex; align-items: flex-start; gap: 14px; background: #FFF7ED; border: 1.5px solid #FED7AA; border-radius: var(--radius); padding: 22px 24px; transition: box-shadow 0.2s; }
+    .problem-card:hover { box-shadow: 0 4px 16px rgba(234,88,12,0.1); }
+    .problem-icon { font-size: 28px; flex-shrink: 0; line-height: 1.3; }
+    .problem-text { font-size: 15px; font-weight: 600; color: #9A3412; line-height: 1.55; margin-top: 2px; }
 
-    /* ── HOW IT WORKS ───────────────────────────────────── */
-    .how-bg {
-      background: var(--green-light);
-      border-top: 1px solid var(--green-border);
-      border-bottom: 1px solid var(--green-border);
-    }
-    .steps-row {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 40px; position: relative;
-    }
-    .steps-row::before {
-      content: ''; position: absolute;
-      top: 27px; left: calc(16.7% + 14px); right: calc(16.7% + 14px);
-      height: 2px; background: var(--green-border); z-index: 0;
-    }
-    .step-item { text-align: center; position: relative; z-index: 1; }
-    .step-num {
-      width: 54px; height: 54px; background: var(--green); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      color: white; font-size: 20px; font-weight: 800;
-      margin: 0 auto 18px;
-      box-shadow: 0 4px 16px rgba(6,199,85,0.38);
-    }
-    .step-title { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
-    .step-desc { font-size: 14px; color: var(--text2); line-height: 1.68; }
+    /* ── COMPARISON ─────────────────────────────────────── */
+    .compare-bg { background: var(--white); border-bottom: 1px solid var(--border); }
+    .compare-table-wrap { overflow-x: auto; border-radius: 16px; border: 1.5px solid var(--border); box-shadow: var(--shadow-sm); }
+    .compare-table { width: 100%; border-collapse: collapse; min-width: 580px; }
+    .compare-table th { padding: 16px 20px; font-size: 14px; font-weight: 700; background: #F9FAFB; border-bottom: 1.5px solid var(--border); }
+    .compare-table th:first-child { text-align: left; border-right: 1px solid var(--border); }
+    .compare-table th.our { background: var(--green); color: white; }
+    .compare-table td { padding: 13px 20px; font-size: 14px; text-align: center; border-bottom: 1px solid var(--border); background: var(--white); }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td:first-child { text-align: left; font-weight: 500; color: var(--text); border-right: 1px solid var(--border); }
+    .compare-table td.our { background: var(--green-light); font-weight: 600; }
+    .cmp-yes { color: #16a34a; font-size: 18px; font-weight: 700; }
+    .cmp-no { color: #D1D5DB; font-size: 18px; }
+    .cmp-price-theirs { color: var(--text2); font-weight: 700; font-size: 16px; }
+    .cmp-price-ours { color: var(--green); font-weight: 800; font-size: 18px; }
+    .compare-note { font-size: 12px; color: var(--text3); margin-top: 14px; }
 
-    /* ── INDUSTRIES ─────────────────────────────────────── */
-    .ind-bg { background: var(--white); border-top: 1px solid var(--border); }
-    .ind-grid { display: flex; flex-wrap: wrap; gap: 10px; }
-    .ind-chip {
-      background: var(--bg); border: 1.5px solid var(--border);
-      border-radius: 100px; padding: 10px 20px;
-      font-size: 14px; font-weight: 500; color: var(--text2);
-      transition: border-color 0.15s, background 0.15s, color 0.15s;
-    }
-    .ind-chip:hover { border-color: var(--green); background: var(--green-light); color: #16a34a; }
+    /* ── SERVICES ───────────────────────────────────────── */
+    .services-bg { background: var(--bg); border-bottom: 1px solid var(--border); }
+    .services-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .svc-card { background: var(--white); border: 1.5px solid var(--border); border-radius: 18px; padding: 32px; position: relative; transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
+    .svc-card:hover { border-color: var(--green-border); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .svc-card.featured { background: var(--green-light); border-color: var(--green); border-width: 2px; }
+    .svc-hot-badge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--green); color: white; font-size: 12px; font-weight: 700; padding: 4px 18px; border-radius: 100px; white-space: nowrap; box-shadow: 0 4px 12px rgba(6,199,85,0.4); }
+    .svc-icon { font-size: 36px; margin-bottom: 12px; display: block; }
+    .svc-name { font-size: 17px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+    .svc-subtitle { font-size: 13px; color: var(--text3); margin-bottom: 16px; font-weight: 500; }
+    .svc-features { list-style: none; margin-bottom: 20px; }
+    .svc-features li { display: flex; align-items: flex-start; gap: 8px; font-size: 13.5px; color: var(--text2); padding: 4px 0; line-height: 1.55; }
+    .svc-features li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+    .svc-price-area { margin-bottom: 20px; border-top: 1px solid var(--border); padding-top: 16px; }
+    .svc-card.featured .svc-price-area { border-color: var(--green-border); }
+    .svc-original { font-size: 12px; color: var(--text3); text-decoration: line-through; margin-bottom: 3px; }
+    .svc-price-main { font-size: 26px; font-weight: 800; color: var(--text); letter-spacing: -0.03em; }
+    .svc-price-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+    .btn-dm { display: block; width: 100%; padding: 13px 20px; background: var(--text); color: white; text-align: center; font-size: 14px; font-weight: 700; border-radius: 10px; text-decoration: none; transition: background 0.15s, transform 0.12s, box-shadow 0.15s; }
+    .btn-dm:hover { background: #1F2937; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .svc-card.featured .btn-dm { background: var(--green); box-shadow: 0 4px 14px rgba(6,199,85,0.3); }
+    .svc-card.featured .btn-dm:hover { background: var(--green-d); box-shadow: 0 6px 20px rgba(6,199,85,0.4); }
 
-    /* ── PRICING ────────────────────────────────────────── */
-    .pricing-bg { background: var(--bg); border-top: 1px solid var(--border); }
+    /* ── AI BOT PRICING ─────────────────────────────────── */
+    .pricing-bg { background: var(--bg); border-bottom: 1px solid var(--border); }
     .pricing-center { display: flex; justify-content: center; }
-    .pricing-card {
-      background: var(--white); border: 1.5px solid var(--border);
-      border-radius: 20px; padding: 44px 42px;
-      width: 100%; max-width: 480px;
-      box-shadow: var(--shadow-lg); position: relative; overflow: hidden;
-    }
-    .pricing-card::before {
-      content: ''; position: absolute;
-      top: 0; left: 0; right: 0; height: 4px; background: var(--green);
-    }
-    .pricing-badge {
-      display: inline-flex; align-items: center; gap: 7px;
-      background: var(--green-light); color: #16a34a;
-      font-size: 12px; font-weight: 700; padding: 5px 13px;
-      border-radius: 6px; margin-bottom: 22px; letter-spacing: 0.02em;
-    }
-    .pricing-price {
-      font-size: 54px; font-weight: 800; color: var(--text);
-      letter-spacing: -0.05em; line-height: 1;
-    }
+    .pricing-card { background: var(--white); border: 1.5px solid var(--border); border-radius: 20px; padding: 44px 42px; width: 100%; max-width: 520px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden; }
+    .pricing-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--green); }
+    .pricing-badge { display: inline-flex; align-items: center; gap: 7px; background: var(--green-light); color: #16a34a; font-size: 12px; font-weight: 700; padding: 5px 13px; border-radius: 6px; margin-bottom: 22px; letter-spacing: 0.02em; }
+    .pricing-price { font-size: 54px; font-weight: 800; color: var(--text); letter-spacing: -0.05em; line-height: 1; }
     .price-unit { font-size: 18px; font-weight: 500; color: var(--text2); }
     .pricing-note { font-size: 14px; color: var(--text3); margin-top: 7px; margin-bottom: 28px; }
     .pricing-divider { height: 1px; background: var(--border); margin: 24px 0; }
     .pricing-features { list-style: none; margin-bottom: 34px; }
-    .pricing-features li {
-      display: flex; align-items: flex-start; gap: 10px;
-      font-size: 15px; color: var(--text2); padding: 7px 0;
-    }
-    .pricing-features li::before {
-      content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0;
-    }
-    .pricing-cta {
-      display: flex; align-items: center; justify-content: center; gap: 9px;
-      width: 100%; padding: 16px; background: var(--green); color: white;
-      font-size: 16px; font-weight: 700; border: none; border-radius: 12px;
-      text-decoration: none; cursor: pointer;
-      transition: background 0.15s, box-shadow 0.15s;
-      box-shadow: 0 4px 16px rgba(6,199,85,0.32);
-    }
+    .pricing-features li { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; color: var(--text2); padding: 7px 0; }
+    .pricing-features li .pf-icon { color: var(--green); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .pricing-cta { display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; padding: 16px; background: var(--green); color: white; font-size: 16px; font-weight: 700; border: none; border-radius: 12px; text-decoration: none; cursor: pointer; transition: background 0.15s, box-shadow 0.15s; box-shadow: 0 4px 16px rgba(6,199,85,0.32); }
     .pricing-cta:hover { background: var(--green-d); box-shadow: 0 6px 22px rgba(6,199,85,0.42); }
-    .pricing-trial {
-      text-align: center; font-size: 13px; color: var(--text3); margin-top: 14px;
-    }
+    .pricing-trial { text-align: center; font-size: 13px; color: var(--text3); margin-top: 14px; }
+    .pricing-cancel-note { margin-top: 16px; background: var(--green-light); border: 1px solid var(--green-border); border-radius: 9px; padding: 12px 16px; font-size: 13px; color: #16a34a; line-height: 1.6; text-align: center; }
+
+    /* ── BEFORE / AFTER ─────────────────────────────────── */
+    .ba-bg { background: var(--white); border-bottom: 1px solid var(--border); }
+    .ba-grid { display: grid; grid-template-columns: 1fr 60px 1fr; gap: 24px; align-items: center; }
+    .ba-card { border-radius: var(--radius); padding: 28px 28px; }
+    .ba-before { background: #FFF7ED; border: 1.5px solid #FED7AA; }
+    .ba-after  { background: var(--green-light); border: 1.5px solid var(--green-border); }
+    .ba-label { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 16px; display: flex; align-items: center; gap: 6px; }
+    .ba-before .ba-label { color: #EA580C; }
+    .ba-after  .ba-label { color: var(--green-d); }
+    .ba-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 11px; }
+    .ba-item:last-child { margin-bottom: 0; }
+    .ba-dot-bad  { width: 8px; height: 8px; background: #EA580C; border-radius: 50%; flex-shrink: 0; margin-top: 7px; }
+    .ba-dot-good { width: 8px; height: 8px; background: var(--green); border-radius: 50%; flex-shrink: 0; margin-top: 7px; }
+    .ba-item-text { font-size: 14px; color: var(--text); line-height: 1.6; font-weight: 500; }
+    .ba-arrow-wrap { display: flex; align-items: center; justify-content: center; }
+    .ba-arrow { font-size: 30px; color: var(--green); line-height: 1; }
+
+    /* ── FLOW ───────────────────────────────────────────── */
+    .flow-bg { background: var(--green-light); border-top: 1px solid var(--green-border); border-bottom: 1px solid var(--green-border); }
+    .flow-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; position: relative; }
+    .flow-steps::before { content: ''; position: absolute; top: 27px; left: calc(12.5% + 14px); right: calc(12.5% + 14px); height: 2px; background: var(--green-border); z-index: 0; }
+    .flow-step { text-align: center; position: relative; z-index: 1; }
+    .flow-num { width: 54px; height: 54px; background: var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; font-weight: 800; margin: 0 auto 18px; box-shadow: 0 4px 16px rgba(6,199,85,0.38); }
+    .flow-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .flow-desc { font-size: 13px; color: var(--text2); line-height: 1.65; }
+
+    /* ── FAQ ────────────────────────────────────────────── */
+    .faq-bg { background: var(--bg); border-bottom: 1px solid var(--border); }
+    .faq-list { max-width: 720px; margin: 0 auto; }
+    .faq-item { border: 1.5px solid var(--border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; background: var(--white); transition: border-color 0.2s; }
+    .faq-item:hover, .faq-item.open { border-color: var(--green-border); }
+    .faq-q { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 20px 22px; cursor: pointer; font-size: 15px; font-weight: 600; color: var(--text); background: none; border: none; width: 100%; text-align: left; font-family: inherit; }
+    .faq-q:hover { background: var(--green-light); }
+    .faq-icon { width: 24px; height: 24px; background: var(--green-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--green); font-size: 18px; flex-shrink: 0; transition: transform 0.25s, background 0.2s, color 0.2s; line-height: 1; font-style: normal; }
+    .faq-item.open .faq-icon { transform: rotate(45deg); background: var(--green); color: white; }
+    .faq-a { display: none; padding: 0 22px 20px; font-size: 14px; color: var(--text2); line-height: 1.8; }
+    .faq-item.open .faq-a { display: block; }
+
+    /* ── CTA ────────────────────────────────────────────── */
+    .cta-bg { background: linear-gradient(135deg, #06C755 0%, #04923E 100%); }
+    .cta-inner { max-width: 640px; margin: 0 auto; padding: 88px 24px; text-align: center; }
+    .cta-title { font-size: clamp(28px, 4.5vw, 46px); font-weight: 800; color: white; letter-spacing: -0.04em; line-height: 1.15; margin-bottom: 18px; }
+    .cta-sub { font-size: 17px; color: rgba(255,255,255,0.88); margin-bottom: 44px; line-height: 1.65; }
+    .btn-cta-white { display: inline-flex; align-items: center; gap: 9px; background: white; color: var(--green); font-size: 16px; font-weight: 800; padding: 17px 44px; border-radius: 12px; text-decoration: none; border: none; cursor: pointer; transition: transform 0.12s, box-shadow 0.15s; box-shadow: 0 4px 20px rgba(0,0,0,0.14); font-family: inherit; }
+    .btn-cta-white:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.2); }
 
     /* ── REGISTER SECTION ───────────────────────────────── */
-    .register-bg {
-      background: var(--bg); border-top: 1px solid var(--border);
-    }
+    .register-bg { background: var(--bg); border-top: 1px solid var(--border); }
     .register-wrap { max-width: 620px; margin: 0 auto; padding: 88px 24px; }
     .register-header { text-align: center; margin-bottom: 48px; }
-
-    .reg-card {
-      background: var(--white); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 32px;
-      margin-bottom: 14px; box-shadow: var(--shadow-sm);
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
+    .reg-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; margin-bottom: 14px; box-shadow: var(--shadow-sm); transition: border-color 0.2s, box-shadow 0.2s; }
     .reg-card:focus-within { border-color: var(--green-border); box-shadow: 0 0 0 3px rgba(6,199,85,0.07); }
-    .reg-card-head {
-      display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
-    }
-    .reg-num {
-      width: 34px; height: 34px; background: var(--green); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      color: white; font-size: 14px; font-weight: 700; flex-shrink: 0;
-    }
+    .reg-card-head { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+    .reg-num { width: 34px; height: 34px; background: var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: 700; flex-shrink: 0; }
     .reg-title { font-size: 17px; font-weight: 700; color: var(--text); }
-
-    /* Google button */
-    .btn-google {
-      display: flex; align-items: center; justify-content: center; gap: 12px;
-      width: 100%; padding: 14px 20px;
-      background: var(--white); border: 1.5px solid var(--border);
-      border-radius: 10px; font-size: 15px; font-weight: 600; color: var(--text);
-      text-decoration: none; transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
-    }
+    .btn-google { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; padding: 14px 20px; background: var(--white); border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; font-weight: 600; color: var(--text); text-decoration: none; transition: border-color 0.15s, box-shadow 0.15s, background 0.15s; }
     .btn-google:hover { border-color: #4285F4; background: #F8F9FF; box-shadow: 0 2px 10px rgba(66,133,244,0.14); }
-    .user-info-box {
-      background: var(--green-light); border: 1.5px solid var(--green-border);
-      border-radius: 10px; padding: 13px 18px;
-      display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    }
+    .user-info-box { background: var(--green-light); border: 1.5px solid var(--green-border); border-radius: 10px; padding: 13px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .user-info-email { font-size: 14px; color: #16a34a; font-weight: 600; word-break: break-all; }
     .logout-link { font-size: 13px; color: var(--text3); text-decoration: none; white-space: nowrap; flex-shrink: 0; }
     .logout-link:hover { color: var(--text); }
-
-    /* Form */
     .form-group { margin-bottom: 18px; }
-    .form-group label {
-      display: block; font-size: 13px; font-weight: 600;
-      color: var(--text2); margin-bottom: 7px;
-    }
-    .form-group input, .form-group select {
-      width: 100%; padding: 11px 14px;
-      border: 1.5px solid var(--border); border-radius: 9px;
-      font-size: 15px; color: var(--text); background: var(--white);
-      font-family: inherit; transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    .form-group input:focus, .form-group select:focus {
-      outline: none; border-color: var(--green);
-      box-shadow: 0 0 0 3px rgba(6,199,85,0.1);
-    }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 7px; }
+    .form-group input, .form-group select { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 9px; font-size: 15px; color: var(--text); background: var(--white); font-family: inherit; transition: border-color 0.15s, box-shadow 0.15s; }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(6,199,85,0.1); }
     .form-group input::placeholder { color: var(--text3); }
     .form-hint { font-size: 12px; color: var(--text3); margin-top: 5px; line-height: 1.5; }
-
-    .error-msg {
-      display: none; color: #DC2626; font-size: 13px;
-      background: #FEF2F2; border: 1px solid #FCA5A5;
-      padding: 9px 13px; border-radius: 8px; margin-top: 12px;
-    }
-
-    .btn-reg {
-      width: 100%; padding: 15px 20px; background: var(--green); color: white;
-      border: none; border-radius: 10px;
-      font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit;
-      transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
-      margin-top: 6px;
-      box-shadow: 0 4px 14px rgba(6,199,85,0.3);
-    }
-    .btn-reg:hover:not(:disabled) {
-      background: var(--green-d);
-      box-shadow: 0 6px 20px rgba(6,199,85,0.42);
-      transform: translateY(-1px);
-    }
+    .error-msg { display: none; color: #DC2626; font-size: 13px; background: #FEF2F2; border: 1px solid #FCA5A5; padding: 9px 13px; border-radius: 8px; margin-top: 12px; }
+    .btn-reg { width: 100%; padding: 15px 20px; background: var(--green); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background 0.15s, transform 0.12s, box-shadow 0.15s; margin-top: 6px; box-shadow: 0 4px 14px rgba(6,199,85,0.3); }
+    .btn-reg:hover:not(:disabled) { background: var(--green-d); box-shadow: 0 6px 20px rgba(6,199,85,0.42); transform: translateY(-1px); }
     .btn-reg:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; box-shadow: none; }
-
-    /* Step 3 */
-    .trial-box {
-      background: var(--green-light); border: 1.5px solid var(--green-border);
-      border-radius: 10px; padding: 16px 18px; margin-bottom: 22px;
-    }
+    .trial-box { background: var(--green-light); border: 1.5px solid var(--green-border); border-radius: 10px; padding: 16px 18px; margin-bottom: 22px; }
     .trial-box-title { font-size: 14px; font-weight: 700; color: #16a34a; margin-bottom: 4px; }
     .trial-box-text { font-size: 13px; color: #16a34a; line-height: 1.6; }
-
-    /* Success box — display toggled by JS via style.display */
     .success-outer { margin-top: 18px; }
-    .success-inner {
-      background: var(--green-light); border: 1.5px solid var(--green-border);
-      border-radius: 12px; padding: 30px 24px; text-align: center;
-    }
+    .success-inner { background: var(--green-light); border: 1.5px solid var(--green-border); border-radius: 12px; padding: 30px 24px; text-align: center; }
     .success-icon { font-size: 52px; margin-bottom: 14px; }
-    .success-title {
-      font-size: 22px; font-weight: 800; color: #16a34a;
-      margin-bottom: 8px; letter-spacing: -0.03em;
-    }
+    .success-title { font-size: 22px; font-weight: 800; color: #16a34a; margin-bottom: 8px; letter-spacing: -0.03em; }
     .success-body { font-size: 15px; color: #16a34a; margin-bottom: 22px; line-height: 1.65; }
-    .webhook-card {
-      background: var(--white); border: 1.5px solid var(--green-border);
-      border-radius: 10px; padding: 16px; text-align: left;
-    }
-    .webhook-label {
-      font-size: 11px; font-weight: 700; color: var(--text2);
-      text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;
-    }
-    .webhook-url-box {
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 7px; padding: 10px 13px;
-    }
-    .webhook-url-box code {
-      font-size: 12px; color: var(--text); word-break: break-all;
-      font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
-    }
-
-    /* ── PASSWORD TOGGLE ───────────────────────────────── */
+    .webhook-card { background: var(--white); border: 1.5px solid var(--green-border); border-radius: 10px; padding: 16px; text-align: left; }
+    .webhook-label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .webhook-url-box { background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 10px 13px; }
+    .webhook-url-box code { font-size: 12px; color: var(--text); word-break: break-all; font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace; }
     .pw-wrap { position: relative; width: 100%; }
     .pw-wrap input { padding-right: 46px !important; }
-    .pw-toggle {
-      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-      background: none; border: none; cursor: pointer;
-      padding: 5px; color: var(--text3); line-height: 0;
-      transition: color 0.15s; border-radius: 5px; flex-shrink: 0;
-    }
+    .pw-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 5px; color: var(--text3); line-height: 0; transition: color 0.15s; border-radius: 5px; flex-shrink: 0; }
     .pw-toggle:hover { color: var(--text2); }
     .pw-toggle:focus { outline: 2px solid var(--green); outline-offset: 2px; }
+    .security-note { font-size: 11px; color: var(--text3); margin-top: 5px; line-height: 1.5; }
+    .security-badge-row { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 18px; margin-top: 16px; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 9px; }
+    .security-badge-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text3); font-weight: 500; white-space: nowrap; }
 
-    /* ── SECURITY NOTE ──────────────────────────────────── */
-    .security-note {
-      font-size: 11px; color: var(--text3);
-      margin-top: 5px; line-height: 1.5;
-    }
-
-    /* ── SECURITY BADGE ─────────────────────────────────── */
-    .security-badge-row {
-      display: flex; align-items: center; justify-content: center;
-      flex-wrap: wrap; gap: 6px 18px;
-      margin-top: 16px; padding: 10px 14px;
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 9px;
-    }
-    .security-badge-item {
-      display: flex; align-items: center; gap: 5px;
-      font-size: 11px; color: var(--text3); font-weight: 500;
-      white-space: nowrap;
-    }
+    /* ── FADE ANIMATION ─────────────────────────────────── */
+    .fade-up { opacity: 0; transform: translateY(28px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    .fade-up.visible { opacity: 1; transform: none; }
 
     /* ── FOOTER ─────────────────────────────────────────── */
-    footer {
-      background: #111827; color: #9CA3AF;
-      padding: 42px 24px; text-align: center;
-    }
-    .footer-nav {
-      display: flex; flex-wrap: wrap; justify-content: center;
-      gap: 8px 24px; margin-bottom: 20px;
-    }
-    .footer-nav a {
-      color: #6B7280; text-decoration: none; font-size: 13px;
-      transition: color 0.15s;
-    }
+    footer { background: #111827; color: #9CA3AF; padding: 42px 24px; text-align: center; }
+    .footer-nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 24px; margin-bottom: 20px; }
+    .footer-nav a { color: #6B7280; text-decoration: none; font-size: 13px; transition: color 0.15s; }
     .footer-nav a:hover { color: var(--green); }
     .footer-copy { font-size: 12px; color: #4B5563; }
 
     /* ── RESPONSIVE ─────────────────────────────────────── */
     @media (max-width: 900px) {
-      .features-grid { grid-template-columns: repeat(2, 1fr); }
-      .steps-row { grid-template-columns: 1fr; gap: 24px; }
-      .steps-row::before { display: none; }
+      .services-grid { grid-template-columns: 1fr; max-width: 520px; margin: 0 auto; }
+      .problems-grid { grid-template-columns: 1fr; }
+      .ba-grid { grid-template-columns: 1fr; }
+      .ba-arrow-wrap { transform: rotate(90deg); }
+      .flow-steps { grid-template-columns: repeat(2, 1fr); }
+      .flow-steps::before { display: none; }
       .nav-link { display: none; }
     }
     @media (max-width: 600px) {
-      .features-grid { grid-template-columns: 1fr; }
       .hero { padding: 60px 20px 52px; }
       .hero-stats { flex-direction: column; border: none; background: transparent; box-shadow: none; gap: 8px; }
       .hero-stat { border: 1px solid var(--border); border-radius: 12px; padding: 16px 24px; border-right: 1px solid var(--border) !important; }
       .pricing-card { padding: 32px 22px; }
       .reg-card { padding: 22px 18px; }
+      .flow-steps { grid-template-columns: 1fr; }
+      .section-wrap { padding: 60px 20px; }
+      .cta-inner { padding: 64px 20px; }
     }
   </style>
 </head>
@@ -477,7 +297,8 @@
       <span class="logo-text">LINE <em>AI予約</em>ボット</span>
     </a>
     <div class="navbar-links">
-      <a href="#features" class="nav-link">機能</a>
+      <a href="#services" class="nav-link">サービス</a>
+      <a href="#comparison" class="nav-link">比較</a>
       <a href="#pricing" class="nav-link">料金</a>
       <a href="/shop-dashboard.html" class="nav-link">ダッシュボード</a>
       <a href="#start" id="navCta" class="nav-cta">無料で始める</a>
@@ -493,14 +314,14 @@
     <span class="badge-dot"></span>
     7日間無料体験実施中
   </div>
-  <h1>あなたのお店に、<br><span class="hl">AIが予約を取ってくれる</span></h1>
+  <h1>予約対応、<br><span class="hl">もうAIに任せませんか？</span></h1>
   <p class="hero-sub">
-    LINEを通じて24時間・365日、予約を自動受付。<br>
-    美容室・飲食店など11業種対応。設定5分で即日スタート。
+    LINE・Google・Instagram、集客から予約まで全部おまかせ。<br>
+    24時間・365日、あなたのお店に代わって自動対応します。
   </p>
   <div class="hero-actions">
     <a href="#start" class="btn-hero">7日間無料で試す →</a>
-    <a href="/shop-dashboard.html" class="btn-outline-hero">ダッシュボードへ</a>
+    <a href="#services" class="btn-outline-hero">サービスを見る</a>
   </div>
   <p class="hero-note">クレジットカード不要 &middot; いつでも解約可能 &middot; 設定5分</p>
   <div class="hero-stats">
@@ -513,136 +334,383 @@
       <div class="stat-lbl">対応業種</div>
     </div>
     <div class="hero-stat">
-      <div class="stat-num">5<em>分</em></div>
-      <div class="stat-lbl">設定時間</div>
+      <div class="stat-num">¥<em>2,980</em></div>
+      <div class="stat-lbl">AI月額〜</div>
     </div>
     <div class="hero-stat">
-      <div class="stat-num">¥2,980</div>
-      <div class="stat-lbl">月額〜</div>
+      <div class="stat-num">7<em>日</em></div>
+      <div class="stat-lbl">無料体験</div>
     </div>
   </div>
 </section>
 
-<!-- ══ FEATURES ════════════════════════════════════════════ -->
-<div class="features-bg" id="features">
+<!-- ══ PAIN POINTS ══════════════════════════════════════════ -->
+<div class="problems-bg">
   <div class="section-wrap">
-    <div class="section-tag">Features</div>
-    <h2 class="section-title">面倒な予約管理を、<br>AIに任せましょう</h2>
-    <p class="section-sub">受電対応・予約調整・リマインド送信まで、すべて自動化。</p>
-    <div class="features-grid">
-      <div class="feat-card">
-        <div class="feat-icon">🤖</div>
-        <div class="feat-title">AI自動応答</div>
-        <p class="feat-desc">Claude AIが自然な会話で予約を受付。空き確認から予約確定まですべて自動で対応します。</p>
+    <div class="fade-up">
+      <div class="section-tag">Problems</div>
+      <h2 class="section-title">こんなお悩みありませんか？</h2>
+    </div>
+    <div class="problems-grid fade-up">
+      <div class="problem-card">
+        <div class="problem-icon">📞</div>
+        <div class="problem-text">電話対応に追われて施術に集中できない</div>
       </div>
-      <div class="feat-card">
-        <div class="feat-icon">🕐</div>
-        <div class="feat-title">24時間対応</div>
-        <p class="feat-desc">深夜・早朝・休日問わず予約を受け付け。機会損失ゼロに。スタッフの負担も大幅軽減。</p>
+      <div class="problem-card">
+        <div class="problem-icon">😔</div>
+        <div class="problem-text">営業時間外の予約を取りこぼしている</div>
       </div>
-      <div class="feat-card">
-        <div class="feat-icon">📱</div>
-        <div class="feat-title">LINE公式連携</div>
-        <p class="feat-desc">お客様が使い慣れたLINEで予約完結。アプリ不要で開始率・予約率が大幅アップ。</p>
+      <div class="problem-card">
+        <div class="problem-icon">😰</div>
+        <div class="problem-text">SNSやGoogleの設定がわからない</div>
       </div>
-      <div class="feat-card">
-        <div class="feat-icon">📅</div>
-        <div class="feat-title">カレンダー連携</div>
-        <p class="feat-desc">GoogleカレンダーiCal同期に対応。予約はすべてカレンダーに自動反映されます。</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon">🔔</div>
-        <div class="feat-title">リマインド自動送信</div>
-        <p class="feat-desc">予約前日にLINEで自動リマインド。ノーショー（無断キャンセル）を大幅に削減。</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon">⚙️</div>
-        <div class="feat-title">かんたん設定</div>
-        <p class="feat-desc">専門知識不要。LINEのChannel情報を入力するだけで、最短5分でボットが起動します。</p>
+      <div class="problem-card">
+        <div class="problem-icon">📋</div>
+        <div class="problem-text">予約管理が手作業で大変・ミスが怖い</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══ HOW IT WORKS ════════════════════════════════════════ -->
-<div class="how-bg">
-  <div class="section-wrap" style="text-align:center;">
-    <div class="section-tag">How it works</div>
-    <h2 class="section-title" style="margin-bottom:52px;">かんたん3ステップで開始</h2>
-    <div class="steps-row">
-      <div class="step-item">
-        <div class="step-num">1</div>
-        <div class="step-title">Googleでログイン</div>
-        <p class="step-desc">Googleアカウントで安全に認証。新規アカウント作成は不要です。</p>
-      </div>
-      <div class="step-item">
-        <div class="step-num">2</div>
-        <div class="step-title">店舗情報を入力</div>
-        <p class="step-desc">店舗名・業種・LINE Channel情報を入力するだけ。5分で完了します。</p>
-      </div>
-      <div class="step-item">
-        <div class="step-num">3</div>
-        <div class="step-title">AIボット自動起動</div>
-        <p class="step-desc">設定完了後すぐにAIが起動。LINEに届く予約メッセージに即座に対応開始。</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ INDUSTRIES ══════════════════════════════════════════ -->
-<div class="ind-bg">
+<!-- ══ COMPARISON ═══════════════════════════════════════════ -->
+<div class="compare-bg" id="comparison">
   <div class="section-wrap">
-    <div class="section-tag">Industries</div>
-    <h2 class="section-title">11業種に対応</h2>
-    <p class="section-sub">あらゆる業種の予約フローに最適化された自動応答を提供します。</p>
-    <div class="ind-grid">
-      <span class="ind-chip">💇 美容室</span>
-      <span class="ind-chip">🍽️ レストラン・飲食店</span>
-      <span class="ind-chip">🦴 整骨院</span>
-      <span class="ind-chip">💅 ネイルサロン</span>
-      <span class="ind-chip">💆 マッサージ・リラクゼーション</span>
-      <span class="ind-chip">🦷 歯科医院</span>
-      <span class="ind-chip">💪 ジム・フィットネス</span>
-      <span class="ind-chip">🐾 ペットサロン</span>
-      <span class="ind-chip">👁️ アイブロウ・まつ毛サロン</span>
-      <span class="ind-chip">🧘 ヨガ・ピラティス</span>
-      <span class="ind-chip">🪡 鍼灸院</span>
+    <div class="fade-up">
+      <div class="section-tag">Comparison</div>
+      <h2 class="section-title">他社サービスとの比較</h2>
+      <p class="section-sub">同価格帯の他サービスと比べて、圧倒的な機能を提供しています。</p>
+    </div>
+    <div class="compare-table-wrap fade-up">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>機能</th>
+            <th>PecoChat</th>
+            <th>RESERVA</th>
+            <th class="our">当サービス</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>月額料金</td>
+            <td><span class="cmp-price-theirs">¥9,800</span></td>
+            <td><span class="cmp-price-theirs">¥5,500</span></td>
+            <td class="our"><span class="cmp-price-ours">¥2,980</span></td>
+          </tr>
+          <tr>
+            <td>AI自然言語会話</td>
+            <td><span class="cmp-yes">✅</span></td>
+            <td><span class="cmp-no">❌</span></td>
+            <td class="our"><span class="cmp-yes">✅</span></td>
+          </tr>
+          <tr>
+            <td>LINE予約完結</td>
+            <td><span class="cmp-yes">✅</span></td>
+            <td><span class="cmp-no">❌</span></td>
+            <td class="our"><span class="cmp-yes">✅</span></td>
+          </tr>
+          <tr>
+            <td>取消・変更LINE完結</td>
+            <td><span class="cmp-no">❌</span></td>
+            <td><span class="cmp-no">❌</span></td>
+            <td class="our"><span class="cmp-yes">✅</span></td>
+          </tr>
+          <tr>
+            <td>経営分析ダッシュボード</td>
+            <td><span class="cmp-no">❌</span></td>
+            <td><span class="cmp-no">❌</span></td>
+            <td class="our"><span class="cmp-yes">✅</span></td>
+          </tr>
+          <tr>
+            <td>顧客カルテ自動蓄積</td>
+            <td><span class="cmp-no">❌</span></td>
+            <td><span class="cmp-no">❌</span></td>
+            <td class="our"><span class="cmp-yes">✅</span></td>
+          </tr>
+          <tr>
+            <td>Googleクチコミ自動化</td>
+            <td><span class="cmp-no">❌</span></td>
+            <td><span class="cmp-no">❌</span></td>
+            <td class="our"><span class="cmp-yes">✅</span></td>
+          </tr>
+          <tr>
+            <td>リピート促進メッセージ</td>
+            <td><span class="cmp-no">❌</span></td>
+            <td><span class="cmp-no">❌</span></td>
+            <td class="our"><span class="cmp-yes">✅</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="compare-note fade-up">※2026年4月調査時点の公開情報に基づく比較です。</p>
+  </div>
+</div>
+
+<!-- ══ SERVICES ═════════════════════════════════════════════ -->
+<div class="services-bg" id="services">
+  <div class="section-wrap">
+    <div class="fade-up">
+      <div class="section-tag">Services</div>
+      <h2 class="section-title">サービス一覧</h2>
+      <p class="section-sub">初期設定から集客まで、必要なものだけをお選びいただけます。</p>
+    </div>
+    <div class="services-grid">
+
+      <!-- Card 1: LINE -->
+      <div class="svc-card fade-up">
+        <span class="svc-icon">💬</span>
+        <div class="svc-name">LINEスタートパック</div>
+        <div class="svc-subtitle">LINE公式アカウント + リッチメニュー作成</div>
+        <ul class="svc-features">
+          <li>LINE公式アカウント開設</li>
+          <li>リッチメニューデザイン制作</li>
+          <li>AI予約ボットとの連携設定</li>
+          <li>動作確認まで完全サポート</li>
+        </ul>
+        <div class="svc-price-area">
+          <div class="svc-price-main">¥19,800<span style="font-size:14px;font-weight:500;color:var(--text3);">（税込）</span></div>
+          <div class="svc-price-sub">一回限り</div>
+        </div>
+        <a href="#cta" class="btn-dm">お申し込みはDMで →</a>
+      </div>
+
+      <!-- Card 2: Google -->
+      <div class="svc-card fade-up">
+        <span class="svc-icon">🗺️</span>
+        <div class="svc-name">Googleパック</div>
+        <div class="svc-subtitle">Googleビジネスプロフィール設定</div>
+        <ul class="svc-features">
+          <li>アカウント開設・オーナー認証</li>
+          <li>基本情報・写真登録</li>
+          <li>カテゴリ・営業時間最適化</li>
+          <li>Googleマップへの表示確認</li>
+        </ul>
+        <div class="svc-price-area">
+          <div class="svc-original">通常 ¥15,000〜¥40,000</div>
+          <div class="svc-price-main">¥9,800<span style="font-size:14px;font-weight:500;color:var(--text3);">（税込）</span></div>
+          <div class="svc-price-sub">一回限り</div>
+        </div>
+        <a href="#cta" class="btn-dm">お申し込みはDMで →</a>
+      </div>
+
+      <!-- Card 3: Instagram -->
+      <div class="svc-card fade-up">
+        <span class="svc-icon">📸</span>
+        <div class="svc-name">Instagramパック</div>
+        <div class="svc-subtitle">Instagramアカウント開設・初期設定</div>
+        <ul class="svc-features">
+          <li>アカウント作成・プロフィール設定</li>
+          <li>ハイライト作成</li>
+          <li>LINE予約への導線設定</li>
+          <li>最初の3投稿作成サポート</li>
+        </ul>
+        <div class="svc-price-area">
+          <div class="svc-original">通常 ¥30,000〜¥80,000</div>
+          <div class="svc-price-main">¥14,800<span style="font-size:14px;font-weight:500;color:var(--text3);">（税込）</span></div>
+          <div class="svc-price-sub">一回限り</div>
+        </div>
+        <a href="#cta" class="btn-dm">お申し込みはDMで →</a>
+      </div>
+
+      <!-- Card 4: Full Pack (featured) -->
+      <div class="svc-card featured fade-up">
+        <div class="svc-hot-badge">🔥 最もお得</div>
+        <span class="svc-icon">🚀</span>
+        <div class="svc-name">集客フルパック</div>
+        <div class="svc-subtitle">LINE + Google + Instagram 全部まとめて</div>
+        <ul class="svc-features">
+          <li>上記3パックすべて含む</li>
+          <li>優先対応・セット割引</li>
+          <li>集客導線を一括で完成</li>
+        </ul>
+        <div class="svc-price-area">
+          <div class="svc-original">通常 ¥95,000〜¥270,000</div>
+          <div class="svc-price-main">¥39,800<span style="font-size:14px;font-weight:500;color:var(--text3);">（税込）</span></div>
+          <div class="svc-price-sub">一回限り</div>
+        </div>
+        <a href="#cta" class="btn-dm">お申し込みはDMで →</a>
+      </div>
+
     </div>
   </div>
 </div>
 
-<!-- ══ PRICING ═════════════════════════════════════════════ -->
+<!-- ══ AI BOT PRICING ═══════════════════════════════════════ -->
 <div class="pricing-bg" id="pricing">
   <div class="section-wrap" style="text-align:center;">
-    <div class="section-tag">Pricing</div>
-    <h2 class="section-title">シンプルな料金プラン</h2>
-    <p class="section-sub" style="margin:14px auto 52px; text-align:center; max-width:420px;">
-      まずは7日間、無料でお試しください。<br>いつでもキャンセル可能です。
-    </p>
-    <div class="pricing-center">
+    <div class="fade-up">
+      <div class="section-tag">Monthly Plan</div>
+      <h2 class="section-title">AI予約ボット 月額プラン</h2>
+      <p class="section-sub" style="margin:14px auto 52px; text-align:center; max-width:440px;">
+        まずは7日間、無料でお試しください。<br>いつでもキャンセル可能です。
+      </p>
+    </div>
+    <div class="pricing-center fade-up">
       <div class="pricing-card">
         <div class="pricing-badge">✦ 7日間 無料体験</div>
-        <div class="pricing-price">¥2,980<span class="price-unit"> / 月〜</span></div>
+        <div class="pricing-price">¥2,980<span class="price-unit"> / 月</span></div>
         <p class="pricing-note">税込・月次自動更新・いつでも解約可</p>
         <div class="pricing-divider"></div>
         <ul class="pricing-features">
-          <li>7日間無料体験（クレカ不要）</li>
-          <li>24時間AI自動予約受付</li>
-          <li>LINEメッセージ数 無制限</li>
-          <li>GoogleカレンダーiCal連携</li>
-          <li>前日リマインド自動送信</li>
-          <li>11業種対応AIシナリオ</li>
-          <li>店舗管理ダッシュボード</li>
-          <li>いつでも解約可能</li>
+          <li><span class="pf-icon">✅</span> 24時間AI自動予約受付</li>
+          <li><span class="pf-icon">✅</span> キャンセル・変更もLINEで完結</li>
+          <li><span class="pf-icon">✅</span> 経営分析ダッシュボード</li>
+          <li><span class="pf-icon">✅</span> 顧客カルテ自動蓄積</li>
+          <li><span class="pf-icon">✅</span> Googleクチコミ自動化</li>
+          <li><span class="pf-icon">✅</span> リピート促進メッセージ</li>
+          <li><span class="pf-icon">✅</span> Googleカレンダー連携</li>
+          <li><span class="pf-icon">✅</span> 解約後もデータ保持・再開即復元</li>
         </ul>
         <a href="#start" class="pricing-cta">7日間無料で始める →</a>
         <p class="pricing-trial">無料期間中に解約しても費用は一切かかりません</p>
+        <div class="pricing-cancel-note">
+          解約後もデータは保持されます。<br>再開するといつでも元通りに復元可能です。
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══ REGISTRATION ════════════════════════════════════════ -->
+<!-- ══ BEFORE / AFTER ═══════════════════════════════════════ -->
+<div class="ba-bg">
+  <div class="section-wrap">
+    <div class="fade-up" style="text-align:center; margin-bottom:52px;">
+      <div class="section-tag">Results</div>
+      <h2 class="section-title">導入するとこう変わる</h2>
+    </div>
+    <div class="ba-grid fade-up">
+      <div class="ba-card ba-before">
+        <div class="ba-label">😓 Before</div>
+        <div class="ba-item">
+          <div class="ba-dot-bad"></div>
+          <div class="ba-item-text">電話対応に1日2時間、月50時間のロス</div>
+        </div>
+        <div class="ba-item">
+          <div class="ba-dot-bad"></div>
+          <div class="ba-item-text">営業時間外の予約を毎月取りこぼし</div>
+        </div>
+        <div class="ba-item">
+          <div class="ba-dot-bad"></div>
+          <div class="ba-item-text">手書き・口頭管理でミスが発生</div>
+        </div>
+        <div class="ba-item">
+          <div class="ba-dot-bad"></div>
+          <div class="ba-item-text">リピーター管理が追いつかない</div>
+        </div>
+      </div>
+      <div class="ba-arrow-wrap">
+        <div class="ba-arrow">→</div>
+      </div>
+      <div class="ba-card ba-after">
+        <div class="ba-label">✨ After</div>
+        <div class="ba-item">
+          <div class="ba-dot-good"></div>
+          <div class="ba-item-text">AIが24時間自動対応、月50時間を施術に集中</div>
+        </div>
+        <div class="ba-item">
+          <div class="ba-dot-good"></div>
+          <div class="ba-item-text">深夜・早朝の予約もすべて自動受付</div>
+        </div>
+        <div class="ba-item">
+          <div class="ba-dot-good"></div>
+          <div class="ba-item-text">ダッシュボードで予約を一元管理</div>
+        </div>
+        <div class="ba-item">
+          <div class="ba-dot-good"></div>
+          <div class="ba-item-text">顧客カルテ自動蓄積でリピート促進</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FLOW ══════════════════════════════════════════════════ -->
+<div class="flow-bg">
+  <div class="section-wrap" style="text-align:center;">
+    <div class="fade-up">
+      <div class="section-tag">How it works</div>
+      <h2 class="section-title" style="margin-bottom:52px;">ご利用の流れ</h2>
+    </div>
+    <div class="flow-steps fade-up">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-title">SNSのDMにてお問い合わせ</div>
+        <p class="flow-desc">まずはお気軽にDMでご相談ください。最短即日お返事いたします。</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-title">ご希望のサービスをお申し込み</div>
+        <p class="flow-desc">LINEパック・Googleパック・Instagramパックなどご希望をお選びください。</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-title">最短翌日から設定・納品</div>
+        <p class="flow-desc">必要情報をお送りいただくだけ。設定はすべて代行します。</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-title">AI予約ボット7日間無料体験スタート</div>
+        <p class="flow-desc">設定完了後すぐにAIが起動。まず7日間無料でお試しいただけます。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FAQ ═══════════════════════════════════════════════════ -->
+<div class="faq-bg">
+  <div class="section-wrap">
+    <div class="fade-up" style="text-align:center; margin-bottom:52px;">
+      <div class="section-tag">FAQ</div>
+      <h2 class="section-title">よくあるご質問</h2>
+    </div>
+    <div class="faq-list fade-up">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          LINEの設定は難しくないですか？
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">全て代行いたします。お客様は店舗名・業種・LINE Channel情報をお送りいただくだけです。専門知識は一切不要です。</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          解約したらデータはどうなりますか？
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">データは保持されます。解約後も予約データ・顧客カルテはそのまま保管され、再開するといつでも元通りになります。</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          対応業種はどこですか？
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">美容室・整骨院・ネイルサロン・マッサージ・飲食店・歯科医院・ジム・ペットサロン・アイブロウサロン・ヨガ・鍼灸院など11業種以上に対応しています。</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          サポートはありますか？
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">LINEまたはSNSのDMにていつでもお問い合わせいただけます。設定後も安心してご利用いただけるよう、継続的にサポートいたします。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CTA ═══════════════════════════════════════════════════ -->
+<div class="cta-bg" id="cta">
+  <div class="cta-inner fade-up">
+    <h2 class="cta-title">まずは無料相談から</h2>
+    <p class="cta-sub">
+      どのサービスが合っているか迷ったら、お気軽にDMでご相談ください。<br>
+      最短翌日からご対応いたします。
+    </p>
+    <button class="btn-cta-white" onclick="alert('SNSのDMリンクは準備中です。しばらくお待ちください。')">
+      💬 DMでお問い合わせ
+    </button>
+  </div>
+</div>
+
+<!-- ══ REGISTRATION ═════════════════════════════════════════ -->
 <div class="register-bg" id="start">
   <div class="register-wrap">
     <div class="register-header">
@@ -755,7 +823,7 @@
         <div class="trial-box-title">🎉 7日間、完全無料</div>
         <div class="trial-box-text">
           無料期間中の解約は費用が一切かかりません。<br>
-          トライアル終了後、¥2,980/月〜の自動更新となります。
+          トライアル終了後、¥2,980/月の自動更新となります。
         </div>
       </div>
       <button class="btn-reg" id="payBtn" onclick="startPayment()" style="font-size:17px; padding:17px;">🚀 7日間無料で始める</button>
@@ -791,6 +859,7 @@
 </footer>
 
 <script>
+  /* ── パスワード表示切替 ── */
   function togglePw(inputId, btn) {
     var input = document.getElementById(inputId);
     if (!input) return;
@@ -801,12 +870,30 @@
     btn.setAttribute('aria-label', show ? '隠す' : '表示する');
   }
 
-  // Paddle v2 初期化 — token と eventCallback のみ指定（公式仕様準拠）
+  /* ── FAQ アコーディオン ── */
+  function toggleFaq(btn) {
+    var item = btn.closest('.faq-item');
+    var isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(function(el) { el.classList.remove('open'); });
+    if (!isOpen) item.classList.add('open');
+  }
+
+  /* ── スクロールアニメーション ── */
+  (function() {
+    if (!window.IntersectionObserver) return;
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.fade-up').forEach(function(el) { obs.observe(el); });
+  })();
+
+  /* ── Paddle v2 初期化 ── */
   Paddle.Initialize({
     token: 'live_f85c45d01df1d11366f81a2083b',
     eventCallback: function(data) {
       if (data.name === 'checkout.completed') {
-        // オーバーレイ内での完了: localStorage 削除 → success 表示
         localStorage.removeItem('paddle_shop_id');
         showPaymentSuccess(currentShopId);
       } else if (data.name === 'checkout.closed' || data.name === 'checkout.error') {
@@ -822,7 +909,7 @@
   let currentUser = null;
   let currentShopId = null;
 
-  // 決済成功 UI 表示
+  /* ── 決済成功 UI 表示 ── */
   function showPaymentSuccess(shopId) {
     document.getElementById('payBtn').style.display = 'none';
     document.getElementById('successBox').style.display = 'block';
@@ -837,11 +924,10 @@
     }
   }
 
-  // successUrl リダイレクト後の復元処理 (?payment=success)
+  /* ── successUrl リダイレクト後の復元処理 ── */
   (function() {
     var params = new URLSearchParams(window.location.search);
     if (params.get('payment') !== 'success') return;
-
     var savedShopId = localStorage.getItem('paddle_shop_id');
     if (savedShopId) {
       currentShopId = savedShopId;
@@ -859,11 +945,10 @@
         })
         .catch(function() { showPaymentSuccess(savedShopId); });
     }
-    // URL からパラメータを除去
     history.replaceState(null, '', '/');
   })();
 
-  // ページ読み込み時にログイン状態を確認
+  /* ── ログイン状態確認 ── */
   async function checkLoginStatus() {
     try {
       const res = await fetch('/api/me');
@@ -886,6 +971,7 @@
 
   checkLoginStatus();
 
+  /* ── 店舗登録 ── */
   async function register() {
     const shopName = document.getElementById('shopName').value.trim();
     const businessType = document.getElementById('businessType').value;
@@ -912,10 +998,7 @@
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: currentUser.email,
-          shopName, businessType, channelSecret, channelToken
-        })
+        body: JSON.stringify({ email: currentUser.email, shopName, businessType, channelSecret, channelToken })
       });
       const data = await response.json();
 
@@ -952,30 +1035,20 @@
     }
   }
 
+  /* ── Paddle 決済開始 ── */
   function startPayment() {
-    if (!currentUser) {
-      alert('ログインが必要です。');
-      return;
-    }
-    if (!currentShopId) {
-      alert('まずお店の情報を登録してください。');
-      return;
-    }
+    if (!currentUser) { alert('ログインが必要です。'); return; }
+    if (!currentShopId) { alert('まずお店の情報を登録してください。'); return; }
 
     var btn = document.getElementById('payBtn');
     btn.disabled = true;
     btn.textContent = '決済画面を開いています...';
 
-    // successUrl リダイレクト後に shopId を復元するために保存
     localStorage.setItem('paddle_shop_id', String(currentShopId));
 
     try {
       Paddle.Checkout.open({
-        settings: {
-          displayMode: 'overlay',
-          locale: 'ja',
-          successUrl: window.location.origin + '/?payment=success'
-        },
+        settings: { displayMode: 'overlay', locale: 'ja', successUrl: window.location.origin + '/?payment=success' },
         items: [{ priceId: 'pri_01kq8rg1516ndq78xsvt9zgwch', quantity: 1 }],
         customer: { email: currentUser.email.trim() },
         customData: { shopId: String(currentShopId) }
