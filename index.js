@@ -318,6 +318,29 @@ async function sendEmailNotification(ownerEmail, subject, bodyHtml) {
   }
 }
 
+async function updateCustomerCarte(shopId, lineUserId, customerName, reservationDate) {
+  try {
+    const { data: existing } = await supabase.from('customer_cartes')
+      .select('id, visit_count').eq('shop_id', shopId).eq('line_user_id', lineUserId).single();
+    if (existing) {
+      await supabase.from('customer_cartes').update({
+        customer_name: customerName,
+        visit_count: (existing.visit_count || 0) + 1,
+        last_visit_date: reservationDate,
+        updated_at: new Date().toISOString(),
+      }).eq('id', existing.id);
+    } else {
+      await supabase.from('customer_cartes').insert({
+        shop_id: shopId, line_user_id: lineUserId,
+        customer_name: customerName, visit_count: 1,
+        last_visit_date: reservationDate,
+      });
+    }
+  } catch (e) {
+    console.error('カルテ更新エラー:', e.message);
+  }
+}
+
 async function getConversationHistory(lineUserId, shopId) {
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const { data } = await supabase
@@ -662,7 +685,7 @@ app.get('/api/shop-settings', requireJWT, async (req, res) => {
   if (!shopId) return res.status(400).json({ error: 'shopId required' });
   try {
     const { data } = await supabase.from('shops')
-      .select('shop_description, business_hours, menu_items, closed_days, reservation_interval, repeat_message_enabled, owner_email')
+      .select('shop_description, business_hours, menu_items, closed_days, reservation_interval, repeat_message_enabled, google_review_url, review_request_enabled, owner_email')
       .eq('id', shopId).single();
     if (!data || data.owner_email !== req.user.email) return res.status(403).json({ error: 'Forbidden' });
     const { owner_email, ...safeData } = data;
@@ -708,12 +731,17 @@ app.post('/api/shop-update', requireJWT, async (req, res) => {
     const { data: shop } = await supabase.from('shops').select('id')
       .eq('id', shopId).eq('owner_email', req.user.email).single();
     if (!shop) return res.status(403).json({ success: false });
-    const allowedFields = ['shop_description', 'business_hours', 'menu_items', 'closed_days', 'reservation_interval', 'repeat_message_enabled'];
+    const allowedFields = ['shop_description', 'business_hours', 'menu_items', 'closed_days', 'reservation_interval', 'repeat_message_enabled', 'google_review_url', 'review_request_enabled'];
     const safeUpdate = {};
     allowedFields.forEach(f => { if (updateData[f] !== undefined) safeUpdate[f] = updateData[f]; });
     // ✅ shop_description 길이 제한 — AI 시스템 프롬프트 토큰 폭증 방지
     if (typeof safeUpdate.shop_description === 'string' && safeUpdate.shop_description.length > 500) {
       return res.status(400).json({ success: false, reason: 'description_too_long' });
+    }
+    if (safeUpdate.google_review_url) {
+      try { new URL(safeUpdate.google_review_url); } catch (_) {
+        return res.status(400).json({ success: false, reason: 'invalid_url' });
+      }
     }
     const { error } = await supabase.from('shops').update(safeUpdate).eq('id', shopId);
     if (error) throw error;
@@ -775,6 +803,7 @@ app.get('/api/calendar/:shopId', async (req, res) => {
     const { token } = req.query;
     const { data: shop } = await supabase.from('shops').select('*').eq('id', shopId).single();
     if (!shop) return res.status(404).send('Not found');
+    if (!shop.is_paid) return res.status(401).send('Unauthorized');
     if (token !== shop.owner_email.slice(0, 4)) return res.status(403).send('Forbidden');
     const { data: reservations } = await supabase.from('reservations').select('*')
       .eq('shop_id', shopId).eq('status', 'confirmed').order('reservation_date', { ascending: true });
@@ -813,6 +842,98 @@ app.get('/api/calendar', adminAuth, async (req, res) => {
   }
 });
 
+app.get('/api/shop-analytics', requireJWT, async (req, res) => {
+  const { shopId } = req.query;
+  if (!shopId) return res.status(400).json({ error: 'shopId required' });
+  try {
+    const { data: shop } = await supabase.from('shops')
+      .select('owner_email, menu_items').eq('id', shopId).single();
+    if (!shop || shop.owner_email !== req.user.email) return res.status(403).json({ error: 'Forbidden' });
+
+    const jstNow = new Date(Date.now() + 9 * 60 * 60 * 1000);
+    const thisMonth = jstNow.toISOString().slice(0, 7);
+    const lastMonthDate = new Date(jstNow.getFullYear(), jstNow.getMonth() - 1, 1);
+    const lastMonth = lastMonthDate.toISOString().slice(0, 7);
+
+    const { data: reservations } = await supabase.from('reservations')
+      .select('customer_name, service_type, reservation_date, reservation_time, line_user_id')
+      .eq('shop_id', shopId).eq('status', 'confirmed')
+      .gte('reservation_date', lastMonth + '-01')
+      .order('reservation_date', { ascending: true });
+
+    const all = reservations || [];
+    const thisMonthRes = all.filter(r => r.reservation_date?.startsWith(thisMonth));
+    const lastMonthRes = all.filter(r => r.reservation_date?.startsWith(lastMonth));
+
+    const menuPrices = {};
+    (shop.menu_items || []).forEach(m => { menuPrices[m.name] = m.price || 0; });
+    const calcRevenue = (list) => list.reduce((sum, r) => sum + (menuPrices[r.service_type] || 0), 0);
+
+    const thisRevenue = calcRevenue(thisMonthRes);
+    const lastRevenue = calcRevenue(lastMonthRes);
+    const revGrowth = lastRevenue > 0 ? Math.round((thisRevenue - lastRevenue) / lastRevenue * 100) : null;
+    const countGrowth = lastMonthRes.length > 0 ? Math.round((thisMonthRes.length - lastMonthRes.length) / lastMonthRes.length * 100) : null;
+
+    const userCounts = {};
+    thisMonthRes.forEach(r => { userCounts[r.line_user_id] = (userCounts[r.line_user_id] || 0) + 1; });
+    const returnCount = Object.values(userCounts).filter(c => c >= 2).length;
+    const uniqueCount = Object.keys(userCounts).length;
+    const returnRate = uniqueCount > 0 ? Math.round(returnCount / uniqueCount * 100) : 0;
+
+    const menuCount = {};
+    thisMonthRes.forEach(r => { if (r.service_type) menuCount[r.service_type] = (menuCount[r.service_type] || 0) + 1; });
+    const topMenus = Object.entries(menuCount).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([name, count]) => ({ name, count }));
+
+    const timeCount = {};
+    thisMonthRes.forEach(r => { if (r.reservation_time) { const h = String(r.reservation_time).slice(0, 2) + ':00'; timeCount[h] = (timeCount[h] || 0) + 1; } });
+    const topTimes = Object.entries(timeCount).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([time, count]) => ({ time, count }));
+
+    const DAY_JA = ['日', '月', '火', '水', '木', '金', '土'];
+    const dayCount = {};
+    thisMonthRes.forEach(r => { if (r.reservation_date) { const d = DAY_JA[new Date(r.reservation_date + 'T00:00:00+09:00').getDay()]; dayCount[d] = (dayCount[d] || 0) + 1; } });
+    const topDays = Object.entries(dayCount).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([day, count]) => ({ day, count }));
+
+    const aiSavings = Math.round(thisMonthRes.length * 0.5 * 1121);
+
+    res.json({ thisMonth: { count: thisMonthRes.length, revenue: thisRevenue, countGrowth, revGrowth }, returnRate, topMenus, topTimes, topDays, aiSavings });
+  } catch (e) {
+    res.status(500).json({ error: 'error' });
+  }
+});
+
+app.get('/api/customer-cartes', requireJWT, async (req, res) => {
+  const { shopId } = req.query;
+  if (!shopId) return res.status(400).json({ error: 'shopId required' });
+  try {
+    const { data: shop } = await supabase.from('shops').select('owner_email').eq('id', shopId).single();
+    if (!shop || shop.owner_email !== req.user.email) return res.status(403).json({ error: 'Forbidden' });
+    const { data } = await supabase.from('customer_cartes').select('*')
+      .eq('shop_id', shopId).order('visit_count', { ascending: false });
+    res.json({ cartes: data || [] });
+  } catch (e) {
+    res.status(500).json({ cartes: [] });
+  }
+});
+
+app.put('/api/customer-carte/:id', requireJWT, async (req, res) => {
+  const { id } = req.params;
+  if (!/^[0-9a-f-]{36}$/.test(id)) return res.status(400).json({ success: false });
+  const { memo, shopId } = req.body;
+  if (!shopId) return res.status(400).json({ success: false });
+  try {
+    const { data: shop } = await supabase.from('shops').select('owner_email').eq('id', shopId).single();
+    if (!shop || shop.owner_email !== req.user.email) return res.status(403).json({ success: false });
+    const safeMemo = typeof memo === 'string' ? memo.slice(0, 500) : '';
+    const { error } = await supabase.from('customer_cartes')
+      .update({ memo: safeMemo, updated_at: new Date().toISOString() })
+      .eq('id', id).eq('shop_id', shopId);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ success: false });
+  }
+});
+
 // ============================
 // LINE Webhook
 // ============================
@@ -821,14 +942,25 @@ app.post('/webhook/:shopId', async (req, res) => {
     const { shopId } = req.params;
     const { data: shop } = await supabase.from('shops').select('*').eq('id', shopId).single();
     if (!shop) return res.status(200).json({ status: 'shop_not_found' });
-    if (!shop.is_paid) return res.status(200).json({ status: 'not_paid' });
-    if (shop.subscription_end_date && new Date(shop.subscription_end_date) < new Date()) {
-      await supabase.from('shops').update({ is_paid: false, plan_status: 'expired' }).eq('id', shopId);
-      return res.status(200).json({ status: 'expired' });
-    }
-    const { data: template } = await supabase.from('templates').select('*').eq('business_type', shop.business_type).single();
     line.middleware({ channelSecret: shop.line_channel_secret, channelAccessToken: shop.line_channel_access_token })(req, res, async () => {
       const events = req.body.events || [];
+      if (!shop.is_paid) {
+        if (events.length > 0 && events[0].replyToken) {
+          const client = new line.messagingApi.MessagingApiClient({ channelAccessToken: shop.line_channel_access_token });
+          try {
+            await client.replyMessage({
+              replyToken: events[0].replyToken,
+              messages: [{ type: 'text', text: 'サービスが停止中です。再開はこちら: https://line-ai-bot-production-2d6d.up.railway.app/' }],
+            });
+          } catch (_) {}
+        }
+        return res.status(200).json({ status: 'not_paid' });
+      }
+      if (shop.subscription_end_date && new Date(shop.subscription_end_date) < new Date()) {
+        await supabase.from('shops').update({ is_paid: false, plan_status: 'expired' }).eq('id', shopId);
+        return res.status(200).json({ status: 'expired' });
+      }
+      const { data: template } = await supabase.from('templates').select('*').eq('business_type', shop.business_type).single();
       await Promise.all(events.map(event => handleEvent(event, shop, template)));
       res.status(200).json({ status: 'ok' });
     });
@@ -1059,6 +1191,12 @@ async function handleEvent(event, shop, template) {
             `【新規予約】${customerName}様 ${reservationData.date} ${normalizedTime}`,
             buildNewResEmailHtml(shop.shop_name, customerName, reservationData.date, dayJa, normalizedTime, serviceType)
           ).catch(() => {});
+
+          updateCustomerCarte(shop.id, lineUserId, customerName, reservationData.date).catch(() => {});
+
+          if (shop.review_request_enabled && shop.google_review_url) {
+            finalReply += `\n\n⭐ よろしければ口コミをお願いします！\n${String(shop.google_review_url).replace(/[\n\r]/g, '')}`;
+          }
 
           // ✅ Feature 5/6: 리피트 메시지 (repeat_message_enabled !== false 이면 전송)
           if (shop.repeat_message_enabled !== false) {

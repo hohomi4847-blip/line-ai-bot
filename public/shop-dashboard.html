@@ -313,6 +313,39 @@
       text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 16px;
     }
 
+    /* ── ANALYTICS ─────────────────────────────────────── */
+    .savings-card {
+      background: linear-gradient(135deg, #06C755 0%, #05A847 100%);
+      color: white; border-radius: var(--radius); padding: 28px;
+      margin-bottom: 16px; text-align: center;
+      box-shadow: 0 4px 20px rgba(6,199,85,0.3);
+    }
+    .savings-title { font-size: 15px; font-weight: 600; opacity: 0.9; margin-bottom: 8px; }
+    .savings-amount { font-size: 40px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 4px; }
+    .savings-desc { font-size: 12px; opacity: 0.8; }
+    .ana-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+    .ana-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px;
+      text-align: center; box-shadow: var(--shadow-sm);
+    }
+    .ana-label { font-size: 12px; color: var(--text3); font-weight: 500; margin-bottom: 6px; }
+    .ana-value { font-size: 28px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; }
+    .ana-growth { font-size: 12px; margin-top: 4px; font-weight: 600; }
+    .rank-section { margin-bottom: 20px; }
+    .rank-section:last-child { margin-bottom: 0; }
+    .rank-title { font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 8px; }
+    .rank-list { padding-left: 20px; }
+    .rank-list li { font-size: 14px; color: var(--text); margin-bottom: 4px; }
+    /* ── CARTE ──────────────────────────────────────────── */
+    .memo-input {
+      width: 100%; min-width: 120px; font-size: 13px;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      padding: 6px 9px; outline: none; font-family: inherit;
+      background: var(--white); transition: border-color 0.15s;
+    }
+    .memo-input:focus { border-color: var(--green); }
+
     /* ── RESPONSIVE ─────────────────────────────────────── */
     @media (max-width: 640px) {
       .dash-header { padding: 0 16px; }
@@ -328,6 +361,8 @@
       .menu-item input.menu-duration { display: none; }
       .res-table th:nth-child(2), .res-table td:nth-child(2) { display: none; }
       .res-table th:nth-child(3), .res-table td:nth-child(3) { display: none; }
+      .ana-grid { grid-template-columns: 1fr; }
+      .savings-amount { font-size: 32px; }
     }
   </style>
 </head>
@@ -392,6 +427,12 @@
       </button>
       <button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">
         ⚙️ 店舗設定
+      </button>
+      <button class="tab-btn" data-tab="analytics" onclick="switchTab('analytics')">
+        📊 経営分析
+      </button>
+      <button class="tab-btn" data-tab="cartes" onclick="switchTab('cartes')">
+        👤 顧客カルテ
       </button>
     </div>
   </div>
@@ -463,6 +504,17 @@
           </label>
           <span class="toggle-label">予約完了後にリピートメッセージを送る</span>
         </div>
+        <div class="form-group" style="margin-top:16px;">
+          <label>Google クチコミ URL（予約完了後にメッセージへ追加）</label>
+          <input type="url" id="googleReviewUrl" placeholder="https://g.page/r/...">
+        </div>
+        <div class="toggle-row">
+          <label class="toggle-switch">
+            <input type="checkbox" id="reviewRequestEnabled">
+            <span class="toggle-track"></span>
+          </label>
+          <span class="toggle-label">予約完了後に Google クチコミをリクエストする</span>
+        </div>
         <button class="btn btn-green" id="saveBasicBtn" onclick="saveBasicInfo()" style="margin-top:20px;">保存する</button>
         <div class="toast toast-ok"  id="basicOk">✅ 保存しました！</div>
         <div class="toast toast-err" id="basicErr">❌ 保存に失敗しました。もう一度お試しください。</div>
@@ -486,6 +538,56 @@
         <div class="toast toast-ok"  id="menuOk">✅ 保存しました！</div>
         <div class="toast toast-err" id="menuErr">❌ 保存に失敗しました。</div>
       </div>
+
+    <!-- ── Tab 4: Analytics ── -->
+    <div id="tab-analytics" class="tab-content" style="display:none;">
+      <div class="savings-card">
+        <div class="savings-title">🤖 AIボットがこれだけ働きました！</div>
+        <div class="savings-amount" id="aiSavingsAmount">¥ ー</div>
+        <div class="savings-desc">今月の推定業務削減コスト（¥1,121 / 時間換算）</div>
+      </div>
+      <div class="ana-grid">
+        <div class="ana-card">
+          <div class="ana-label">今月の予約数</div>
+          <div class="ana-value" id="anaCount">ー</div>
+          <div class="ana-growth" id="anaCountGrowth"></div>
+        </div>
+        <div class="ana-card">
+          <div class="ana-label">今月の推定売上</div>
+          <div class="ana-value" id="anaRevenue">ー</div>
+          <div class="ana-growth" id="anaRevGrowth"></div>
+        </div>
+        <div class="ana-card">
+          <div class="ana-label">リピート率</div>
+          <div class="ana-value" id="anaReturnRate">ー</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🏆 人気ランキング（今月）</div>
+        <div class="rank-section">
+          <div class="rank-title">メニュー TOP3</div>
+          <ol class="rank-list" id="rankMenus"></ol>
+        </div>
+        <div class="rank-section">
+          <div class="rank-title">時間帯 TOP3</div>
+          <ol class="rank-list" id="rankTimes"></ol>
+        </div>
+        <div class="rank-section">
+          <div class="rank-title">曜日 TOP3</div>
+          <ol class="rank-list" id="rankDays"></ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tab 5: Customer Cartes ── -->
+    <div id="tab-cartes" class="tab-content" style="display:none;">
+      <div class="card">
+        <div class="card-title">👤 顧客カルテ</div>
+        <div id="cartesContainer">
+          <div class="empty-state"><div class="empty-state-icon">👤</div>読み込み中...</div>
+        </div>
+      </div>
+    </div>
 
     </div>
   </div>
@@ -621,6 +723,8 @@ function renderDashboard() {
   buildHoursGrid();
   loadShopSettings();
   loadReservations();
+  loadAnalytics();
+  loadCartes();
   showEl('dashboard');
 }
 
@@ -671,6 +775,8 @@ async function loadShopSettings() {
       document.getElementById('shopDescription').value = data.shop_description;
     }
     document.getElementById('repeatMsgEnabled').checked = data.repeat_message_enabled !== false;
+    document.getElementById('reviewRequestEnabled').checked = !!data.review_request_enabled;
+    document.getElementById('googleReviewUrl').value = data.google_review_url || '';
 
     if (data.business_hours) {
       DAY_KEYS.forEach(key => {
@@ -825,6 +931,8 @@ async function saveBasicInfo() {
         shopId: currentShop.id,
         shop_description: document.getElementById('shopDescription').value,
         repeat_message_enabled: document.getElementById('repeatMsgEnabled').checked,
+        review_request_enabled: document.getElementById('reviewRequestEnabled').checked,
+        google_review_url: document.getElementById('googleReviewUrl').value.trim(),
       }),
     });
     const data = await res.json();
@@ -889,6 +997,115 @@ async function saveMenu() {
     toast(data.success ? 'menuOk' : 'menuErr');
   } catch (e) {
     toast('menuErr');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ─── 経営分析 ─────────────────────────────────────────────
+async function loadAnalytics() {
+  try {
+    const res  = await api(`/api/shop-analytics?shopId=${encodeURIComponent(currentShop.id)}`);
+    const data = await res.json();
+    renderAnalytics(data);
+  } catch (e) { /* handled */ }
+}
+
+function renderAnalytics(d) {
+  const fmt = n => n != null ? '¥ ' + n.toLocaleString() : 'ー';
+  document.getElementById('aiSavingsAmount').textContent = d.aiSavings != null ? '¥ ' + d.aiSavings.toLocaleString() : '¥ ー';
+  document.getElementById('anaCount').textContent = d.thisMonth?.count ?? 'ー';
+  document.getElementById('anaRevenue').textContent = fmt(d.thisMonth?.revenue);
+
+  const growthEl = (id, val) => {
+    const el = document.getElementById(id);
+    if (val == null) { el.textContent = ''; return; }
+    el.textContent = (val >= 0 ? '▲ ' : '▼ ') + Math.abs(val) + '% 先月比';
+    el.style.color = val >= 0 ? 'var(--green)' : '#EF4444';
+  };
+  growthEl('anaCountGrowth', d.thisMonth?.countGrowth);
+  growthEl('anaRevGrowth', d.thisMonth?.revGrowth);
+  document.getElementById('anaReturnRate').textContent = d.returnRate != null ? d.returnRate + '%' : 'ー';
+
+  const renderRank = (id, items, labelKey, countKey) => {
+    const el = document.getElementById(id);
+    el.innerHTML = '';
+    if (!items || items.length === 0) {
+      el.innerHTML = '<li style="color:var(--text3);font-size:13px;">データなし</li>';
+      return;
+    }
+    items.forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = item[labelKey] + '（' + item[countKey] + '件）';
+      el.appendChild(li);
+    });
+  };
+  renderRank('rankMenus', d.topMenus, 'name', 'count');
+  renderRank('rankTimes', d.topTimes, 'time', 'count');
+  renderRank('rankDays',  d.topDays,  'day',  'count');
+}
+
+// ─── 顧客カルテ ───────────────────────────────────────────
+async function loadCartes() {
+  try {
+    const res  = await api(`/api/customer-cartes?shopId=${encodeURIComponent(currentShop.id)}`);
+    const data = await res.json();
+    renderCartes(data.cartes || []);
+  } catch (e) { /* handled */ }
+}
+
+function renderCartes(cartes) {
+  const container = document.getElementById('cartesContainer');
+  if (!cartes || cartes.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👤</div>顧客データはまだありません</div>';
+    return;
+  }
+  const table = document.createElement('table');
+  table.className = 'res-table';
+  const thead = table.createTHead();
+  const hrow  = thead.insertRow();
+  ['お客様名', '来店回数', '最終来店', 'メモ', ''].forEach(text => {
+    const th = document.createElement('th');
+    th.textContent = text;
+    hrow.appendChild(th);
+  });
+  const tbody = table.createTBody();
+  cartes.forEach(c => {
+    const tr = tbody.insertRow();
+    [c.customer_name || '-', c.visit_count || 0, c.last_visit_date || '-'].forEach(text => {
+      const td = tr.insertCell();
+      td.textContent = text;
+    });
+    const memoTd = tr.insertCell();
+    const memoInput = document.createElement('input');
+    memoInput.type = 'text';
+    memoInput.className = 'memo-input';
+    memoInput.value = c.memo || '';
+    memoInput.placeholder = 'メモを入力...';
+    memoTd.appendChild(memoInput);
+    const saveTd = tr.insertCell();
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'cancel-btn';
+    saveBtn.textContent = '保存';
+    saveBtn.addEventListener('click', () => saveMemo(c.id, memoInput, saveBtn));
+    saveTd.appendChild(saveBtn);
+  });
+  container.innerHTML = '';
+  container.appendChild(table);
+}
+
+async function saveMemo(carteId, input, btn) {
+  btn.disabled = true;
+  try {
+    const res  = await api(`/api/customer-carte/${encodeURIComponent(carteId)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ memo: input.value, shopId: currentShop.id }),
+    });
+    const data = await res.json();
+    if (!data.success) alert('保存に失敗しました。');
+  } catch (e) {
+    alert('保存に失敗しました。');
   } finally {
     btn.disabled = false;
   }
