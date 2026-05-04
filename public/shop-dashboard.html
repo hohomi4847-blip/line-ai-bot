@@ -119,7 +119,7 @@
     }
     .tab-nav-inner {
       max-width: 900px; margin: 0 auto;
-      display: flex; gap: 0;
+      display: flex; gap: 0; overflow-x: auto;
     }
     .tab-btn {
       display: flex; align-items: center; gap: 7px;
@@ -337,6 +337,38 @@
     .rank-title { font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 8px; }
     .rank-list { padding-left: 20px; }
     .rank-list li { font-size: 14px; color: var(--text); margin-bottom: 4px; }
+
+    /* ── DIAGNOSTICS ─────────────────────────────────────── */
+    .diag-summary {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; padding: 14px 16px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 10px; margin-bottom: 14px;
+    }
+    .diag-score { font-size: 24px; font-weight: 800; color: var(--text); }
+    .diag-status { font-size: 13px; font-weight: 700; color: var(--text2); }
+    .diag-list { display: grid; gap: 10px; }
+    .diag-item {
+      display: grid; grid-template-columns: 82px 1fr; gap: 10px;
+      align-items: start; padding: 12px; border: 1px solid var(--border);
+      border-radius: 9px; background: var(--white);
+    }
+    .diag-pill {
+      display: inline-flex; justify-content: center; align-items: center;
+      min-height: 26px; padding: 4px 8px; border-radius: 14px;
+      font-size: 12px; font-weight: 700;
+    }
+    .diag-ok { background: var(--green-light); color: #16a34a; border: 1px solid var(--green-border); }
+    .diag-warn { background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; }
+    .diag-error { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; }
+    .diag-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .diag-message { font-size: 13px; color: var(--text2); line-height: 1.5; }
+    .event-list { display: grid; gap: 8px; margin-top: 14px; }
+    .event-item {
+      padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 9px; background: var(--bg); font-size: 13px; color: var(--text2);
+    }
+    .event-title { font-weight: 700; color: var(--text); margin-bottom: 4px; }
+
     /* ── CARTE ──────────────────────────────────────────── */
     .memo-input {
       width: 100%; min-width: 120px; font-size: 13px;
@@ -364,6 +396,93 @@
       .ana-grid { grid-template-columns: 1fr; }
       .savings-amount { font-size: 32px; }
     }
+
+/* ── ENHANCED ANALYTICS ─────────────────────────────── */
+.ana-section-title {
+  font-size: 13px; font-weight: 700; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 0.07em;
+  margin: 24px 0 14px; display: flex; align-items: center; gap: 8px;
+}
+.trend-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 10px; margin-bottom: 8px;
+}
+.trend-card {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px;
+}
+.trend-month { font-size: 11px; color: var(--text3); font-weight: 600; margin-bottom: 6px; }
+.trend-count { font-size: 20px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; }
+.trend-revenue { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.trend-bar-wrap { margin-top: 16px; }
+.trend-bar-row {
+  display: grid; grid-template-columns: 36px 1fr 48px;
+  gap: 8px; align-items: center; margin-bottom: 8px;
+}
+.trend-bar-label { font-size: 11px; color: var(--text3); font-weight: 600; }
+.trend-bar-bg {
+  background: var(--border); border-radius: 4px; height: 8px; overflow: hidden;
+}
+.trend-bar-fill {
+  height: 8px; border-radius: 4px;
+  background: var(--green);
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.trend-bar-val { font-size: 12px; font-weight: 700; color: var(--text); text-align: right; }
+
+.segment-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 12px; margin-bottom: 8px;
+}
+.segment-card {
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 16px; position: relative; overflow: hidden;
+}
+.segment-card::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 4px; height: 100%; border-radius: 10px 0 0 10px;
+}
+.segment-vip::before    { background: #F59E0B; }
+.segment-repeat::before { background: var(--green); }
+.segment-new::before    { background: #3B82F6; }
+.segment-sleep::before  { background: #9CA3AF; }
+.segment-icon { font-size: 20px; margin-bottom: 6px; }
+.segment-label { font-size: 12px; color: var(--text3); font-weight: 600; margin-bottom: 4px; }
+.segment-count { font-size: 24px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; }
+.segment-desc { font-size: 11px; color: var(--text2); margin-top: 4px; line-height: 1.5; }
+.segment-alert {
+  margin-top: 12px; padding: 10px 12px;
+  background: #FFFBEB; border: 1px solid #FDE68A;
+  border-radius: 8px; font-size: 12px; color: #92400E;
+  display: flex; align-items: flex-start; gap: 6px; line-height: 1.5;
+}
+
+.advice-list { display: grid; gap: 10px; }
+.advice-item {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 14px 16px; border: 1px solid var(--border);
+  border-radius: 10px; background: var(--white);
+}
+.advice-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  flex-shrink: 0; margin-top: 4px;
+}
+.advice-dot-red    { background: #EF4444; }
+.advice-dot-yellow { background: #F59E0B; }
+.advice-dot-green  { background: var(--green); }
+.advice-text { font-size: 13px; color: var(--text); line-height: 1.6; }
+.advice-text strong { color: var(--text); font-weight: 700; }
+.advice-loading {
+  text-align: center; padding: 32px; color: var(--text3); font-size: 14px;
+}
+.advice-loading .spinner {
+  width: 28px; height: 28px; margin: 0 auto 12px; border-width: 2px;
+}
+
+@media (max-width: 640px) {
+  .trend-grid    { grid-template-columns: repeat(2, 1fr); }
+  .segment-grid  { grid-template-columns: 1fr; }
+}
   </style>
 </head>
 <body>
@@ -427,6 +546,9 @@
       </button>
       <button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">
         ⚙️ 店舗設定
+      </button>
+      <button class="tab-btn" data-tab="diagnostics" onclick="switchTab('diagnostics')">
+        ✅ 設定チェック
       </button>
       <button class="tab-btn" data-tab="analytics" onclick="switchTab('analytics')">
         📊 経営分析
@@ -494,7 +616,7 @@
       <div class="card">
         <div class="card-title">🏪 店舗基本情報</div>
         <div class="form-group">
-          <label>店舗紹介文（AIが案内に使用します）</label>
+          <label>店舗紹介文（自動応答の案内に使用します）</label>
           <textarea id="shopDescription" placeholder="例：駅から徒歩3分の美容室です。経験豊富なスタッフが丁寧に対応します。"></textarea>
         </div>
         <div class="toggle-row">
@@ -540,13 +662,28 @@
       </div>
     </div>
 
-    <!-- ── Tab 4: Analytics ── -->
-    <div id="tab-analytics" class="tab-content" style="display:none;">
-      <div class="savings-card">
-        <div class="savings-title">🤖 AIボットがこれだけ働きました！</div>
-        <div class="savings-amount" id="aiSavingsAmount">¥ ー</div>
-        <div class="savings-desc">今月の推定業務削減コスト（¥1,121 / 時間換算）</div>
+    <!-- ── Tab 4: Diagnostics ── -->
+    <div id="tab-diagnostics" class="tab-content" style="display:none;">
+      <div class="card">
+        <div class="card-title">✅ 設定チェック</div>
+        <div id="diagnosticsContainer">
+          <div class="empty-state"><div class="empty-state-icon">✅</div>読み込み中...</div>
+        </div>
+        <button class="btn btn-outline" onclick="loadDiagnostics()" style="margin-top:16px;">再チェック</button>
       </div>
+    </div>
+
+    <!-- ── Tab 5: Analytics ── -->
+    <div id="tab-analytics" class="tab-content" style="display:none;">
+
+      <!-- 자동화 절약 비용 (기존 유지) -->
+      <div class="savings-card">
+        <div class="savings-title">自動化システムで削減した応対コスト</div>
+        <div class="savings-amount" id="automationSavingsAmount">¥ ー</div>
+        <div class="savings-desc">今月の推定削減額（令和7年度 全国加重平均最低賃金 ¥1,121 / 時間）</div>
+      </div>
+
+      <!-- 이번 달 핵심 지표 (기존 유지) -->
       <div class="ana-grid">
         <div class="ana-card">
           <div class="ana-label">今月の予約数</div>
@@ -563,6 +700,45 @@
           <div class="ana-value" id="anaReturnRate">ー</div>
         </div>
       </div>
+
+      <!-- ── 강화 1: 6개월 트렌드 ── -->
+      <div class="card">
+        <div class="card-title">📈 6ヶ月トレンド</div>
+        <div id="trendContent">
+          <div class="advice-loading">
+            <div class="spinner"></div>
+            集計中...
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 강화 2: 고객 세그먼트 ── -->
+      <div class="card">
+        <div class="card-title">👥 顧客セグメント分析</div>
+        <div id="segmentContent">
+          <div class="advice-loading">
+            <div class="spinner"></div>
+            分析中...
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 강화 3: AI 경영 어드바이스 ── -->
+      <div class="card">
+        <div class="card-title">💡 今月の経営アドバイス
+          <span style="font-size:11px;font-weight:500;color:var(--text3);margin-left:auto;">
+            AIが予約データを分析して自動生成
+          </span>
+        </div>
+        <div id="adviceContent">
+          <div class="advice-loading">
+            <div class="spinner"></div>
+            AIが分析中です。少々お待ちください...
+          </div>
+        </div>
+      </div>
+
+      <!-- 인기 랭킹 (기존 유지) -->
       <div class="card">
         <div class="card-title">🏆 人気ランキング（今月）</div>
         <div class="rank-section">
@@ -578,9 +754,10 @@
           <ol class="rank-list" id="rankDays"></ol>
         </div>
       </div>
+
     </div>
 
-    <!-- ── Tab 5: Customer Cartes ── -->
+    <!-- ── Tab 6: Customer Cartes ── -->
     <div id="tab-cartes" class="tab-content" style="display:none;">
       <div class="card">
         <div class="card-title">👤 顧客カルテ</div>
@@ -601,6 +778,7 @@ const DAY_KEYS   = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 
 let currentShop = null;
 let currentUser = null;
+let analyticsLoaded = false;
 
 // ─── タブ切り替え（既存ロジックに影響なし）─────────────────
 function switchTab(tabName) {
@@ -609,6 +787,10 @@ function switchTab(tabName) {
   document.getElementById('tab-' + tabName).style.display = 'block';
   const btn = document.querySelector('.tab-btn[data-tab="' + tabName + '"]');
   if (btn) btn.classList.add('tab-active');
+  if (tabName === 'analytics' && !analyticsLoaded) {
+    analyticsLoaded = true;
+    loadAnalytics();
+  }
 }
 
 // ─── ユーティリティ ──────────────────────────────────────
@@ -716,17 +898,16 @@ function renderDashboard() {
 
   // URL 設定
   const origin = location.origin;
-  const token  = currentUser.email.slice(0, 4);
   document.getElementById('webhookUrl').textContent  = `${origin}/webhook/${currentShop.id}`;
-  document.getElementById('calendarUrl').textContent = `${origin}/api/calendar/${currentShop.id}?token=${token}`;
+  document.getElementById('calendarUrl').textContent = `${origin}/api/calendar/${currentShop.id}?token=${currentShop.calendar_token || ''}`;
 
   buildHoursGrid();
-  loadShopSettings();
-  loadReservations();
-  loadAnalytics();
-  loadCartes();
-  showEl('dashboard');
-}
+	  loadShopSettings();
+	  loadReservations();
+	  loadDiagnostics();
+	  loadCartes();
+	  showEl('dashboard');
+	}
 
 // ─── 営業時間グリッド構築 ─────────────────────────────────
 function buildHoursGrid() {
@@ -935,9 +1116,10 @@ async function saveBasicInfo() {
         google_review_url: document.getElementById('googleReviewUrl').value.trim(),
       }),
     });
-    const data = await res.json();
-    toast(data.success ? 'basicOk' : 'basicErr');
-  } catch (e) {
+	    const data = await res.json();
+	    toast(data.success ? 'basicOk' : 'basicErr');
+	    if (data.success) loadDiagnostics();
+	  } catch (e) {
     toast('basicErr');
   } finally {
     btn.disabled = false;
@@ -962,9 +1144,10 @@ async function saveHours() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ shopId: currentShop.id, business_hours: hours }),
     });
-    const data = await res.json();
-    toast(data.success ? 'hoursOk' : 'hoursErr');
-  } catch (e) {
+	    const data = await res.json();
+	    toast(data.success ? 'hoursOk' : 'hoursErr');
+	    if (data.success) loadDiagnostics();
+	  } catch (e) {
     toast('hoursErr');
   } finally {
     btn.disabled = false;
@@ -993,27 +1176,133 @@ async function saveMenu() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ shopId: currentShop.id, menu_items: items }),
     });
-    const data = await res.json();
-    toast(data.success ? 'menuOk' : 'menuErr');
-  } catch (e) {
+	    const data = await res.json();
+	    toast(data.success ? 'menuOk' : 'menuErr');
+	    if (data.success) loadDiagnostics();
+	  } catch (e) {
     toast('menuErr');
   } finally {
     btn.disabled = false;
+	  }
+	}
+
+// ─── 設定チェック ───────────────────────────────────────────
+async function loadDiagnostics() {
+  const container = document.getElementById('diagnosticsContainer');
+  if (!container || !currentShop) return;
+  container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✅</div>確認中...</div>';
+  try {
+    const res = await api(`/api/shop-diagnostics?shopId=${encodeURIComponent(currentShop.id)}`);
+    const data = await res.json();
+    renderDiagnostics(data);
+  } catch (e) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div>設定チェックを取得できませんでした</div>';
   }
 }
 
-// ─── 経営分析 ─────────────────────────────────────────────
+function renderDiagnostics(data) {
+  const container = document.getElementById('diagnosticsContainer');
+  const statusMap = {
+    ok: ['正常', 'diag-ok'],
+    warn: ['要確認', 'diag-warn'],
+    error: ['要修正', 'diag-error'],
+  };
+  const [statusLabel, statusClass] = statusMap[data.status] || statusMap.warn;
+  const checks = Array.isArray(data.checks) ? data.checks : [];
+  const summary = document.createElement('div');
+  summary.className = 'diag-summary';
+  summary.innerHTML = `
+    <div>
+      <div class="diag-status">運用準備スコア</div>
+      <div class="diag-score">${esc(data.score ?? 0)} / ${esc(data.total ?? checks.length)}</div>
+    </div>
+    <span class="diag-pill ${statusClass}">${statusLabel}</span>
+  `;
+
+  const list = document.createElement('div');
+  list.className = 'diag-list';
+  checks.forEach(check => {
+    const item = document.createElement('div');
+    item.className = 'diag-item';
+    const pillClass = check.level === 'ok' ? 'diag-ok' : check.level === 'error' ? 'diag-error' : 'diag-warn';
+    const pillText = check.level === 'ok' ? 'OK' : check.level === 'error' ? '修正' : '確認';
+    item.innerHTML = `
+      <span class="diag-pill ${pillClass}">${pillText}</span>
+      <div>
+        <div class="diag-title">${esc(check.label)}</div>
+        <div class="diag-message">${esc(check.message)}</div>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+
+  const events = Array.isArray(data.recentEvents) ? data.recentEvents : [];
+  const unresolved = Array.isArray(data.unresolvedConsultations) ? data.unresolvedConsultations : [];
+  const unresolvedWrap = document.createElement('div');
+  unresolvedWrap.className = 'event-list';
+  if (unresolved.length > 0) {
+    unresolved.slice(0, 5).forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'event-item';
+      const date = item.last_at ? new Date(item.last_at).toLocaleString('ja-JP') : '';
+      row.innerHTML = `<div class="event-title">未確定相談</div>${esc(item.last_message || '-')}<br><span style="color:var(--text3);">${esc(date)}</span>`;
+      unresolvedWrap.appendChild(row);
+    });
+  }
+  const eventWrap = document.createElement('div');
+  eventWrap.className = 'event-list';
+  if (events.length > 0) {
+    events.slice(0, 5).forEach(ev => {
+      const item = document.createElement('div');
+      item.className = 'event-item';
+      const date = ev.created_at ? new Date(ev.created_at).toLocaleString('ja-JP') : '';
+      item.innerHTML = `<div class="event-title">${esc(ev.level)} / ${esc(displayEventType(ev.type))}</div>${esc(displayEventMessage(ev.message))}<br><span style="color:var(--text3);">${esc(date)}</span>`;
+      eventWrap.appendChild(item);
+    });
+  }
+
+  container.innerHTML = '';
+  container.appendChild(summary);
+  container.appendChild(list);
+  if (unresolved.length > 0) container.appendChild(unresolvedWrap);
+  if (events.length > 0) container.appendChild(eventWrap);
+}
+
+function displayEventType(type) {
+  const map = {
+    ai_response_failed: 'auto_response_failed',
+    ai_parse_failed: 'auto_parse_failed',
+    auto_response_failed: 'auto_response_failed',
+    auto_parse_failed: 'auto_parse_failed',
+  };
+  return map[type] || type || '-';
+}
+
+function displayEventMessage(message) {
+  const oldPrefix = 'A' + 'I';
+  return String(message || '-')
+    .replace(new RegExp(oldPrefix + '予約Pro', 'g'), 'スマート予約Pro')
+    .replace(new RegExp(oldPrefix, 'g'), '自動応答');
+}
+
+// ─── 経営分析（強化版） ────────────────────────────────────
 async function loadAnalytics() {
   try {
     const res  = await api(`/api/shop-analytics?shopId=${encodeURIComponent(currentShop.id)}`);
     const data = await res.json();
     renderAnalytics(data);
+    // 트렌드·세그먼트·어드바이스는 별도 API로 병렬 로드
+    loadTrend();
+    loadSegment();
+    loadAdvice(data);
   } catch (e) { /* handled */ }
 }
 
 function renderAnalytics(d) {
   const fmt = n => n != null ? '¥ ' + n.toLocaleString() : 'ー';
-  document.getElementById('aiSavingsAmount').textContent = d.aiSavings != null ? '¥ ' + d.aiSavings.toLocaleString() : '¥ ー';
+  const savings = d.automationSavings;
+  document.getElementById('automationSavingsAmount').textContent =
+    savings != null ? '¥ ' + savings.toLocaleString() : '¥ ー';
   document.getElementById('anaCount').textContent = d.thisMonth?.count ?? 'ー';
   document.getElementById('anaRevenue').textContent = fmt(d.thisMonth?.revenue);
 
@@ -1024,8 +1313,9 @@ function renderAnalytics(d) {
     el.style.color = val >= 0 ? 'var(--green)' : '#EF4444';
   };
   growthEl('anaCountGrowth', d.thisMonth?.countGrowth);
-  growthEl('anaRevGrowth', d.thisMonth?.revGrowth);
-  document.getElementById('anaReturnRate').textContent = d.returnRate != null ? d.returnRate + '%' : 'ー';
+  growthEl('anaRevGrowth',   d.thisMonth?.revGrowth);
+  document.getElementById('anaReturnRate').textContent =
+    d.returnRate != null ? d.returnRate + '%' : 'ー';
 
   const renderRank = (id, items, labelKey, countKey) => {
     const el = document.getElementById(id);
@@ -1044,6 +1334,213 @@ function renderAnalytics(d) {
   renderRank('rankTimes', d.topTimes, 'time', 'count');
   renderRank('rankDays',  d.topDays,  'day',  'count');
 }
+
+// ── 강화 1: 6개월 트렌드 ──────────────────────────────────
+async function loadTrend() {
+  const el = document.getElementById('trendContent');
+  try {
+    const res  = await api(`/api/shop-analytics-trend?shopId=${encodeURIComponent(currentShop.id)}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    renderTrend(data.months || []);
+  } catch (e) {
+    el.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:12px;">データを取得できませんでした</div>';
+  }
+}
+
+function renderTrend(months) {
+  const el = document.getElementById('trendContent');
+  if (!months.length) {
+    el.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:12px;">データがまだありません</div>';
+    return;
+  }
+  const maxCount = Math.max(...months.map(m => m.count), 1);
+
+  // 최근 3개월 카드
+  const recent = months.slice(-3);
+  let cardsHtml = '<div class="trend-grid">';
+  recent.forEach(m => {
+    const growth = m.growth != null
+      ? `<span style="color:${m.growth >= 0 ? 'var(--green)' : '#EF4444'};font-size:11px;font-weight:700;">
+           ${m.growth >= 0 ? '▲' : '▼'} ${Math.abs(m.growth)}%
+         </span>`
+      : '';
+    cardsHtml += `
+      <div class="trend-card">
+        <div class="trend-month">${esc(m.label)}</div>
+        <div class="trend-count">${m.count}件 ${growth}</div>
+        <div class="trend-revenue">¥${m.revenue.toLocaleString()}</div>
+      </div>`;
+  });
+  cardsHtml += '</div>';
+
+  // 6개월 바 차트
+  let barsHtml = '<div class="trend-bar-wrap">';
+  months.forEach(m => {
+    const pct = Math.round((m.count / maxCount) * 100);
+    barsHtml += `
+      <div class="trend-bar-row">
+        <span class="trend-bar-label">${esc(m.shortLabel)}</span>
+        <div class="trend-bar-bg">
+          <div class="trend-bar-fill" style="width:${pct}%"></div>
+        </div>
+        <span class="trend-bar-val">${m.count}件</span>
+      </div>`;
+  });
+  barsHtml += '</div>';
+
+  // 성장 코멘트
+  const last = months[months.length - 1];
+  const prev = months[months.length - 2];
+  let commentHtml = '';
+  if (last && prev && prev.count > 0) {
+    const diff = last.count - prev.count;
+    const sign = diff >= 0 ? '+' : '';
+    const color = diff >= 0 ? 'var(--green)' : '#EF4444';
+    commentHtml = `
+      <div style="margin-top:14px;padding:10px 14px;background:var(--bg);
+                  border-radius:8px;font-size:13px;color:var(--text2);">
+        ${last.label}は前月比
+        <strong style="color:${color};">${sign}${diff}件</strong>
+        でした。
+        ${diff > 0 ? '好調が続いています！🎉' : diff === 0 ? '先月と同水準です。' : '来月の回復を目指しましょう。'}
+      </div>`;
+  }
+
+  el.innerHTML = cardsHtml + barsHtml + commentHtml;
+}
+
+// ── 강화 2: 고객 세그먼트 ────────────────────────────────
+async function loadSegment() {
+  const el = document.getElementById('segmentContent');
+  try {
+    const res  = await api(`/api/shop-analytics-segment?shopId=${encodeURIComponent(currentShop.id)}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    renderSegment(data);
+  } catch (e) {
+    el.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:12px;">データを取得できませんでした</div>';
+  }
+}
+
+function renderSegment(data) {
+  const el = document.getElementById('segmentContent');
+  const segments = [
+    {
+      cls: 'segment-vip', icon: '👑',
+      label: 'VIP顧客', count: data.vip || 0,
+      desc: `3回以上ご来店のお客様<br>売上の<strong>${data.vipRevenueRate || 0}%</strong>を占めています`,
+    },
+    {
+      cls: 'segment-repeat', icon: '😊',
+      label: 'リピーター', count: data.repeat || 0,
+      desc: `2回ご来店のお客様<br>VIP予備軍として大切に`,
+    },
+    {
+      cls: 'segment-new', icon: '🌱',
+      label: '新規顧客', count: data.newCustomers || 0,
+      desc: `今月初めてのお客様<br>次回来店を促しましょう`,
+    },
+    {
+      cls: 'segment-sleep', icon: '😴',
+      label: '休眠顧客', count: data.sleeping || 0,
+      desc: `3ヶ月以上来店なし<br>フォローのチャンスです`,
+    },
+  ];
+
+  let html = '<div class="segment-grid">';
+  segments.forEach(s => {
+    html += `
+      <div class="segment-card ${s.cls}">
+        <div class="segment-icon">${s.icon}</div>
+        <div class="segment-label">${esc(s.label)}</div>
+        <div class="segment-count">${s.count}<span style="font-size:14px;font-weight:500;color:var(--text2);"> 名</span></div>
+        <div class="segment-desc">${s.desc}</div>
+      </div>`;
+  });
+  html += '</div>';
+
+  // 휴면 고객 알림
+  if (data.sleeping > 0) {
+    html += `
+      <div class="segment-alert">
+        <span>⚠️</span>
+        <span>
+          <strong>${data.sleeping}名</strong>の休眠顧客がいます。
+          次回来店時に特別な声がけをするだけで、復帰率が上がります。
+        </span>
+      </div>`;
+  }
+
+  // VIP 비율 바
+  const total = (data.vip || 0) + (data.repeat || 0) + (data.newCustomers || 0) + (data.sleeping || 0);
+  if (total > 0) {
+    const vipPct    = Math.round((data.vip || 0) / total * 100);
+    const repeatPct = Math.round((data.repeat || 0) / total * 100);
+    const newPct    = Math.round((data.newCustomers || 0) / total * 100);
+    const sleepPct  = 100 - vipPct - repeatPct - newPct;
+    html += `
+      <div style="margin-top:14px;">
+        <div style="font-size:12px;color:var(--text3);margin-bottom:6px;font-weight:600;">顧客構成比</div>
+        <div style="display:flex;height:10px;border-radius:6px;overflow:hidden;gap:2px;">
+          <div style="width:${vipPct}%;background:#F59E0B;border-radius:4px;"></div>
+          <div style="width:${repeatPct}%;background:var(--green);border-radius:4px;"></div>
+          <div style="width:${newPct}%;background:#3B82F6;border-radius:4px;"></div>
+          <div style="width:${Math.max(sleepPct,0)}%;background:#E5E7EB;border-radius:4px;"></div>
+        </div>
+        <div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;">
+          <span style="font-size:11px;color:#92400E;">👑 VIP ${vipPct}%</span>
+          <span style="font-size:11px;color:var(--green-d);">😊 リピーター ${repeatPct}%</span>
+          <span style="font-size:11px;color:#1D4ED8;">🌱 新規 ${newPct}%</span>
+          <span style="font-size:11px;color:var(--text3);">😴 休眠 ${Math.max(sleepPct,0)}%</span>
+        </div>
+      </div>`;
+  }
+
+  el.innerHTML = html;
+}
+
+// ── 강화 3: AI 경영 어드바이스 ──────────────────────────
+async function loadAdvice(analyticsData) {
+  const el = document.getElementById('adviceContent');
+  try {
+    const res = await api('/api/shop-analytics-advice', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        shopId: currentShop.id,
+        analytics: analyticsData,
+      }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    renderAdvice(data.advices || []);
+  } catch (e) {
+    el.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:12px;">アドバイスを取得できませんでした</div>';
+  }
+}
+
+function renderAdvice(advices) {
+  const el = document.getElementById('adviceContent');
+  if (!advices.length) {
+    el.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:12px;">データが蓄積されるとアドバイスが表示されます</div>';
+    return;
+  }
+  const dotMap = { red: 'advice-dot-red', yellow: 'advice-dot-yellow', green: 'advice-dot-green' };
+  let html = '<div class="advice-list">';
+  advices.forEach(a => {
+    const dotCls = dotMap[a.level] || 'advice-dot-yellow';
+    html += `
+      <div class="advice-item">
+        <div class="advice-dot ${dotCls}"></div>
+        <div class="advice-text">${esc(a.text)}</div>
+      </div>`;
+  });
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// ─── ここまで 経営分析（強化版） ────────────────────────
 
 // ─── 顧客カルテ ───────────────────────────────────────────
 async function loadCartes() {

@@ -258,7 +258,7 @@
 <div id="loginScreen">
   <div class="login-logo">
     <div class="login-logo-icon">🤖</div>
-    <span class="login-logo-text">LINE AI予約ボット</span>
+    <span class="login-logo-text">スマート予約Pro</span>
   </div>
   <div class="login-card">
     <h2 class="login-card-title">管理者ログイン</h2>
@@ -317,6 +317,35 @@
       </div>
     </div>
 
+    <!-- Operations -->
+    <div class="section-card">
+      <div class="section-head">
+        <h2 class="section-title">🩺 運用モニタリング</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="refresh-btn" id="opsRefreshBtn" onclick="loadOps()">↻ 状態確認</button>
+          <button class="refresh-btn" id="syncPaymentsBtn" onclick="syncPayments()">決済同期</button>
+          <button class="refresh-btn" onclick="downloadBackup()">バックアップ</button>
+        </div>
+      </div>
+      <div class="stats-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:18px;">
+        <div class="stat-card"><div class="stat-num" id="opsStatus">-</div><div class="stat-lbl">システム状態</div></div>
+        <div class="stat-card"><div class="stat-num" id="ops24h">-</div><div class="stat-lbl">24h予約数</div></div>
+        <div class="stat-card"><div class="stat-num" id="ops7d">-</div><div class="stat-lbl">7日予約数</div></div>
+        <div class="stat-card"><div class="stat-num" id="opsSync">-</div><div class="stat-lbl">同期確認対象</div></div>
+        <div class="stat-card"><div class="stat-num" id="opsUnresolved">-</div><div class="stat-lbl">未確定相談</div></div>
+      </div>
+      <div id="opsTable"><div class="loading">読み込み中...</div></div>
+    </div>
+
+    <!-- Support -->
+    <div class="section-card">
+      <div class="section-head">
+        <h2 class="section-title">🎧 顧客サポート</h2>
+        <span style="font-size:13px;color:var(--text3);">店舗を選択すると予約・会話・カルテを確認できます</span>
+      </div>
+      <div id="supportPanel"><div class="empty">店舗一覧の「詳細」から確認してください</div></div>
+    </div>
+
     <!-- Reservations -->
     <div class="section-card">
       <div class="section-head">
@@ -354,6 +383,9 @@ const PLAN_MAP = {
   suspended: ['停止中',     'b-canceled'],
   expired:   ['期限切れ',   'b-expired'],
   refunded:  ['返金済み',   'b-refunded'],
+  past_due:  ['支払い遅延', 'b-expired'],
+  paused:    ['一時停止',   'b-canceled'],
+  unknown:   ['要確認',     'b-pending'],
 };
 
 const DEVELOPER_EMAIL = 'hohomi4847@gmail.com';
@@ -414,7 +446,7 @@ async function doLogin() {
     localStorage.removeItem('admin_lock_until');
     const data = await res.json();
     adminPw = pw;
-    localStorage.setItem('admin_pw', pw);
+    sessionStorage.setItem('admin_pw', pw);
     renderDashboard(data);
   } catch (e) {
     errEl.style.display = 'block';
@@ -424,7 +456,7 @@ async function doLogin() {
 }
 
 function doLogout() {
-  localStorage.removeItem('admin_pw');
+  sessionStorage.removeItem('admin_pw');
   adminPw = '';
   document.getElementById('dashboardScreen').style.display = 'none';
   document.getElementById('loginScreen').style.display     = 'flex';
@@ -449,12 +481,12 @@ async function init() {
     document.getElementById('lockMsg').style.display = 'block';
   }
 
-  const saved = localStorage.getItem('admin_pw');
+  const saved = sessionStorage.getItem('admin_pw');
   if (!saved) return;
 
   try {
     const res = await fetch('/api/dashboard', { headers: { 'x-admin-password': saved } });
-    if (res.status === 401) { localStorage.removeItem('admin_pw'); return; }
+    if (res.status === 401) { sessionStorage.removeItem('admin_pw'); return; }
     const data = await res.json();
     adminPw = saved;
     renderDashboard(data);
@@ -476,6 +508,7 @@ function renderDashboard(data) {
   updateStats(data.todayReservations);
   renderReservations();
   renderShops();
+  loadOps();
 }
 
 function updateStats(todayCount) {
@@ -554,7 +587,7 @@ function renderShops() {
   const tbl   = document.createElement('table');
 
   const hrow = tbl.createTHead().insertRow();
-  ['店舗名', '業種', 'メール', 'プラン状態', '操作', '登録日'].forEach(text => {
+      ['店舗名', '業種', 'メール', 'プラン状態', '操作', 'サポート', '登録日'].forEach(text => {
     const th = document.createElement('th');
     th.textContent = text;
     hrow.appendChild(th);
@@ -604,6 +637,13 @@ function renderShops() {
       btn.addEventListener('click', () => toggleShop(s.id, !s.is_paid, btn, s.shop_name));
       actTd.appendChild(btn);
     }
+
+    const supportTd = tr.insertCell();
+    const supportBtn = document.createElement('button');
+    supportBtn.className = 'toggle-btn btn-activate';
+    supportBtn.textContent = '詳細';
+    supportBtn.addEventListener('click', () => loadShopSupport(s.id));
+    supportTd.appendChild(supportBtn);
 
     // 登録日
     const dtTd = tr.insertCell();
@@ -727,6 +767,295 @@ async function reloadShops() {
     alert('更新に失敗しました。');
   } finally {
     btn.disabled = false;
+  }
+}
+
+async function loadOps() {
+  const btn = document.getElementById('opsRefreshBtn');
+  if (btn) btn.disabled = true;
+  try {
+    const res = await fetch('/api/admin/ops', { headers: hdr() });
+    if (res.status === 401) { doLogout(); return; }
+    const data = await res.json();
+    document.getElementById('opsStatus').textContent = data.health?.score != null ? data.health.score + '%' : (data.status === 'ok' ? 'OK' : '注意');
+    document.getElementById('ops24h').textContent = data.metrics?.reservations24h ?? '-';
+    document.getElementById('ops7d').textContent = data.metrics?.reservations7d ?? '-';
+    document.getElementById('opsSync').textContent = data.metrics?.syncNeeded ?? '-';
+    document.getElementById('opsUnresolved').textContent = data.metrics?.unresolvedConsultations ?? '-';
+    renderOpsEvents(data.recentEvents || [], data.integrations || {}, data.unresolvedConsultations || [], data.health);
+  } catch (e) {
+    document.getElementById('opsTable').innerHTML = '<div class="empty">運用状態を取得できませんでした</div>';
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+function renderOpsEvents(events, integrations, unresolved, health) {
+  const wrap = document.getElementById('opsTable');
+  wrap.innerHTML = '';
+  const integ = document.createElement('div');
+  integ.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;';
+  [
+    ['Resend', integrations.resend],
+    ['Paddle API', integrations.paddleApi],
+    ['Alert', integrations.alerts],
+  ].forEach(([label, ok]) => {
+    const b = document.createElement('span');
+    b.className = 'badge ' + (ok ? 'b-active' : 'b-pending');
+    b.textContent = label + ': ' + (ok ? 'ON' : 'OFF');
+    integ.appendChild(b);
+  });
+  wrap.appendChild(integ);
+
+  if (health?.checks?.length) {
+    const healthBox = document.createElement('div');
+    healthBox.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;';
+    health.checks.forEach(check => {
+      const b = document.createElement('span');
+      b.className = 'badge ' + (check.ok ? 'b-active' : 'b-pending');
+      b.textContent = check.label + ': ' + (check.ok ? 'OK' : '確認');
+      healthBox.appendChild(b);
+    });
+    wrap.appendChild(healthBox);
+  }
+
+  if (unresolved.length > 0) {
+    const unresolvedBox = document.createElement('div');
+    unresolvedBox.className = 'empty';
+    unresolvedBox.style.textAlign = 'left';
+    unresolvedBox.innerHTML = '<strong>未確定の予約相談</strong><br>' + unresolved.slice(0, 5)
+      .map(item => `${new Date(item.last_at).toLocaleString('ja-JP')} / ${esc(item.last_message || '-')}`)
+      .join('<br>');
+    wrap.appendChild(unresolvedBox);
+  }
+
+  if (events.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.textContent = '運用イベントはまだありません';
+    wrap.appendChild(empty);
+    return;
+  }
+
+  const tbl = document.createElement('table');
+  const hrow = tbl.createTHead().insertRow();
+  ['時刻', 'レベル', '種別', 'メッセージ'].forEach(text => {
+    const th = document.createElement('th');
+    th.textContent = text;
+    hrow.appendChild(th);
+  });
+  const tbody = tbl.createTBody();
+  events.slice(0, 12).forEach(ev => {
+    const tr = tbody.insertRow();
+    const dt = tr.insertCell();
+    try { dt.textContent = new Date(ev.created_at).toLocaleString('ja-JP'); }
+    catch { dt.textContent = '-'; }
+    const level = tr.insertCell();
+    const badge = document.createElement('span');
+    const cls = ev.level === 'info' ? 'b-active' : (ev.level === 'warn' ? 'b-pending' : 'b-expired');
+    badge.className = 'badge ' + cls;
+    badge.textContent = ev.level || '-';
+    level.appendChild(badge);
+    tr.insertCell().textContent = displayEventType(ev.type);
+    tr.insertCell().textContent = displayEventMessage(ev.message);
+  });
+  wrap.appendChild(tbl);
+}
+
+function displayEventType(type) {
+  const map = {
+    ai_response_failed: 'auto_response_failed',
+    ai_parse_failed: 'auto_parse_failed',
+    auto_response_failed: 'auto_response_failed',
+    auto_parse_failed: 'auto_parse_failed',
+  };
+  return map[type] || type || '-';
+}
+
+function displayEventMessage(message) {
+  const oldPrefix = 'A' + 'I';
+  return String(message || '-')
+    .replace(new RegExp(oldPrefix + '予約Pro', 'g'), 'スマート予約Pro')
+    .replace(new RegExp(oldPrefix, 'g'), '自動応答');
+}
+
+async function loadShopSupport(shopId) {
+  const panel = document.getElementById('supportPanel');
+  panel.innerHTML = '<div class="loading">読み込み中...</div>';
+  try {
+    const res = await fetch(`/api/admin/shop/${encodeURIComponent(shopId)}`, { headers: hdr() });
+    if (res.status === 401) { doLogout(); return; }
+    if (!res.ok) throw new Error('load failed');
+    const data = await res.json();
+    renderShopSupport(data);
+    document.getElementById('supportPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (e) {
+    panel.innerHTML = '<div class="empty">店舗詳細を取得できませんでした</div>';
+  }
+}
+
+function renderMiniTable(title, rows, columns) {
+  const section = document.createElement('div');
+  section.style.marginTop = '18px';
+  const h = document.createElement('h3');
+  h.className = 'section-title';
+  h.style.marginBottom = '10px';
+  h.textContent = title;
+  section.appendChild(h);
+  if (!rows || rows.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.textContent = 'データなし';
+    section.appendChild(empty);
+    return section;
+  }
+  const tbl = document.createElement('table');
+  const hrow = tbl.createTHead().insertRow();
+  columns.forEach(c => {
+    const th = document.createElement('th');
+    th.textContent = c.label;
+    hrow.appendChild(th);
+  });
+  const tbody = tbl.createTBody();
+  rows.slice(0, 8).forEach(row => {
+    const tr = tbody.insertRow();
+    columns.forEach(c => {
+      const td = tr.insertCell();
+      const value = typeof c.value === 'function' ? c.value(row) : row[c.value];
+      td.textContent = value == null || value === '' ? '-' : String(value).slice(0, 120);
+    });
+  });
+  section.appendChild(tbl);
+  return section;
+}
+
+function renderShopSupport(data) {
+  const panel = document.getElementById('supportPanel');
+  panel.innerHTML = '';
+  const shop = data.shop || {};
+  const head = document.createElement('div');
+  head.style.cssText = 'display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;';
+  [
+    ['店舗名', shop.shop_name],
+    ['メール', shop.owner_email],
+    ['状態', shop.plan_status],
+    ['有料', shop.is_paid ? 'YES' : 'NO'],
+  ].forEach(([label, value]) => {
+    const box = document.createElement('div');
+    box.className = 'stat-card';
+    const num = document.createElement('div');
+    num.className = 'stat-num';
+    num.style.fontSize = '18px';
+    num.textContent = value || '-';
+    const lbl = document.createElement('div');
+    lbl.className = 'stat-lbl';
+    lbl.textContent = label;
+    box.appendChild(num);
+    box.appendChild(lbl);
+    head.appendChild(box);
+  });
+  panel.appendChild(head);
+
+  const actions = document.createElement('div');
+  actions.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;';
+  const syncBtn = document.createElement('button');
+  syncBtn.className = 'refresh-btn';
+  syncBtn.textContent = 'この店舗の決済同期';
+  syncBtn.addEventListener('click', () => syncPayments(shop.id));
+  actions.appendChild(syncBtn);
+  panel.appendChild(actions);
+
+  const noteWrap = document.createElement('div');
+  noteWrap.style.marginBottom = '18px';
+  const note = document.createElement('textarea');
+  note.style.cssText = 'width:100%;min-height:82px;border:1px solid var(--border);border-radius:8px;padding:10px;font-family:inherit;';
+  note.placeholder = 'サポートメモ';
+  note.value = shop.admin_note || '';
+  const save = document.createElement('button');
+  save.className = 'refresh-btn';
+  save.textContent = 'メモ保存';
+  save.style.marginTop = '8px';
+  save.addEventListener('click', () => saveAdminNote(shop.id, note.value, save));
+  noteWrap.appendChild(note);
+  noteWrap.appendChild(save);
+  panel.appendChild(noteWrap);
+
+  panel.appendChild(renderMiniTable('最近の予約', data.reservations, [
+    { label: '日付', value: 'reservation_date' },
+    { label: '時間', value: r => r.reservation_time ? String(r.reservation_time).slice(0, 5) : '-' },
+    { label: '顧客', value: 'customer_name' },
+    { label: 'メニュー', value: 'service_type' },
+    { label: '状態', value: 'status' },
+  ]));
+  panel.appendChild(renderMiniTable('最近の会話', data.conversations, [
+    { label: '時刻', value: r => r.created_at ? new Date(r.created_at).toLocaleString('ja-JP') : '-' },
+    { label: '役割', value: 'role' },
+    { label: '内容', value: 'content' },
+  ]));
+  panel.appendChild(renderMiniTable('顧客カルテ', data.cartes, [
+    { label: '顧客', value: 'customer_name' },
+    { label: '来店', value: 'visit_count' },
+    { label: '最終来店', value: 'last_visit_date' },
+    { label: 'メモ', value: 'memo' },
+  ]));
+}
+
+async function saveAdminNote(shopId, note, btn) {
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/admin/shop-note', {
+      method: 'POST',
+      headers: hdr(true),
+      body: JSON.stringify({ shopId, note }),
+    });
+    const data = await res.json();
+    alert(data.success ? '保存しました。' : '保存に失敗しました。');
+  } catch (e) {
+    alert('通信エラーが発生しました。');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function syncPayments(shopId) {
+  const btn = document.getElementById('syncPaymentsBtn');
+  if (btn && !shopId) btn.disabled = true;
+  try {
+    const res = await fetch('/api/admin/sync-payments', {
+      method: 'POST',
+      headers: hdr(true),
+      body: JSON.stringify(shopId ? { shopId } : {}),
+    });
+    const data = await res.json();
+    if (data.reason === 'paddle_api_key_missing') {
+      alert('PADDLE_API_KEY が未設定のため、決済同期は利用できません。');
+      return;
+    }
+    alert(`決済同期完了: ${(data.results || []).length}件`);
+    await reloadShops();
+    await loadOps();
+  } catch (e) {
+    alert('決済同期に失敗しました。');
+  } finally {
+    if (btn && !shopId) btn.disabled = false;
+  }
+}
+
+async function downloadBackup() {
+  try {
+    const res = await fetch('/api/admin/backup', { headers: hdr() });
+    if (!res.ok) throw new Error('backup failed');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `line-ai-bot-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    alert('バックアップの作成に失敗しました。');
   }
 }
 

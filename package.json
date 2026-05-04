@@ -4,12 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run test:safety",
+    "test:safety": "node test_reservation_safety.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
     "@line/bot-sdk": "^11.0.0",
@@ -24,7 +28,6 @@
     "jsonwebtoken": "^9.0.3",
     "node-cron": "^4.2.1",
     "passport": "^0.7.0",
-    "passport-google-oauth20": "^2.0.0",
-    "resend": "^6.12.2"
+    "passport-google-oauth20": "^2.0.0"
   }
 }

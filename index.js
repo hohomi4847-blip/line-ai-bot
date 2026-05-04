@@ -12,8 +12,6 @@ const { createClient } = require('@supabase/supabase-js');
 const path = require('path');
 const ical = require('ical-generator').default;
 const cron = require('node-cron');
-const { Resend } = require('resend');
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 // ✅ 필수 환경변수 — 미설정 시 즉시 종료 (fallback 없음)
 const REQUIRED_ENV = [
@@ -35,9 +33,15 @@ app.set('trust proxy', 1);
 // ✅ Paddle webhook은 raw body 필요 - 반드시 먼저
 app.use('/paddle/webhook', express.raw({ type: 'application/json' }));
 
+function preserveRawBody(req, _res, buf) {
+  if (req.originalUrl && req.originalUrl.startsWith('/webhook/')) {
+    req.rawBody = buf;
+  }
+}
+
 app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb', verify: preserveRawBody }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -48,6 +52,15 @@ const supabase = createClient(
 
 const JWT_SECRET = process.env.SESSION_SECRET; // fallback 없음 — 위 REQUIRED_ENV 검증으로 보장
 const JWT_EXPIRES = '7d';
+const CALENDAR_TOKEN_SECRET = process.env.CALENDAR_TOKEN_SECRET || JWT_SECRET;
+const STARTED_AT = new Date();
+const OPS_EVENTS_LIMIT = 300;
+const opsEvents = [];
+const alertCooldowns = new Map();
+
+function isAlertConfigured() {
+  return Boolean(process.env.ALERT_WEBHOOK_URL || (process.env.ALERT_EMAIL && process.env.RESEND_API_KEY));
+}
 
 // ✅ JWT 쿠키 발급 함수
 function issueJWT(res, user) {
@@ -82,6 +95,19 @@ function verifyJWT(req, res, next) {
 
 app.use(verifyJWT);
 
+function makeCalendarToken(shop) {
+  return crypto
+    .createHmac('sha256', CALENDAR_TOKEN_SECRET)
+    .update(`${shop.id}:${shop.owner_email}`)
+    .digest('hex');
+}
+
+function safeEqualString(a, b) {
+  const left = Buffer.from(String(a || ''), 'utf8');
+  const right = Buffer.from(String(b || ''), 'utf8');
+  return left.length === right.length && crypto.timingSafeEqual(left, right);
+}
+
 // ✅ JWT 필수 미들웨어 (미인증 시 401)
 function requireJWT(req, res, next) {
   if (!req.user) return res.status(401).json({ error: '認証が必要です' });
@@ -112,12 +138,27 @@ app.use(passport.initialize());
 // ✅ 운영자 인증 미들웨어
 // query string 지원 제거 — 서버 로그에 패스워드 평문 노출 방지
 function adminAuth(req, res, next) {
+  const key = req.ip || 'unknown';
+  const now = Date.now();
+  const current = adminAttempts.get(key);
+  if (current?.lockedUntil && current.lockedUntil > now) {
+    return res.status(429).json({ error: 'リクエストが多すぎます。しばらくしてから再試行してください。' });
+  }
+
   const pw = req.headers['x-admin-password'];
   if (!pw || pw !== process.env.ADMIN_PASSWORD) {
+    const failed = (current?.failed || 0) + 1;
+    adminAttempts.set(key, {
+      failed: failed >= 5 ? 0 : failed,
+      lockedUntil: failed >= 5 ? now + 30 * 60 * 1000 : 0,
+    });
     return res.status(401).json({ error: '認証が必要です' });
   }
+  adminAttempts.delete(key);
   next();
 }
+
+const adminAttempts = new Map();
 
 // ✅ 입력값 검증
 function validateRegisterInput({ email, shopName, businessType, channelSecret, channelToken }) {
@@ -125,6 +166,49 @@ function validateRegisterInput({ email, shopName, businessType, channelSecret, c
   if (typeof email !== 'string' || !email.includes('@')) return false;
   if (shopName.length > 100) return false;
   return true;
+}
+
+function isUuid(value) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''));
+}
+
+function sanitizeBusinessHours(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const allowedDays = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+  const result = {};
+  for (const day of allowedDays) {
+    const item = value[day];
+    if (!item || typeof item !== 'object') continue;
+    const open = normalizeTime(item.open || '09:00');
+    const close = normalizeTime(item.close || '19:00');
+    const closed = Boolean(item.closed);
+    if (!closed && (!open || !close || open >= close)) return null;
+    result[day] = { open: open || '09:00', close: close || '19:00', closed };
+  }
+  return Object.keys(result).length > 0 ? result : null;
+}
+
+function sanitizeMenuItems(value) {
+  if (!Array.isArray(value)) return null;
+  const items = [];
+  for (const item of value.slice(0, 80)) {
+    if (!item || typeof item !== 'object') continue;
+    const name = String(item.name || '').trim().slice(0, 80);
+    if (!name) continue;
+    const price = Number(item.price);
+    const duration = Number(item.duration);
+    items.push({
+      name,
+      price: Number.isFinite(price) && price >= 0 && price <= 10000000 ? Math.round(price) : 0,
+      duration: Number.isFinite(duration) && duration > 0 && duration <= 480 ? Math.round(duration) : 60,
+    });
+  }
+  return items;
+}
+
+function sanitizeClosedDays(value) {
+  if (!Array.isArray(value)) return null;
+  return [...new Set(value.filter(isValidDateString))].slice(0, 365);
 }
 
 // ✅ iCal 텍스트 정제 (HTML 이스케이프 금지 — iCal은 평문, 라이브러리가 자체 처리)
@@ -136,9 +220,22 @@ function sanitizeIcalText(str) {
 // ✅ 시간 정규화
 function normalizeTime(timeStr) {
   if (!timeStr) return null;
-  const parts = timeStr.split(':');
+  const parts = String(timeStr).trim().split(':');
   if (parts.length < 2) return null;
-  return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+  const hour = Number(parts[0]);
+  const minute = Number(parts[1]);
+  if (!Number.isInteger(hour) || !Number.isInteger(minute)) return null;
+  if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+}
+
+function isValidDateString(date) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date || ''))) return false;
+  const [year, month, day] = date.split('-').map(Number);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  return parsed.getUTCFullYear() === year
+    && parsed.getUTCMonth() === month - 1
+    && parsed.getUTCDate() === day;
 }
 
 // ✅ 과거 날짜 체크
@@ -157,6 +254,340 @@ function timeToMinutes(timeStr) {
   if (!timeStr) return 0;
   const [h, m] = timeStr.split(':').map(Number);
   return h * 60 + m;
+}
+
+function getBusinessSlotIssue(shop, date, time, durationMinutes) {
+  if (!isValidDateString(date)) return 'invalid_date';
+  const normalizedTime = normalizeTime(time);
+  if (!normalizedTime) return 'invalid_time';
+  const dayKeys = ['sun','mon','tue','wed','thu','fri','sat'];
+  const dayKey = dayKeys[new Date(`${date}T00:00:00+09:00`).getDay()];
+  const hours = shop?.business_hours?.[dayKey];
+  if (Array.isArray(shop?.closed_days) && shop.closed_days.includes(date)) return 'closed_day';
+  if (!hours || hours.closed) return 'closed_day';
+  const open = normalizeTime(hours.open || '10:00');
+  const close = normalizeTime(hours.close || '19:00');
+  if (!open || !close || open >= close) return 'invalid_hours';
+  const start = timeToMinutes(normalizedTime);
+  const end = start + (Number(durationMinutes) || 60);
+  if (start < timeToMinutes(open) || end > timeToMinutes(close)) return 'outside_hours';
+  return null;
+}
+
+function businessSlotIssueMessage(issue, date, time) {
+  const dayJa = isValidDateString(date) ? getDayJa(date) : '';
+  if (issue === 'closed_day') return `${date}（${dayJa}）は定休日となっております。別の日程をお知らせください。`;
+  if (issue === 'outside_hours') return `${date} ${time}は営業時間外です。営業時間内のお時間をお知らせください。`;
+  if (issue === 'invalid_hours') return '店舗の営業時間設定を確認できませんでした。恐れ入りますが、別のお時間でお問い合わせください。';
+  if (issue === 'invalid_time') return 'ご予約の時間を正しくお知らせください。（例：14:00）';
+  return 'ご予約の日付を正しくお知らせください。（例：2026-05-01）';
+}
+
+function validateReservationFields(shop, { name, service, date, time }, options = {}) {
+  const requireName = options.requireName !== false;
+  const normalizedTime = normalizeTime(time);
+  const invalidNames = ['お客様名', 'お客様', '名前', 'name', '未定', '不明'];
+  const invalidServices = ['サービス内容', 'メニュー', '未定', '不明'];
+  const cleanName = String(name || '').trim();
+  const cleanService = String(service || '').trim();
+  if (requireName && (!cleanName || invalidNames.includes(cleanName) || cleanName.length < 2)) {
+    return { ok: false, message: 'ご予約のお名前をフルネームで教えていただけますか？' };
+  }
+  if (!cleanService || invalidServices.includes(cleanService)) {
+    return { ok: false, message: 'ご希望のメニューを教えてください。' };
+  }
+  if (!isValidDateString(date)) {
+    return { ok: false, message: 'ご予約の日付を正しくお知らせください。（例：2026-05-01）' };
+  }
+  if (!normalizedTime) {
+    return { ok: false, message: 'ご予約の時間を正しくお知らせください。（例：14:00）' };
+  }
+  if (isPastDate(date, normalizedTime)) {
+    return { ok: false, message: '申し訳ございません。過去の日時は予約できません。改めてご希望の日時をお聞かせください。' };
+  }
+  const durationMinutes = getServiceDuration(shop, cleanService);
+  const businessIssue = getBusinessSlotIssue(shop, date, normalizedTime, durationMinutes);
+  if (businessIssue) {
+    return { ok: false, message: businessSlotIssueMessage(businessIssue, date, normalizedTime) };
+  }
+  return {
+    ok: true,
+    name: cleanName.slice(0, 100),
+    service: cleanService.slice(0, 100),
+    date,
+    time: normalizedTime,
+    durationMinutes,
+  };
+}
+
+const reservationLocks = new Map();
+async function withReservationLock(key, fn) {
+  const previous = reservationLocks.get(key) || Promise.resolve();
+  let release;
+  const next = new Promise(resolve => { release = resolve; });
+  const tail = previous.catch(() => {}).then(() => next);
+  reservationLocks.set(key, tail);
+
+  await previous.catch(() => {});
+  try {
+    return await fn();
+  } finally {
+    release();
+    if (reservationLocks.get(key) === tail) reservationLocks.delete(key);
+  }
+}
+
+function getServiceDuration(shop, serviceType) {
+  const fallback = Number(shop.reservation_interval) || 60;
+  const items = Array.isArray(shop.menu_items) ? shop.menu_items : [];
+  const match = items.find(m => String(m.name || '').trim() === String(serviceType || '').trim());
+  const duration = Number(match?.duration);
+  return Number.isFinite(duration) && duration > 0 && duration <= 480 ? duration : fallback;
+}
+
+function getDayJa(date) {
+  const dayNames = ['日','月','火','水','木','金','土'];
+  return dayNames[new Date(date + 'T00:00:00+09:00').getDay()] || '';
+}
+
+function buildShopDiagnostics(shop, events = []) {
+  const hours = shop?.business_hours || {};
+  const menuItems = Array.isArray(shop?.menu_items) ? shop.menu_items : [];
+  const hasOpenHours = Object.values(hours).some(h => h && !h.closed && h.open && h.close && h.open < h.close);
+  const checks = [
+    {
+      key: 'payment',
+      level: shop?.is_paid && ['active', 'trial', 'trialing'].includes(shop?.plan_status || '') ? 'ok' : 'warn',
+      label: '決済ステータス',
+      message: shop?.is_paid ? `利用可能です（${shop.plan_status || 'unknown'}）` : '支払い状態を確認してください。',
+    },
+    {
+      key: 'line',
+      level: shop?.line_channel_secret && shop?.line_channel_access_token ? 'ok' : 'error',
+      label: 'LINE連携',
+      message: shop?.line_channel_secret && shop?.line_channel_access_token ? 'Webhook応答に必要な認証情報があります。' : 'LINE Channel Secret / Access Token が不足しています。',
+    },
+    {
+      key: 'description',
+      level: shop?.shop_description ? 'ok' : 'warn',
+      label: '店舗紹介文',
+      message: shop?.shop_description ? '自動応答で店舗情報を案内できます。' : '店舗紹介文を入力すると自動応答の品質が上がります。',
+    },
+    {
+      key: 'hours',
+      level: hasOpenHours ? 'ok' : 'error',
+      label: '営業時間',
+      message: hasOpenHours ? '予約可能な営業時間が設定されています。' : '少なくとも1日は営業日と営業時間を設定してください。',
+    },
+    {
+      key: 'menu',
+      level: menuItems.length > 0 ? 'ok' : 'warn',
+      label: 'メニュー',
+      message: menuItems.length > 0 ? `${menuItems.length}件のメニューがあります。` : 'メニューを登録すると所要時間と売上分析が安定します。',
+    },
+    {
+      key: 'review',
+      level: !shop?.review_request_enabled || shop?.google_review_url ? 'ok' : 'warn',
+      label: '口コミURL',
+      message: !shop?.review_request_enabled ? '口コミ依頼は無効です。' : '口コミ依頼に使うURLが設定されています。',
+    },
+  ];
+  const aiEvents = events.filter(e => ['auto_response_failed', 'auto_parse_failed', 'ai_response_failed', 'ai_parse_failed', 'reservation_change_failed', 'reservation_processing_failed'].includes(e.type));
+  checks.push({
+    key: 'ai_monitoring',
+    level: aiEvents.length === 0 ? 'ok' : 'warn',
+    label: '自動応答エラー監視',
+    message: aiEvents.length === 0 ? '直近の自動応答エラーはありません。' : `直近で${aiEvents.length}件の自動応答/予約処理エラーがあります。`,
+  });
+  const score = checks.reduce((sum, c) => sum + (c.level === 'ok' ? 1 : 0), 0);
+  return {
+    status: checks.some(c => c.level === 'error') ? 'error' : checks.some(c => c.level === 'warn') ? 'warn' : 'ok',
+    score,
+    total: checks.length,
+    checks,
+    recentEvents: events.slice(0, 10),
+  };
+}
+
+function isReservationIntentText(text) {
+  return /(予約|空き|空い|変更|キャンセル|お願い|伺い|行きたい|できますか|可能|希望|取りたい|予約したい)/.test(String(text || ''));
+}
+
+function isUnresolvedAssistantText(text) {
+  return /(教えて|お知らせください|いかがでしょうか|確認|番号|フルネーム|メニュー|日付|時間|空き時間帯)/.test(String(text || ''));
+}
+
+function isResolvedAssistantText(text) {
+  return /(ご予約を承りました|ご予約を変更いたしました|ご予約をキャンセルいたしました|予約完了|変更いたしました|キャンセルいたしました)/.test(String(text || ''));
+}
+
+async function getUnresolvedReservationConsultations(shopId = null) {
+  const since = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+  let convQuery = supabase.from('conversations')
+    .select('line_user_id, shop_id, role, content, created_at')
+    .gte('created_at', since)
+    .order('created_at', { ascending: true })
+    .limit(3000);
+  let resQuery = supabase.from('reservations')
+    .select('line_user_id, shop_id, created_at')
+    .gte('created_at', since)
+    .eq('status', 'confirmed')
+    .limit(3000);
+  if (shopId) {
+    convQuery = convQuery.eq('shop_id', shopId);
+    resQuery = resQuery.eq('shop_id', shopId);
+  }
+  const [convRes, reservationRes] = await Promise.all([convQuery, resQuery]);
+  if (convRes.error) throw convRes.error;
+
+  const confirmedAfter = new Map();
+  (reservationRes.data || []).forEach(r => {
+    const key = `${r.shop_id}:${r.line_user_id}`;
+    const time = new Date(r.created_at || 0).getTime();
+    confirmedAfter.set(key, Math.max(confirmedAfter.get(key) || 0, time));
+  });
+
+  const grouped = new Map();
+  (convRes.data || []).forEach(row => {
+    const key = `${row.shop_id}:${row.line_user_id}`;
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key).push(row);
+  });
+
+  const items = [];
+  for (const [key, rows] of grouped.entries()) {
+    const latest = rows[rows.length - 1];
+    const lastUser = [...rows].reverse().find(r => r.role === 'user');
+    const lastAssistant = [...rows].reverse().find(r => r.role === 'assistant');
+    if (!lastUser && !lastAssistant) continue;
+    const lastUserTime = lastUser ? new Date(lastUser.created_at).getTime() : 0;
+    const confirmedTime = confirmedAfter.get(key) || 0;
+    if (confirmedTime > lastUserTime) continue;
+    if (lastAssistant && isResolvedAssistantText(lastAssistant.content)) continue;
+
+    const assistantOpen = lastAssistant && isUnresolvedAssistantText(lastAssistant.content);
+    const userIntentOpen = lastUser && isReservationIntentText(lastUser.content) && latest.role === 'user';
+    if (!assistantOpen && !userIntentOpen) continue;
+
+    const [itemShopId, lineUserId] = key.split(':');
+    items.push({
+      shop_id: itemShopId,
+      line_user_id: lineUserId,
+      last_role: latest.role,
+      last_message: String(latest.content || '').replace(/\[[A-Z_]+\].*?\[\/[A-Z_]+\]/gs, '').trim().slice(0, 180),
+      last_at: latest.created_at,
+      reason: assistantOpen ? 'waiting_for_customer_info' : 'customer_message_needs_reply',
+    });
+  }
+
+  return items.sort((a, b) => new Date(b.last_at) - new Date(a.last_at)).slice(0, 100);
+}
+
+function buildSystemHealth({ integrations, metrics, recentEvents }) {
+  const checks = [
+    { key: 'alerts', ok: integrations.alerts, label: '障害通知' },
+    { key: 'database', ok: true, label: 'データベース' },
+    { key: 'payments', ok: integrations.paddleApi, label: '決済同期' },
+    { key: 'auto_errors', ok: (metrics.autoResponseErrors24h || 0) === 0, label: '自動応答エラー' },
+    { key: 'unresolved', ok: (metrics.unresolvedConsultations || 0) <= 5, label: '未確定相談' },
+  ];
+  const critical = (recentEvents || []).some(e => e.level === 'critical');
+  const score = checks.reduce((sum, c) => sum + (c.ok ? 20 : 0), 0) - (critical ? 20 : 0);
+  const normalized = Math.max(0, Math.min(100, score));
+  return {
+    score: normalized,
+    status: normalized >= 90 ? 'ok' : normalized >= 70 ? 'warn' : 'error',
+    checks,
+  };
+}
+
+function safeMeta(meta) {
+  if (!meta || typeof meta !== 'object') return {};
+  const json = JSON.stringify(meta);
+  return JSON.parse(json.length > 4000 ? json.slice(0, 4000) : json);
+}
+
+async function sendOpsAlert(event) {
+  const key = `${event.level}:${event.type}`;
+  const now = Date.now();
+  const last = alertCooldowns.get(key) || 0;
+  if (now - last < 10 * 60 * 1000) return;
+  alertCooldowns.set(key, now);
+
+  const text = `[${event.level.toUpperCase()}] ${event.type}\n${event.message}\n${new Date(event.created_at).toISOString()}`;
+  try {
+    if (process.env.ALERT_WEBHOOK_URL) {
+      await fetch(process.env.ALERT_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, event }),
+      });
+    }
+    if (process.env.ALERT_EMAIL) {
+      await sendEmailNotification(
+        process.env.ALERT_EMAIL,
+        `【スマート予約Pro Alert】${event.type}`,
+        `<pre style="font-family:monospace;white-space:pre-wrap;">${escapeHtml(text)}</pre>`
+      );
+    }
+  } catch (e) {
+    console.error('운영 알림 전송 실패:', e.message);
+  }
+}
+
+async function logOpsEvent(level, type, message, meta = {}, shopId = null) {
+  const event = {
+    id: crypto.randomUUID(),
+    created_at: new Date().toISOString(),
+    level,
+    type,
+    message: String(message || '').slice(0, 500),
+    shop_id: shopId,
+    meta: safeMeta(meta),
+  };
+  opsEvents.unshift(event);
+  if (opsEvents.length > OPS_EVENTS_LIMIT) opsEvents.pop();
+
+  const logLine = `[OPS:${level}] ${type} ${event.message}`;
+  if (level === 'critical' || level === 'error') console.error(logLine, event.meta);
+  else if (level === 'warn') console.warn(logLine, event.meta);
+  else console.log(logLine, event.meta);
+
+  supabase.from('ops_events').insert(event).then(({ error }) => {
+    if (error && !['42P01', '42703'].includes(error.code)) {
+      console.error('ops_events 기록 실패:', error.message);
+    }
+  }).catch(() => {});
+
+  if (['warn', 'error', 'critical'].includes(level)) sendOpsAlert(event).catch(() => {});
+  return event;
+}
+
+function mapPaddleStatusToPlan(subscription) {
+  const status = subscription?.status;
+  const scheduled = subscription?.scheduled_change;
+  const period = subscription?.current_billing_period;
+  const nextBilledAt = subscription?.items?.find(item => item.next_billed_at)?.next_billed_at;
+  const endDate = scheduled?.effective_at || period?.ends_at || nextBilledAt || null;
+  if (status === 'active' || status === 'trialing') {
+    return { is_paid: true, plan_status: 'active', subscription_end_date: endDate };
+  }
+  if (status === 'past_due') return { is_paid: false, plan_status: 'past_due', subscription_end_date: endDate };
+  if (status === 'paused') return { is_paid: false, plan_status: 'paused', subscription_end_date: endDate };
+  if (status === 'canceled') return { is_paid: false, plan_status: 'canceled', subscription_end_date: endDate };
+  return { is_paid: false, plan_status: status || 'unknown', subscription_end_date: endDate };
+}
+
+async function fetchPaddleSubscription(subscriptionId) {
+  if (!process.env.PADDLE_API_KEY) throw new Error('PADDLE_API_KEY is not configured');
+  const baseUrl = process.env.PADDLE_API_BASE
+    || (process.env.PADDLE_ENV === 'sandbox' ? 'https://sandbox-api.paddle.com' : 'https://api.paddle.com');
+  const response = await fetch(`${baseUrl}/subscriptions/${encodeURIComponent(subscriptionId)}`, {
+    headers: { Authorization: `Bearer ${process.env.PADDLE_API_KEY}` },
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(`Paddle API ${response.status}: ${JSON.stringify(body).slice(0, 300)}`);
+  return body.data;
 }
 
 // ✅ 업종별 재방문 주기 + 메시지
@@ -183,7 +614,7 @@ function getReturnVisitMessage(businessType) {
   return map[businessType] || `またのご利用をお待ちしております😊（目安：約${w}週間後）`;
 }
 
-// ✅ 기억하는 AI — 마지막 예약 조회
+// ✅ 이전 예약 기억
 async function getLastReservation(lineUserId, shopId) {
   const { data } = await supabase.from('reservations')
     .select('customer_name, service_type, reservation_date')
@@ -265,6 +696,97 @@ async function checkPendingMultiCancelInHistory(lineUserId, shopId) {
   return null;
 }
 
+async function checkPendingChangeInHistory(lineUserId, shopId) {
+  try {
+    const since = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    const { data } = await supabase.from('conversations')
+      .select('content').eq('line_user_id', lineUserId).eq('shop_id', shopId)
+      .eq('role', 'assistant').gte('created_at', since)
+      .order('created_at', { ascending: false }).limit(8);
+    for (const msg of (data || [])) {
+      const m = msg.content?.match(/\[CHANGE_PENDING\](.*?)\[\/CHANGE_PENDING\]/s);
+      if (!m) continue;
+      try {
+        const pending = JSON.parse(m[1]);
+        if (!pending.old?.id || !pending.next?.date || !pending.next?.time) continue;
+        const { data: r } = await supabase.from('reservations')
+          .select('status').eq('id', pending.old.id).eq('shop_id', shopId).single();
+        if (r?.status === 'confirmed') return pending;
+      } catch {
+        continue;
+      }
+    }
+  } catch { }
+  return null;
+}
+
+async function checkPendingMultiChangeInHistory(lineUserId, shopId) {
+  try {
+    const since = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    const { data } = await supabase.from('conversations')
+      .select('content').eq('line_user_id', lineUserId).eq('shop_id', shopId)
+      .eq('role', 'assistant').gte('created_at', since)
+      .order('created_at', { ascending: false }).limit(8);
+    for (const msg of (data || [])) {
+      const m = msg.content?.match(/\[CHANGE_PENDING_MULTI\](.*?)\[\/CHANGE_PENDING_MULTI\]/s);
+      if (m) {
+        try {
+          const p = JSON.parse(m[1]);
+          if (Array.isArray(p.reservations) && p.next?.date && p.next?.time) return p;
+        } catch {
+          continue;
+        }
+      }
+    }
+  } catch { }
+  return null;
+}
+
+function parsePendingTag(content, tag) {
+  const m = content?.match(new RegExp(`\\[${tag}\\](.*?)\\[\\/${tag}\\]`, 's'));
+  if (!m) return null;
+  try {
+    return JSON.parse(m[1]);
+  } catch {
+    return null;
+  }
+}
+
+async function getLatestPendingAction(lineUserId, shopId) {
+  try {
+    const since = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    const { data } = await supabase.from('conversations')
+      .select('content, created_at').eq('line_user_id', lineUserId).eq('shop_id', shopId)
+      .eq('role', 'assistant').gte('created_at', since)
+      .order('created_at', { ascending: false }).limit(12);
+    for (const msg of (data || [])) {
+      const change = parsePendingTag(msg.content, 'CHANGE_PENDING');
+      if (change?.old?.id && change?.next?.date && change?.next?.time) {
+        const { data: r } = await supabase.from('reservations')
+          .select('status').eq('id', change.old.id).eq('shop_id', shopId).single();
+        if (r?.status === 'confirmed') return { type: 'change', payload: change, createdAt: msg.created_at };
+        continue;
+      }
+      const changeMulti = parsePendingTag(msg.content, 'CHANGE_PENDING_MULTI');
+      if (Array.isArray(changeMulti?.reservations) && changeMulti.next?.date && changeMulti.next?.time) {
+        return { type: 'change_multi', payload: changeMulti, createdAt: msg.created_at };
+      }
+      const cancel = parsePendingTag(msg.content, 'CANCEL_PENDING');
+      if (cancel?.id) {
+        const { data: r } = await supabase.from('reservations')
+          .select('status').eq('id', cancel.id).eq('shop_id', shopId).single();
+        if (r?.status === 'confirmed') return { type: 'cancel', payload: cancel, createdAt: msg.created_at };
+        continue;
+      }
+      const cancelMulti = parsePendingTag(msg.content, 'CANCEL_PENDING_MULTI');
+      if (Array.isArray(cancelMulti)) {
+        return { type: 'cancel_multi', payload: { reservations: cancelMulti }, createdAt: msg.created_at };
+      }
+    }
+  } catch { }
+  return null;
+}
+
 // ✅ 확인 메시지 판정
 function isConfirmationMessage(msg) {
   const t = msg.trim().toLowerCase();
@@ -273,16 +795,34 @@ function isConfirmationMessage(msg) {
   );
 }
 
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  }[ch]));
+}
+
 // ✅ 이메일 HTML 빌더 (캔슬)
 function buildCancelEmailHtml(shopName, name, date, dayJa, time, service) {
   const t = String(time || '').slice(0, 5);
+  const safe = {
+    shopName: escapeHtml(shopName),
+    name: escapeHtml(name || '-'),
+    date: escapeHtml(date),
+    dayJa: escapeHtml(dayJa),
+    time: escapeHtml(t),
+    service: escapeHtml(service || '-'),
+  };
   return `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">
     <h2 style="color:#DC2626;">【キャンセル通知】</h2>
-    <p style="color:#555;margin-bottom:16px;">店舗：${shopName}</p>
+    <p style="color:#555;margin-bottom:16px;">店舗：${safe.shopName}</p>
     <table style="width:100%;border-collapse:collapse;">
-      <tr><th style="background:#fef2f2;padding:10px;border:1px solid #dde;text-align:left;width:35%;">お客様名</th><td style="padding:10px;border:1px solid #dde;">${name||'-'}</td></tr>
-      <tr><th style="background:#fef2f2;padding:10px;border:1px solid #dde;text-align:left;">予約日時</th><td style="padding:10px;border:1px solid #dde;">${date}（${dayJa}）${t}</td></tr>
-      <tr><th style="background:#fef2f2;padding:10px;border:1px solid #dde;text-align:left;">メニュー</th><td style="padding:10px;border:1px solid #dde;">${service||'-'}</td></tr>
+      <tr><th style="background:#fef2f2;padding:10px;border:1px solid #dde;text-align:left;width:35%;">お客様名</th><td style="padding:10px;border:1px solid #dde;">${safe.name}</td></tr>
+      <tr><th style="background:#fef2f2;padding:10px;border:1px solid #dde;text-align:left;">予約日時</th><td style="padding:10px;border:1px solid #dde;">${safe.date}（${safe.dayJa}）${safe.time}</td></tr>
+      <tr><th style="background:#fef2f2;padding:10px;border:1px solid #dde;text-align:left;">メニュー</th><td style="padding:10px;border:1px solid #dde;">${safe.service}</td></tr>
     </table>
     <p style="margin-top:20px;"><a href="https://line-ai-bot-production-2d6d.up.railway.app/shop-dashboard.html" style="color:#06C755;font-weight:bold;">ダッシュボードで確認 →</a></p>
   </div>`;
@@ -290,13 +830,46 @@ function buildCancelEmailHtml(shopName, name, date, dayJa, time, service) {
 
 // ✅ 이메일 HTML 빌더 (신규 예약)
 function buildNewResEmailHtml(shopName, name, date, dayJa, time, service) {
+  const safe = {
+    shopName: escapeHtml(shopName),
+    name: escapeHtml(name),
+    date: escapeHtml(date),
+    dayJa: escapeHtml(dayJa),
+    time: escapeHtml(time),
+    service: escapeHtml(service),
+  };
   return `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">
     <h2 style="color:#06C755;">【新規予約通知】</h2>
-    <p style="color:#555;margin-bottom:16px;">店舗：${shopName}</p>
+    <p style="color:#555;margin-bottom:16px;">店舗：${safe.shopName}</p>
     <table style="width:100%;border-collapse:collapse;">
-      <tr><th style="background:#f0f9f4;padding:10px;border:1px solid #dde;text-align:left;width:35%;">お客様名</th><td style="padding:10px;border:1px solid #dde;">${name}</td></tr>
-      <tr><th style="background:#f0f9f4;padding:10px;border:1px solid #dde;text-align:left;">予約日時</th><td style="padding:10px;border:1px solid #dde;">${date}（${dayJa}）${time}</td></tr>
-      <tr><th style="background:#f0f9f4;padding:10px;border:1px solid #dde;text-align:left;">メニュー</th><td style="padding:10px;border:1px solid #dde;">${service}</td></tr>
+      <tr><th style="background:#f0f9f4;padding:10px;border:1px solid #dde;text-align:left;width:35%;">お客様名</th><td style="padding:10px;border:1px solid #dde;">${safe.name}</td></tr>
+      <tr><th style="background:#f0f9f4;padding:10px;border:1px solid #dde;text-align:left;">予約日時</th><td style="padding:10px;border:1px solid #dde;">${safe.date}（${safe.dayJa}）${safe.time}</td></tr>
+      <tr><th style="background:#f0f9f4;padding:10px;border:1px solid #dde;text-align:left;">メニュー</th><td style="padding:10px;border:1px solid #dde;">${safe.service}</td></tr>
+    </table>
+    <p style="margin-top:20px;"><a href="https://line-ai-bot-production-2d6d.up.railway.app/shop-dashboard.html" style="color:#06C755;font-weight:bold;">ダッシュボードで確認する →</a></p>
+	  </div>`;
+}
+
+function buildChangeEmailHtml(shopName, name, oldRes, nextRes) {
+  const safe = {
+    shopName: escapeHtml(shopName),
+    name: escapeHtml(name || '-'),
+    oldDate: escapeHtml(oldRes.date),
+    oldDay: escapeHtml(oldRes.dayJa),
+    oldTime: escapeHtml(String(oldRes.time || '').slice(0, 5)),
+    oldService: escapeHtml(oldRes.service || '-'),
+    newDate: escapeHtml(nextRes.date),
+    newDay: escapeHtml(nextRes.dayJa),
+    newTime: escapeHtml(String(nextRes.time || '').slice(0, 5)),
+    newService: escapeHtml(nextRes.service || '-'),
+  };
+  return `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+    <h2 style="color:#2563EB;">【予約変更通知】</h2>
+    <p style="color:#555;margin-bottom:16px;">店舗：${safe.shopName}</p>
+    <table style="width:100%;border-collapse:collapse;">
+      <tr><th style="background:#eff6ff;padding:10px;border:1px solid #dde;text-align:left;width:35%;">お客様名</th><td style="padding:10px;border:1px solid #dde;">${safe.name}</td></tr>
+      <tr><th style="background:#eff6ff;padding:10px;border:1px solid #dde;text-align:left;">変更前</th><td style="padding:10px;border:1px solid #dde;">${safe.oldDate}（${safe.oldDay}）${safe.oldTime} / ${safe.oldService}</td></tr>
+      <tr><th style="background:#eff6ff;padding:10px;border:1px solid #dde;text-align:left;">変更後</th><td style="padding:10px;border:1px solid #dde;">${safe.newDate}（${safe.newDay}）${safe.newTime} / ${safe.newService}</td></tr>
     </table>
     <p style="margin-top:20px;"><a href="https://line-ai-bot-production-2d6d.up.railway.app/shop-dashboard.html" style="color:#06C755;font-weight:bold;">ダッシュボードで確認する →</a></p>
   </div>`;
@@ -304,14 +877,25 @@ function buildNewResEmailHtml(shopName, name, date, dayJa, time, service) {
 
 // ✅ Resend 이메일 알림 (실패해도 예약/취소에 영향 없음)
 async function sendEmailNotification(ownerEmail, subject, bodyHtml) {
-  if (!resend || !ownerEmail) return;
+  if (!process.env.RESEND_API_KEY || !ownerEmail) return;
   try {
-    await resend.emails.send({
-      from: 'LINE AI予約ボット <onboarding@resend.dev>',
-      to: ownerEmail,
-      subject,
-      html: bodyHtml,
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'スマート予約Pro <onboarding@resend.dev>',
+        to: ownerEmail,
+        subject,
+        html: bodyHtml,
+      }),
     });
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`Resend API ${response.status}: ${body.slice(0, 300)}`);
+    }
     console.log(`✅ メール送信: ${subject}`);
   } catch (e) {
     console.error('メール送信失敗:', e.message);
@@ -355,12 +939,15 @@ async function getConversationHistory(lineUserId, shopId) {
 }
 
 async function saveConversation(lineUserId, shopId, role, content) {
-  await supabase.from('conversations').insert({
+  const { error } = await supabase.from('conversations').insert({
     line_user_id: lineUserId,
     shop_id: shopId,
     role,
     content,
   });
+  if (error) {
+    await logOpsEvent('warn', 'conversation_save_failed', error.message, { lineUserId, role }, shopId);
+  }
 }
 
 async function cleanOldConversations() {
@@ -392,10 +979,10 @@ async function getShopExtraInfo(shopId) {
   return extraInfo;
 }
 
-async function checkReservationConflict(shopId, date, time, durationMinutes = 60) {
+async function checkReservationConflict(shopId, date, time, durationMinutes = 60, excludeReservationId = null) {
   const { data } = await supabase
     .from('reservations')
-    .select('reservation_time, duration_minutes')
+    .select('id, reservation_time, duration_minutes')
     .eq('shop_id', shopId)
     .eq('reservation_date', date)
     .eq('status', 'confirmed');
@@ -404,6 +991,7 @@ async function checkReservationConflict(shopId, date, time, durationMinutes = 60
   const newStart = timeToMinutes(time);
   const newEnd = newStart + durationMinutes;
   return data.some(r => {
+    if (excludeReservationId && r.id === excludeReservationId) return false;
     const existStart = timeToMinutes(r.reservation_time);
     const existEnd = existStart + (r.duration_minutes || 60);
     return newStart < existEnd && newEnd > existStart;
@@ -411,6 +999,7 @@ async function checkReservationConflict(shopId, date, time, durationMinutes = 60
 }
 
 async function sendReminders() {
+  if (process.env.ENABLE_LINE_PUSH_REMINDERS !== 'true') return;
   try {
     const jstNow = new Date(Date.now() + 9 * 60 * 60 * 1000);
     const tomorrow = new Date(jstNow);
@@ -439,16 +1028,39 @@ async function sendReminders() {
         await supabase.from('reservations').update({ reminder_sent: true }).eq('id', r.id);
       } catch (e) {
         console.error(`리마인더 실패: ${r.customer_name}`, e.message);
+        await logOpsEvent('warn', 'reminder_send_failed', e.message, {
+          reservationId: r.id,
+          lineUserId: r.line_user_id,
+        }, r.shop_id);
       }
     }
   } catch (e) {
     console.error('리마인더 오류:', e);
+    await logOpsEvent('error', 'reminder_job_failed', e.message);
   }
 }
 
-cron.schedule('0 0 * * *', sendReminders, { timezone: 'UTC' });
-cron.schedule('0 1 * * 1', cleanOldConversations, { timezone: 'UTC' });
-console.log('⏰ 스케줄러 시작');
+async function runHealthMonitor() {
+  try {
+    const { error } = await supabase.from('shops').select('id', { count: 'exact', head: true }).limit(1);
+    if (error) throw error;
+    if (!process.env.RESEND_API_KEY) {
+      await logOpsEvent('warn', 'resend_not_configured', 'RESEND_API_KEY is not configured; email notifications are disabled.');
+    }
+    if (!process.env.PADDLE_API_KEY) {
+      await logOpsEvent('warn', 'paddle_api_not_configured', 'PADDLE_API_KEY is not configured; manual payment sync is disabled.');
+    }
+  } catch (e) {
+    await logOpsEvent('critical', 'health_check_failed', e.message);
+  }
+}
+
+if (process.env.NODE_ENV !== 'test') {
+  cron.schedule('0 0 * * *', sendReminders, { timezone: 'UTC' });
+  cron.schedule('0 1 * * 1', cleanOldConversations, { timezone: 'UTC' });
+  cron.schedule('*/15 * * * *', runHealthMonitor, { timezone: 'UTC' });
+  console.log('⏰ 스케줄러 시작');
+}
 
 // ✅ Rate Limiting
 // 회원가입: IP당 15분에 10회
@@ -506,6 +1118,7 @@ app.get('/api/my-shop', requireJWT, async (req, res) => {
       shop.plan_status = 'expired';
     }
     const { line_channel_secret, line_channel_access_token, ...safeShop } = shop;
+    safeShop.calendar_token = makeCalendarToken(shop);
     res.json({ success: true, shop: safeShop });
   } catch (e) {
     res.status(500).json({ success: false });
@@ -548,6 +1161,7 @@ app.post('/paddle/webhook', async (req, res) => {
   const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET;
   if (!webhookSecret) {
     console.error('❌ [Paddle] PADDLE_WEBHOOK_SECRET 미설정 — webhook 거부');
+    logOpsEvent('critical', 'paddle_secret_missing', 'PADDLE_WEBHOOK_SECRET is not configured').catch(() => {});
     return res.status(401).json({ error: 'Server misconfiguration' });
   }
 
@@ -556,6 +1170,7 @@ app.post('/paddle/webhook', async (req, res) => {
 
   if (!verifyPaddleSignature(rawBody, sig, webhookSecret)) {
     console.warn(`⚠️ [Paddle] 서명 검증 실패 | IP=${req.ip} | Paddle-Signature: ${sig || '(없음)'}`);
+    logOpsEvent('warn', 'paddle_signature_failed', 'Invalid Paddle webhook signature', { ip: req.ip }).catch(() => {});
     return res.status(401).json({ error: 'Invalid signature' });
   }
   console.log(`✅ [Paddle] 서명 검증 성공 | IP=${req.ip}`);
@@ -564,6 +1179,7 @@ app.post('/paddle/webhook', async (req, res) => {
   try {
     const body = JSON.parse(rawBody);
     const eventType = body.event_type;
+    const eventId = body.event_id || body.id || null;
 
     // Paddle v2 webhook: customData は custom_data (snake_case) で届く
     // camelCase フォールバックも念のため確認
@@ -573,6 +1189,7 @@ app.post('/paddle/webhook', async (req, res) => {
     const customerEmail = body.data?.customer?.email || null;
 
     console.log(`📦 Paddle webhook: ${eventType} | shopId=${shopId} | email=${customerEmail}`);
+    await logOpsEvent('info', 'paddle_webhook_received', eventType, { eventId, shopId, customerEmail }, shopId);
 
     // shopId が優先 — なければ email にフォールバック
     function buildQuery(table, updateData) {
@@ -603,8 +1220,13 @@ app.post('/paddle/webhook', async (req, res) => {
         });
         if (q) {
           const { error } = await q;
-          if (error) console.error('shop 활성화 실패:', error);
-          else console.log(`✅ shop 활성화 완료`);
+          if (error) {
+            console.error('shop 활성화 실패:', error);
+            await logOpsEvent('error', 'paddle_activation_failed', error.message, { eventId, eventType, shopId, customerEmail }, shopId);
+          } else {
+            console.log(`✅ shop 활성화 완료`);
+            await logOpsEvent('info', 'shop_activated_by_paddle', 'Shop activated by Paddle webhook', { eventId, eventType }, shopId);
+          }
         }
       }
     }
@@ -627,8 +1249,13 @@ app.post('/paddle/webhook', async (req, res) => {
         console.log(`  → 서비스 종료 예정일: ${endDate}`);
         if (q) {
           const { error } = await q;
-          if (error) console.error('subscription.canceled 업데이트 실패:', error);
-          else console.log(`🚫 구독 취소 완료`);
+          if (error) {
+            console.error('subscription.canceled 업데이트 실패:', error);
+            await logOpsEvent('error', 'paddle_cancel_failed', error.message, { eventId, shopId, customerEmail }, shopId);
+          } else {
+            console.log(`🚫 구독 취소 완료`);
+            await logOpsEvent('info', 'subscription_canceled_by_paddle', 'Subscription cancellation synced', { eventId, endDate }, shopId);
+          }
         }
       }
     }
@@ -643,8 +1270,13 @@ app.post('/paddle/webhook', async (req, res) => {
         });
         if (q) {
           const { error } = await q;
-          if (error) console.error('transaction.refunded 업데이트 실패:', error);
-          else console.log(`💰 환불 완료`);
+          if (error) {
+            console.error('transaction.refunded 업데이트 실패:', error);
+            await logOpsEvent('error', 'paddle_refund_failed', error.message, { eventId, shopId, customerEmail }, shopId);
+          } else {
+            console.log(`💰 환불 완료`);
+            await logOpsEvent('warn', 'shop_refunded_by_paddle', 'Shop marked refunded by Paddle webhook', { eventId }, shopId);
+          }
         }
       }
     }
@@ -652,6 +1284,7 @@ app.post('/paddle/webhook', async (req, res) => {
     res.status(200).json({ received: true });
   } catch (e) {
     console.error('Paddle webhook 오류:', e);
+    await logOpsEvent('error', 'paddle_webhook_error', e.message);
     res.status(200).json({ received: true });
   }
 });
@@ -661,6 +1294,7 @@ app.post('/paddle/webhook', async (req, res) => {
 // ============================
 app.post('/api/admin/activate-shop', adminLimiter, adminAuth, async (req, res) => {
   const { shopId, activate } = req.body;
+  if (!isUuid(shopId)) return res.status(400).json({ success: false, reason: 'invalid_shop_id' });
   try {
     // 개발자 테스트 가게는 비활성화 불가 — 서버 이중 차단
     if (!activate) {
@@ -682,7 +1316,7 @@ app.post('/api/admin/activate-shop', adminLimiter, adminAuth, async (req, res) =
 
 app.get('/api/shop-settings', requireJWT, async (req, res) => {
   const { shopId } = req.query;
-  if (!shopId) return res.status(400).json({ error: 'shopId required' });
+  if (!isUuid(shopId)) return res.status(400).json({ error: 'invalid shopId' });
   try {
     const { data } = await supabase.from('shops')
       .select('shop_description, business_hours, menu_items, closed_days, reservation_interval, repeat_message_enabled, google_review_url, review_request_enabled, owner_email')
@@ -695,9 +1329,44 @@ app.get('/api/shop-settings', requireJWT, async (req, res) => {
   }
 });
 
+app.get('/api/shop-diagnostics', requireJWT, async (req, res) => {
+  const { shopId } = req.query;
+  if (!isUuid(shopId)) return res.status(400).json({ error: 'invalid shopId' });
+  try {
+    const { data: shop } = await supabase.from('shops').select('*').eq('id', shopId).single();
+    if (!shop || shop.owner_email !== req.user.email) return res.status(403).json({ error: 'Forbidden' });
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const [{ data: events, error: eventsError }, unresolved] = await Promise.all([
+      supabase.from('ops_events')
+        .select('level, type, message, created_at, meta')
+        .eq('shop_id', shopId)
+        .gte('created_at', since)
+        .order('created_at', { ascending: false })
+        .limit(20),
+      getUnresolvedReservationConsultations(shopId),
+    ]);
+    if (eventsError) throw eventsError;
+    const diagnostics = buildShopDiagnostics(shop, events || []);
+    diagnostics.unresolvedConsultations = unresolved;
+    diagnostics.checks.push({
+      key: 'unresolved_consultations',
+      level: unresolved.length === 0 ? 'ok' : unresolved.length <= 3 ? 'warn' : 'error',
+      label: '未確定の予約相談',
+      message: unresolved.length === 0 ? '未確定の予約相談はありません。' : `${unresolved.length}件の未確定相談があります。`,
+    });
+    diagnostics.total = diagnostics.checks.length;
+    diagnostics.score = diagnostics.checks.reduce((sum, c) => sum + (c.level === 'ok' ? 1 : 0), 0);
+    diagnostics.status = diagnostics.checks.some(c => c.level === 'error') ? 'error' : diagnostics.checks.some(c => c.level === 'warn') ? 'warn' : 'ok';
+    res.json(diagnostics);
+  } catch (e) {
+    await logOpsEvent('error', 'shop_diagnostics_failed', e.message, { shopId }, shopId);
+    res.status(500).json({ error: 'error' });
+  }
+});
+
 app.get('/api/shop-reservations', requireJWT, async (req, res) => {
   const { shopId } = req.query;
-  if (!shopId) return res.status(400).json({ error: 'shopId required' });
+  if (!isUuid(shopId)) return res.status(400).json({ error: 'invalid shopId' });
   try {
     const { data: shop } = await supabase.from('shops').select('owner_email').eq('id', shopId).single();
     if (!shop || shop.owner_email !== req.user.email) return res.status(403).json({ error: 'Forbidden' });
@@ -711,7 +1380,7 @@ app.get('/api/shop-reservations', requireJWT, async (req, res) => {
 
 app.post('/api/cancel-reservation', requireJWT, async (req, res) => {
   const { reservationId, shopId } = req.body;
-  if (!reservationId || !shopId) return res.status(400).json({ success: false });
+  if (!isUuid(reservationId) || !isUuid(shopId)) return res.status(400).json({ success: false, reason: 'invalid_id' });
   try {
     const { data: shop } = await supabase.from('shops').select('owner_email').eq('id', shopId).single();
     if (!shop || shop.owner_email !== req.user.email) return res.status(403).json({ success: false });
@@ -726,24 +1395,49 @@ app.post('/api/cancel-reservation', requireJWT, async (req, res) => {
 
 app.post('/api/shop-update', requireJWT, async (req, res) => {
   const { shopId, ...updateData } = req.body;
-  if (!shopId) return res.status(400).json({ success: false });
+  if (!isUuid(shopId)) return res.status(400).json({ success: false, reason: 'invalid_shop_id' });
   try {
     const { data: shop } = await supabase.from('shops').select('id')
       .eq('id', shopId).eq('owner_email', req.user.email).single();
     if (!shop) return res.status(403).json({ success: false });
-    const allowedFields = ['shop_description', 'business_hours', 'menu_items', 'closed_days', 'reservation_interval', 'repeat_message_enabled', 'google_review_url', 'review_request_enabled'];
-    const safeUpdate = {};
-    allowedFields.forEach(f => { if (updateData[f] !== undefined) safeUpdate[f] = updateData[f]; });
-    // ✅ shop_description 길이 제한 — AI 시스템 프롬프트 토큰 폭증 방지
+	    const allowedFields = ['shop_description', 'business_hours', 'menu_items', 'closed_days', 'reservation_interval', 'repeat_message_enabled', 'google_review_url', 'review_request_enabled'];
+	    const safeUpdate = {};
+	    allowedFields.forEach(f => { if (updateData[f] !== undefined) safeUpdate[f] = updateData[f]; });
+	    if (Object.keys(safeUpdate).length === 0) {
+	      return res.status(400).json({ success: false, reason: 'no_fields' });
+	    }
+    // ✅ shop_description 길이 제한 — 응답 프롬프트 토큰 폭증 방지
     if (typeof safeUpdate.shop_description === 'string' && safeUpdate.shop_description.length > 500) {
       return res.status(400).json({ success: false, reason: 'description_too_long' });
     }
-    if (safeUpdate.google_review_url) {
-      try { new URL(safeUpdate.google_review_url); } catch (_) {
-        return res.status(400).json({ success: false, reason: 'invalid_url' });
-      }
-    }
-    const { error } = await supabase.from('shops').update(safeUpdate).eq('id', shopId);
+	    if (safeUpdate.google_review_url) {
+	      try { new URL(safeUpdate.google_review_url); } catch (_) {
+	        return res.status(400).json({ success: false, reason: 'invalid_url' });
+	      }
+	    }
+	    if (safeUpdate.business_hours !== undefined) {
+	      const hours = sanitizeBusinessHours(safeUpdate.business_hours);
+	      if (!hours) return res.status(400).json({ success: false, reason: 'invalid_business_hours' });
+	      safeUpdate.business_hours = hours;
+	    }
+	    if (safeUpdate.menu_items !== undefined) {
+	      const menu = sanitizeMenuItems(safeUpdate.menu_items);
+	      if (!menu || menu.length === 0) return res.status(400).json({ success: false, reason: 'invalid_menu_items' });
+	      safeUpdate.menu_items = menu;
+	    }
+	    if (safeUpdate.closed_days !== undefined) {
+	      const closedDays = sanitizeClosedDays(safeUpdate.closed_days);
+	      if (!closedDays) return res.status(400).json({ success: false, reason: 'invalid_closed_days' });
+	      safeUpdate.closed_days = closedDays;
+	    }
+	    if (safeUpdate.reservation_interval !== undefined) {
+	      const interval = Number(safeUpdate.reservation_interval);
+	      if (!Number.isFinite(interval) || interval < 5 || interval > 480) {
+	        return res.status(400).json({ success: false, reason: 'invalid_reservation_interval' });
+	      }
+	      safeUpdate.reservation_interval = Math.round(interval);
+	    }
+	    const { error } = await supabase.from('shops').update(safeUpdate).eq('id', shopId);
     if (error) throw error;
     res.json({ success: true });
   } catch (e) {
@@ -774,6 +1468,236 @@ app.get('/api/dashboard', adminLimiter, adminAuth, async (_req, res) => {
   }
 });
 
+app.get('/health', async (_req, res) => {
+  const checks = {
+    uptimeSeconds: Math.round(process.uptime()),
+    startedAt: STARTED_AT.toISOString(),
+    env: {
+      resend: Boolean(process.env.RESEND_API_KEY),
+      paddleApi: Boolean(process.env.PADDLE_API_KEY),
+	      alertWebhook: Boolean(process.env.ALERT_WEBHOOK_URL),
+	      alertEmail: Boolean(process.env.ALERT_EMAIL),
+	      alertsReady: isAlertConfigured(),
+	      linePushReminders: process.env.ENABLE_LINE_PUSH_REMINDERS === 'true',
+	    },
+    database: 'unknown',
+  };
+  try {
+    const { error } = await supabase.from('shops').select('id', { count: 'exact', head: true }).limit(1);
+    checks.database = error ? 'error' : 'ok';
+    const ok = checks.database === 'ok';
+    res.status(ok ? 200 : 503).json({ status: ok ? 'ok' : 'degraded', checks });
+  } catch (e) {
+    checks.database = 'error';
+    res.status(503).json({ status: 'degraded', checks });
+  }
+});
+
+app.get('/api/admin/ops', adminLimiter, adminAuth, async (_req, res) => {
+  try {
+    const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+	    const [shopsRes, todayRes, weekRes, dbEventsRes, unresolved] = await Promise.all([
+	      supabase.from('shops').select('id, shop_name, owner_email, is_paid, plan_status, paddle_subscription_id, subscription_end_date, created_at').order('created_at', { ascending: false }).limit(1000),
+	      supabase.from('reservations').select('id, shop_id, status, created_at').gte('created_at', since24h).limit(5000),
+	      supabase.from('reservations').select('id, shop_id, status, created_at').gte('created_at', since7d).limit(10000),
+	      supabase.from('ops_events').select('*').order('created_at', { ascending: false }).limit(100),
+	      getUnresolvedReservationConsultations(),
+	    ]);
+
+    const shops = shopsRes.data || [];
+    const paidShops = shops.filter(s => s.is_paid);
+    const syncNeeded = shops.filter(s => s.paddle_subscription_id && !['active', 'trial', 'trialing'].includes(s.plan_status || '')).length;
+    const dbEvents = dbEventsRes.error ? [] : (dbEventsRes.data || []);
+    const recentEvents = dbEvents.length > 0 ? dbEvents : opsEvents;
+	    const integrations = {
+	      resend: Boolean(process.env.RESEND_API_KEY),
+	      paddleApi: Boolean(process.env.PADDLE_API_KEY),
+	      alerts: isAlertConfigured(),
+	      linePushReminders: process.env.ENABLE_LINE_PUSH_REMINDERS === 'true',
+	    };
+	    const metrics = {
+	      totalShops: shops.length,
+	      paidShops: paidShops.length,
+	      inactivePaidRisk: shops.filter(s => s.is_paid && !['active', 'trial', 'trialing'].includes(s.plan_status || '')).length,
+	      reservations24h: (todayRes.data || []).length,
+	      reservations7d: (weekRes.data || []).length,
+	      syncNeeded,
+	      unresolvedConsultations: unresolved.length,
+	      autoResponseErrors24h: recentEvents.filter(e =>
+	        ['auto_response_failed', 'ai_response_failed', 'reservation_processing_failed'].includes(e.type)
+	        && new Date(e.created_at) >= new Date(since24h)
+	      ).length,
+	    };
+	    const health = buildSystemHealth({ integrations, metrics, recentEvents });
+	    res.json({
+	      status: 'ok',
+	      generatedAt: new Date().toISOString(),
+	      uptimeSeconds: Math.round(process.uptime()),
+	      startedAt: STARTED_AT.toISOString(),
+	      integrations,
+	      metrics,
+	      health,
+	      unresolvedConsultations: unresolved.slice(0, 30),
+	      shops: shops.slice(0, 100),
+	      recentEvents,
+      errors: [shopsRes.error, todayRes.error, weekRes.error, dbEventsRes.error].filter(Boolean).map(e => e.message),
+    });
+  } catch (e) {
+    await logOpsEvent('error', 'admin_ops_failed', e.message);
+    res.status(500).json({ status: 'error' });
+  }
+});
+
+app.get('/api/admin/shop/:shopId', adminLimiter, adminAuth, async (req, res) => {
+  const { shopId } = req.params;
+  if (!isUuid(shopId)) return res.status(400).json({ error: 'invalid_shop_id' });
+  try {
+	    const [shopRes, reservationsRes, conversationsRes, cartesRes, eventsRes] = await Promise.all([
+      supabase.from('shops').select('*').eq('id', shopId).single(),
+      supabase.from('reservations').select('*').eq('shop_id', shopId).order('created_at', { ascending: false }).limit(50),
+      supabase.from('conversations').select('line_user_id, role, content, created_at').eq('shop_id', shopId).order('created_at', { ascending: false }).limit(50),
+      supabase.from('customer_cartes').select('*').eq('shop_id', shopId).order('updated_at', { ascending: false }).limit(50),
+      supabase.from('ops_events').select('*').eq('shop_id', shopId).order('created_at', { ascending: false }).limit(50),
+	    ]);
+	    if (shopRes.error || !shopRes.data) return res.status(404).json({ error: 'shop_not_found' });
+	    const { line_channel_secret, line_channel_access_token, ...safeShop } = shopRes.data;
+	    const diagnostics = buildShopDiagnostics(shopRes.data, eventsRes.error ? [] : (eventsRes.data || []));
+	    res.json({
+	      shop: safeShop,
+	      reservations: reservationsRes.data || [],
+	      conversations: conversationsRes.data || [],
+	      cartes: cartesRes.data || [],
+	      events: eventsRes.error ? [] : (eventsRes.data || []),
+	      diagnostics,
+	    });
+  } catch (e) {
+    await logOpsEvent('error', 'admin_shop_detail_failed', e.message, { shopId }, shopId);
+    res.status(500).json({ error: 'error' });
+  }
+});
+
+app.post('/api/admin/shop-note', adminLimiter, adminAuth, async (req, res) => {
+  const { shopId, note } = req.body || {};
+  if (!isUuid(shopId)) return res.status(400).json({ success: false, reason: 'invalid_shop_id' });
+  try {
+    const safeNote = typeof note === 'string' ? note.slice(0, 2000) : '';
+    const { error } = await supabase.from('shops').update({ admin_note: safeNote }).eq('id', shopId);
+    if (error) throw error;
+    await logOpsEvent('info', 'admin_note_saved', 'Admin note updated', { length: safeNote.length }, shopId);
+    res.json({ success: true });
+  } catch (e) {
+    await logOpsEvent('error', 'admin_note_failed', e.message, { shopId }, shopId);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+app.post('/api/admin/sync-payments', adminLimiter, adminAuth, async (req, res) => {
+  const { shopId } = req.body || {};
+  if (shopId && !isUuid(shopId)) return res.status(400).json({ success: false, reason: 'invalid_shop_id' });
+  if (!process.env.PADDLE_API_KEY) return res.status(400).json({ success: false, reason: 'paddle_api_key_missing' });
+  try {
+    let query = supabase.from('shops').select('id, shop_name, owner_email, paddle_subscription_id, is_paid, plan_status');
+    if (shopId) query = query.eq('id', shopId);
+    else query = query.not('paddle_subscription_id', 'is', null).limit(100);
+    const { data: shops, error } = await query;
+    if (error) throw error;
+
+    const results = [];
+    for (const shop of shops || []) {
+      try {
+        if (!shop.paddle_subscription_id) {
+          results.push({ shopId: shop.id, success: false, reason: 'no_subscription_id' });
+          continue;
+        }
+        const subscription = await fetchPaddleSubscription(shop.paddle_subscription_id);
+        const mapped = mapPaddleStatusToPlan(subscription);
+        const { error: updateError } = await supabase.from('shops').update({
+          is_paid: mapped.is_paid,
+          plan_status: mapped.plan_status,
+          subscription_end_date: mapped.subscription_end_date,
+          payment_synced_at: new Date().toISOString(),
+        }).eq('id', shop.id);
+        if (updateError) throw updateError;
+        results.push({ shopId: shop.id, success: true, paddleStatus: subscription.status, planStatus: mapped.plan_status });
+      } catch (e) {
+        results.push({ shopId: shop.id, success: false, reason: e.message });
+        await logOpsEvent('warn', 'payment_sync_shop_failed', e.message, { shopId: shop.id }, shop.id);
+      }
+    }
+    await logOpsEvent('info', 'payment_sync_completed', `Payment sync processed ${results.length} shop(s)`, { results });
+    res.json({ success: true, results });
+  } catch (e) {
+    await logOpsEvent('error', 'payment_sync_failed', e.message);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+app.post('/api/admin/test-alert', adminLimiter, adminAuth, async (_req, res) => {
+  try {
+    const event = await logOpsEvent('warn', 'test_alert', 'This is a test alert from Smart Reservation operations.');
+    res.json({ success: true, eventId: event.id, alertsReady: isAlertConfigured() });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+app.get('/api/admin/backup', adminLimiter, adminAuth, async (_req, res) => {
+  try {
+    const tables = ['shops', 'reservations', 'conversations', 'customer_cartes', 'templates', 'ops_events'];
+    const backup = {
+      format: 'line-ai-bot-backup-v1',
+      exportedAt: new Date().toISOString(),
+      tables: {},
+    };
+    for (const table of tables) {
+      const { data, error } = await supabase.from(table).select('*').limit(10000);
+      backup.tables[table] = error ? { error: error.message, rows: [] } : { rows: data || [] };
+    }
+    res.set('Content-Type', 'application/json; charset=utf-8');
+    res.set('Content-Disposition', `attachment; filename="line-ai-bot-backup-${new Date().toISOString().slice(0, 10)}.json"`);
+    res.send(JSON.stringify(backup, null, 2));
+  } catch (e) {
+    await logOpsEvent('error', 'backup_failed', e.message);
+    res.status(500).json({ error: 'backup_failed' });
+  }
+});
+
+app.post('/api/admin/restore', adminLimiter, adminAuth, async (req, res) => {
+  const { backup, confirm } = req.body || {};
+  if (!backup || backup.format !== 'line-ai-bot-backup-v1' || !backup.tables) {
+    return res.status(400).json({ success: false, reason: 'invalid_backup' });
+  }
+  const restorable = ['shops', 'reservations', 'customer_cartes'];
+  const summary = {};
+  for (const table of restorable) {
+    const rows = Array.isArray(backup.tables[table]?.rows) ? backup.tables[table].rows : [];
+    summary[table] = rows.filter(row => row && row.id).length;
+  }
+  if (confirm !== 'RESTORE') {
+    return res.json({ success: true, dryRun: true, summary, message: 'Send confirm: RESTORE to upsert rows.' });
+  }
+  try {
+    const restored = {};
+    for (const table of restorable) {
+      const rows = (backup.tables[table]?.rows || []).filter(row => row && row.id);
+      restored[table] = 0;
+      for (let i = 0; i < rows.length; i += 500) {
+        const chunk = rows.slice(i, i + 500);
+        if (chunk.length === 0) continue;
+        const { error } = await supabase.from(table).upsert(chunk, { onConflict: 'id' });
+        if (error) throw error;
+        restored[table] += chunk.length;
+      }
+    }
+    await logOpsEvent('critical', 'backup_restored', 'Backup restore was executed', { restored });
+    res.json({ success: true, restored });
+  } catch (e) {
+    await logOpsEvent('error', 'restore_failed', e.message, { summary });
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 app.post('/api/register', registerLimiter, requireJWT, async (req, res) => {
   // ✅ JWT から email を取得 — body の email は使わない (なりすまし防止)
   const email = req.user.email;
@@ -800,11 +1724,12 @@ app.post('/api/register', registerLimiter, requireJWT, async (req, res) => {
 app.get('/api/calendar/:shopId', async (req, res) => {
   try {
     const { shopId } = req.params;
+    if (!isUuid(shopId)) return res.status(404).send('Not found');
     const { token } = req.query;
     const { data: shop } = await supabase.from('shops').select('*').eq('id', shopId).single();
     if (!shop) return res.status(404).send('Not found');
     if (!shop.is_paid) return res.status(401).send('Unauthorized');
-    if (token !== shop.owner_email.slice(0, 4)) return res.status(403).send('Forbidden');
+    if (!safeEqualString(token, makeCalendarToken(shop))) return res.status(403).send('Forbidden');
     const { data: reservations } = await supabase.from('reservations').select('*')
       .eq('shop_id', shopId).eq('status', 'confirmed').order('reservation_date', { ascending: true });
     const calendar = ical({ name: shop.shop_name, timezone: 'Asia/Tokyo' });
@@ -827,7 +1752,7 @@ app.get('/api/calendar/:shopId', async (req, res) => {
 app.get('/api/calendar', adminAuth, async (req, res) => {
   try {
     const { data: reservations } = await supabase.from('reservations').select('*').order('reservation_date', { ascending: true });
-    const calendar = ical({ name: 'LINE AI予約ボット - 全予約', timezone: 'Asia/Tokyo' });
+    const calendar = ical({ name: 'スマート予約Pro - 全予約', timezone: 'Asia/Tokyo' });
     (reservations || []).forEach(r => {
       if (!r.reservation_date || !r.reservation_time) return;
       const startDate = new Date(`${r.reservation_date}T${r.reservation_time}+09:00`);
@@ -844,7 +1769,7 @@ app.get('/api/calendar', adminAuth, async (req, res) => {
 
 app.get('/api/shop-analytics', requireJWT, async (req, res) => {
   const { shopId } = req.query;
-  if (!shopId) return res.status(400).json({ error: 'shopId required' });
+  if (!isUuid(shopId)) return res.status(400).json({ error: 'invalid shopId' });
   try {
     const { data: shop } = await supabase.from('shops')
       .select('owner_email, menu_items').eq('id', shopId).single();
@@ -893,17 +1818,170 @@ app.get('/api/shop-analytics', requireJWT, async (req, res) => {
     thisMonthRes.forEach(r => { if (r.reservation_date) { const d = DAY_JA[new Date(r.reservation_date + 'T00:00:00+09:00').getDay()]; dayCount[d] = (dayCount[d] || 0) + 1; } });
     const topDays = Object.entries(dayCount).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([day, count]) => ({ day, count }));
 
-    const aiSavings = Math.round(thisMonthRes.length * 0.5 * 1121);
+    const automationSavings = Math.round(thisMonthRes.length * 0.5 * 1121);
 
-    res.json({ thisMonth: { count: thisMonthRes.length, revenue: thisRevenue, countGrowth, revGrowth }, returnRate, topMenus, topTimes, topDays, aiSavings });
+    res.json({ thisMonth: { count: thisMonthRes.length, revenue: thisRevenue, countGrowth, revGrowth }, returnRate, topMenus, topTimes, topDays, automationSavings });
   } catch (e) {
+    res.status(500).json({ error: 'error' });
+  }
+});
+
+// ── 강화 1: 6개월 트렌드 API ──────────────────────────
+app.get('/api/shop-analytics-trend', requireJWT, async (req, res) => {
+  const { shopId } = req.query;
+  if (!isUuid(shopId)) return res.status(400).json({ error: 'invalid shopId' });
+  try {
+    const { data: shop } = await supabase.from('shops')
+      .select('owner_email, menu_items').eq('id', shopId).single();
+    if (!shop || shop.owner_email !== req.user.email)
+      return res.status(403).json({ error: 'Forbidden' });
+
+    const jstNow = new Date(Date.now() + 9 * 60 * 60 * 1000);
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(jstNow.getFullYear(), jstNow.getMonth() - i, 1);
+      months.push({
+        year:  d.getFullYear(),
+        month: d.getMonth() + 1,
+        label: `${d.getFullYear()}年${d.getMonth() + 1}月`,
+        shortLabel: `${d.getMonth() + 1}月`,
+      });
+    }
+
+    const menuPriceMap = {};
+    (shop.menu_items || []).forEach(m => { menuPriceMap[m.name] = m.price || 0; });
+
+    const results = await Promise.all(months.map(async m => {
+      const from = `${m.year}-${String(m.month).padStart(2,'0')}-01`;
+      const lastDay = new Date(m.year, m.month, 0).getDate();
+      const to   = `${m.year}-${String(m.month).padStart(2,'0')}-${lastDay}`;
+      const { data } = await supabase.from('reservations')
+        .select('service_type')
+        .eq('shop_id', shopId).eq('status', 'confirmed')
+        .gte('reservation_date', from).lte('reservation_date', to);
+      const count   = (data || []).length;
+      const revenue = (data || []).reduce((s, r) => s + (menuPriceMap[r.service_type] || 0), 0);
+      return { ...m, count, revenue };
+    }));
+
+    // 전월 대비 성장률 계산
+    results.forEach((m, i) => {
+      if (i === 0) { m.growth = null; return; }
+      const prev = results[i - 1].count;
+      m.growth = prev > 0 ? Math.round((m.count - prev) / prev * 100) : null;
+    });
+
+    res.json({ months: results });
+  } catch (e) {
+    res.status(500).json({ error: 'error' });
+  }
+});
+
+// ── 강화 2: 고객 세그먼트 API ────────────────────────────
+app.get('/api/shop-analytics-segment', requireJWT, async (req, res) => {
+  const { shopId } = req.query;
+  if (!isUuid(shopId)) return res.status(400).json({ error: 'invalid shopId' });
+  try {
+    const { data: shop } = await supabase.from('shops')
+      .select('owner_email, menu_items').eq('id', shopId).single();
+    if (!shop || shop.owner_email !== req.user.email)
+      return res.status(403).json({ error: 'Forbidden' });
+
+    const menuPriceMap = {};
+    (shop.menu_items || []).forEach(m => { menuPriceMap[m.name] = m.price || 0; });
+
+    const { data: cartes } = await supabase.from('customer_cartes')
+      .select('line_user_id, visit_count, last_visit_date')
+      .eq('shop_id', shopId);
+
+    const threeMonthsAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
+      .toISOString().split('T')[0];
+
+    let vip = 0, repeat = 0, newCustomers = 0, sleeping = 0;
+    (cartes || []).forEach(c => {
+      const isSleeping = !c.last_visit_date || c.last_visit_date < threeMonthsAgo;
+      if (isSleeping) { sleeping++; return; }
+      if ((c.visit_count || 0) >= 3) vip++;
+      else if ((c.visit_count || 0) === 2) repeat++;
+      else newCustomers++;
+    });
+
+    // VIP 매출 비율
+    const { data: allRes } = await supabase.from('reservations')
+      .select('line_user_id, service_type')
+      .eq('shop_id', shopId).eq('status', 'confirmed');
+
+    const userSpend = {};
+    (allRes || []).forEach(r => {
+      userSpend[r.line_user_id] = (userSpend[r.line_user_id] || 0) + (menuPriceMap[r.service_type] || 0);
+    });
+    const totalRevenue = Object.values(userSpend).reduce((s, v) => s + v, 0);
+
+    const vipUserIds = new Set(
+      (cartes || [])
+        .filter(c => (c.visit_count || 0) >= 3 && c.last_visit_date >= threeMonthsAgo)
+        .map(c => c.line_user_id)
+    );
+    const vipRevenue = Object.entries(userSpend)
+      .filter(([id]) => vipUserIds.has(id))
+      .reduce((s, [, v]) => s + v, 0);
+    const vipRevenueRate = totalRevenue > 0
+      ? Math.round(vipRevenue / totalRevenue * 100) : 0;
+
+    res.json({ vip, repeat, newCustomers, sleeping, vipRevenueRate });
+  } catch (e) {
+    res.status(500).json({ error: 'error' });
+  }
+});
+
+// ── 강화 3: AI 경영 어드바이스 API ──────────────────────
+app.post('/api/shop-analytics-advice', requireJWT, async (req, res) => {
+  const { shopId, analytics } = req.body;
+  if (!isUuid(shopId)) return res.status(400).json({ error: 'invalid shopId' });
+  try {
+    const { data: shop } = await supabase.from('shops')
+      .select('owner_email, shop_name, business_type').eq('id', shopId).single();
+    if (!shop || shop.owner_email !== req.user.email)
+      return res.status(403).json({ error: 'Forbidden' });
+
+    const prompt = `あなたは日本の小規模サロン・店舗の経営アドバイザーです。
+以下の予約データを分析して、店舗オーナーへの具体的なアドバイスを3つ生成してください。
+
+店舗名: ${shop.shop_name}
+業種: ${shop.business_type}
+今月の予約数: ${analytics?.thisMonth?.count ?? 0}件
+先月比: ${analytics?.thisMonth?.countGrowth ?? 0}%
+今月の推定売上: ¥${analytics?.thisMonth?.revenue ?? 0}
+リピート率: ${analytics?.returnRate ?? 0}%
+人気メニュー: ${(analytics?.topMenus || []).map(m => m.name).join('、') || 'データなし'}
+人気時間帯: ${(analytics?.topTimes || []).map(t => t.time).join('、') || 'データなし'}
+人気曜日: ${(analytics?.topDays || []).map(d => d.day).join('、') || 'データなし'}
+
+以下のJSON形式のみで回答してください。前置き・後置き・マークダウン不要：
+{"advices":[{"level":"red","text":"..."},{"level":"yellow","text":"..."},{"level":"green","text":"..."}]}
+
+levelの意味: red=要注意・改善が必要, yellow=チャンス・検討推奨, green=好調・このまま継続
+各textは日本語で2文以内、具体的な数字や行動を含めてください。`;
+
+    const aiRes = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 400,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    const raw = aiRes.content[0].text.trim();
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    res.json(parsed);
+  } catch (e) {
+    console.error('advice API error:', e);
     res.status(500).json({ error: 'error' });
   }
 });
 
 app.get('/api/customer-cartes', requireJWT, async (req, res) => {
   const { shopId } = req.query;
-  if (!shopId) return res.status(400).json({ error: 'shopId required' });
+  if (!isUuid(shopId)) return res.status(400).json({ error: 'invalid shopId' });
   try {
     const { data: shop } = await supabase.from('shops').select('owner_email').eq('id', shopId).single();
     if (!shop || shop.owner_email !== req.user.email) return res.status(403).json({ error: 'Forbidden' });
@@ -919,7 +1997,7 @@ app.put('/api/customer-carte/:id', requireJWT, async (req, res) => {
   const { id } = req.params;
   if (!/^[0-9a-f-]{36}$/.test(id)) return res.status(400).json({ success: false });
   const { memo, shopId } = req.body;
-  if (!shopId) return res.status(400).json({ success: false });
+  if (!isUuid(shopId)) return res.status(400).json({ success: false, reason: 'invalid_shop_id' });
   try {
     const { data: shop } = await supabase.from('shops').select('owner_email').eq('id', shopId).single();
     if (!shop || shop.owner_email !== req.user.email) return res.status(403).json({ success: false });
@@ -940,8 +2018,11 @@ app.put('/api/customer-carte/:id', requireJWT, async (req, res) => {
 app.post('/webhook/:shopId', async (req, res) => {
   try {
     const { shopId } = req.params;
-    const { data: shop } = await supabase.from('shops').select('*').eq('id', shopId).single();
-    if (!shop) return res.status(200).json({ status: 'shop_not_found' });
+      const { data: shop } = await supabase.from('shops').select('*').eq('id', shopId).single();
+    if (!shop) {
+      await logOpsEvent('warn', 'line_shop_not_found', 'LINE webhook received for unknown shop', { shopId }, shopId);
+      return res.status(200).json({ status: 'shop_not_found' });
+    }
     line.middleware({ channelSecret: shop.line_channel_secret, channelAccessToken: shop.line_channel_access_token })(req, res, async () => {
       const events = req.body.events || [];
       if (!shop.is_paid) {
@@ -966,6 +2047,7 @@ app.post('/webhook/:shopId', async (req, res) => {
     });
   } catch (err) {
     console.error(err);
+    await logOpsEvent('error', 'line_webhook_error', err.message);
     res.status(200).json({ status: 'error' });
   }
 });
@@ -979,7 +2061,7 @@ async function handleEvent(event, shop, template) {
   const userMessage = event.message.text;
   const DAY_NAMES = ['日','月','火','水','木','金','土'];
 
-  // ✅ 메시지 길이 제한 — AI 비용 폭증 방지
+  // ✅ 메시지 길이 제한 — 응답 처리 비용 폭증 방지
   if (userMessage.length > 2000) {
     await client.replyMessage({
       replyToken: event.replyToken,
@@ -988,13 +2070,137 @@ async function handleEvent(event, shop, template) {
     return;
   }
 
+  const latestPending = await getLatestPendingAction(lineUserId, shop.id);
+  if (latestPending?.type === 'change' && isConfirmationMessage(userMessage)) {
+    let changeMsg = '';
+    const oldRes = latestPending.payload.old;
+    const nextRes = latestPending.payload.next;
+    const lockKeys = [`${shop.id}:${oldRes.date}`, `${shop.id}:${nextRes.date}`].sort().join('|');
+    try {
+      await withReservationLock(lockKeys, async () => {
+	        const validation = validateReservationFields(shop, {
+	          name: oldRes.name || 'お客様',
+	          service: nextRes.service || oldRes.service || '予約',
+	          date: nextRes.date,
+	          time: nextRes.time,
+	        }, { requireName: false });
+        if (!validation.ok) {
+          changeMsg = validation.message;
+          return;
+        }
+        const conflict = await checkReservationConflict(shop.id, validation.date, validation.time, validation.durationMinutes, oldRes.id);
+        if (conflict) {
+          changeMsg = `申し訳ございません。${validation.date} ${validation.time}はすでに予約が入っております。他のお時間はいかがでしょうか？`;
+          return;
+        }
+        const { data: current, error: currentError } = await supabase.from('reservations')
+          .select('*').eq('id', oldRes.id).eq('shop_id', shop.id).single();
+        if (currentError || !current || current.status !== 'confirmed') {
+          changeMsg = '申し訳ございません。変更対象のご予約が見つかりませんでした。';
+          return;
+        }
+        const { error: cancelError } = await supabase.from('reservations')
+          .update({ status: 'canceled' }).eq('id', oldRes.id).eq('shop_id', shop.id);
+        if (cancelError) throw cancelError;
+        const { error: insertError } = await supabase.from('reservations').insert({
+          line_user_id: lineUserId,
+          shop_id: shop.id,
+          customer_name: String(current.customer_name || oldRes.name || 'お客様').slice(0, 100),
+          service_type: validation.service,
+          reservation_date: validation.date,
+          reservation_time: validation.time,
+          duration_minutes: validation.durationMinutes,
+          status: 'confirmed',
+          reminder_sent: false,
+        });
+        if (insertError) throw insertError;
+        changeMsg = `ご予約を変更いたしました。\n\n変更前：${oldRes.date}（${getDayJa(oldRes.date)}） ${String(oldRes.time).slice(0, 5)}\n変更後：${validation.date}（${getDayJa(validation.date)}） ${validation.time}\n✂️ ${validation.service || current.service_type || '-'}`;
+        sendEmailNotification(
+          shop.owner_email,
+          `【予約変更】${current.customer_name || oldRes.name || 'お客様'}様 ${validation.date} ${validation.time}`,
+          buildChangeEmailHtml(
+            shop.shop_name,
+            current.customer_name || oldRes.name,
+            { ...oldRes, dayJa: getDayJa(oldRes.date) },
+            { ...nextRes, date: validation.date, time: validation.time, service: validation.service, dayJa: getDayJa(validation.date) }
+          )
+        ).catch(() => {});
+        await logOpsEvent('info', 'reservation_changed', 'Reservation changed by LINE confirmation', {
+          oldReservationId: oldRes.id,
+          oldDate: oldRes.date,
+          newDate: validation.date,
+        }, shop.id);
+      });
+    } catch (e) {
+      console.error('予約変更確定エラー:', e);
+      await logOpsEvent('error', 'reservation_change_failed', e.message, { lineUserId }, shop.id);
+      changeMsg = '申し訳ございません。予約変更中にエラーが発生しました。もう一度お試しください。';
+    }
+    await saveConversation(lineUserId, shop.id, 'user', userMessage);
+    await saveConversation(lineUserId, shop.id, 'assistant', changeMsg);
+    await client.replyMessage({ replyToken: event.replyToken, messages: [{ type: 'text', text: changeMsg }] });
+    return;
+  }
+
+  if (latestPending?.type === 'change_multi') {
+    const num = parseInt(userMessage.trim(), 10);
+    const list = latestPending.payload.reservations || [];
+    if (!isNaN(num) && num >= 1 && num <= list.length) {
+      const old = list[num - 1];
+      const next = latestPending.payload.next;
+      let selectMsg = '';
+      try {
+        const validation = validateReservationFields(shop, {
+          name: old.name || 'お客様',
+          service: next.service || old.service || '予約',
+          date: next.date,
+          time: next.time,
+        }, { requireName: false });
+        if (!validation.ok) {
+          selectMsg = validation.message;
+        } else {
+          const conflict = await checkReservationConflict(shop.id, validation.date, validation.time, validation.durationMinutes, old.id);
+          if (conflict) {
+            selectMsg = `申し訳ございません。${validation.date} ${validation.time}はすでに予約が入っております。他のお時間はいかがでしょうか？`;
+          } else {
+            selectMsg = `以下の内容で予約を変更してよろしいですか？\n\n変更前：${old.date}（${getDayJa(old.date)}） ${String(old.time).slice(0, 5)}\n変更後：${validation.date}（${getDayJa(validation.date)}） ${validation.time}\n✂️ ${validation.service || old.service || '-'}\n\n「はい」または「お願いします」と送信してください。`;
+            const saveContent = `${selectMsg}\n[CHANGE_PENDING]${JSON.stringify({
+              old,
+              next: { ...next, date: validation.date, time: validation.time, service: validation.service || old.service || '予約' },
+            })}[/CHANGE_PENDING]`;
+            await saveConversation(lineUserId, shop.id, 'user', userMessage);
+            await saveConversation(lineUserId, shop.id, 'assistant', saveContent);
+            await client.replyMessage({ replyToken: event.replyToken, messages: [{ type: 'text', text: selectMsg }] });
+            return;
+          }
+        }
+      } catch (e) {
+        console.error('予約変更選択エラー:', e);
+        await logOpsEvent('warn', 'reservation_change_failed', e.message, { lineUserId }, shop.id);
+        selectMsg = '申し訳ございません。予約変更の確認中にエラーが発生しました。もう一度お試しください。';
+      }
+      await saveConversation(lineUserId, shop.id, 'user', userMessage);
+      await saveConversation(lineUserId, shop.id, 'assistant', selectMsg);
+      await client.replyMessage({ replyToken: event.replyToken, messages: [{ type: 'text', text: selectMsg }] });
+      return;
+    }
+  }
+
   // ✅ Feature 1: 취소 대기 단건 확인
-  const pendingCancel = await checkPendingCancelInHistory(lineUserId, shop.id);
-  if (pendingCancel && isConfirmationMessage(userMessage)) {
-    const { id, name, date, time, service } = pendingCancel;
+  if (latestPending?.type === 'cancel' && isConfirmationMessage(userMessage)) {
+    const { id, name, date, time, service } = latestPending.payload;
     const dayJa = DAY_NAMES[new Date(date + 'T00:00:00+09:00').getDay()];
     const t = String(time).slice(0, 5);
-    await supabase.from('reservations').update({ status: 'canceled' }).eq('id', id);
+    const { data: canceled, error: cancelError } = await supabase.from('reservations')
+      .update({ status: 'canceled' }).eq('id', id).eq('shop_id', shop.id).eq('status', 'confirmed')
+      .select('id').single();
+    if (cancelError || !canceled) {
+      const notFoundMsg = '申し訳ございません。キャンセル対象のご予約が見つかりませんでした。';
+      await saveConversation(lineUserId, shop.id, 'user', userMessage);
+      await saveConversation(lineUserId, shop.id, 'assistant', notFoundMsg);
+      await client.replyMessage({ replyToken: event.replyToken, messages: [{ type: 'text', text: notFoundMsg }] });
+      return;
+    }
     const cancelMsg = `ご予約をキャンセルいたしました。\n\n📅 ${date}（${dayJa}） ${t}\n✂️ ${service || '-'}\n\nまたのご利用をお待ちしております。`;
     await saveConversation(lineUserId, shop.id, 'user', userMessage);
     await saveConversation(lineUserId, shop.id, 'assistant', cancelMsg);
@@ -1008,15 +2214,23 @@ async function handleEvent(event, shop, template) {
   }
 
   // ✅ Feature 1: 취소 대기 복수 선택
-  const pendingMulti = await checkPendingMultiCancelInHistory(lineUserId, shop.id);
-  if (pendingMulti) {
+  if (latestPending?.type === 'cancel_multi') {
     const num = parseInt(userMessage.trim(), 10);
-    const list = pendingMulti.reservations;
+    const list = latestPending.payload.reservations || [];
     if (!isNaN(num) && num >= 1 && num <= list.length) {
       const p = list[num - 1];
       const dayJa = DAY_NAMES[new Date(p.date + 'T00:00:00+09:00').getDay()];
       const t = String(p.time).slice(0, 5);
-      await supabase.from('reservations').update({ status: 'canceled' }).eq('id', p.id);
+      const { data: canceled, error: cancelError } = await supabase.from('reservations')
+        .update({ status: 'canceled' }).eq('id', p.id).eq('shop_id', shop.id).eq('status', 'confirmed')
+        .select('id').single();
+      if (cancelError || !canceled) {
+        const notFoundMsg = '申し訳ございません。キャンセル対象のご予約が見つかりませんでした。';
+        await saveConversation(lineUserId, shop.id, 'user', userMessage);
+        await saveConversation(lineUserId, shop.id, 'assistant', notFoundMsg);
+        await client.replyMessage({ replyToken: event.replyToken, messages: [{ type: 'text', text: notFoundMsg }] });
+        return;
+      }
       const cancelMsg = `ご予約をキャンセルいたしました。\n\n📅 ${p.date}（${dayJa}） ${t}\n✂️ ${p.service || '-'}\n\nまたのご利用をお待ちしております。`;
       await saveConversation(lineUserId, shop.id, 'user', userMessage);
       await saveConversation(lineUserId, shop.id, 'assistant', cancelMsg);
@@ -1033,31 +2247,63 @@ async function handleEvent(event, shop, template) {
   const history = await getConversationHistory(lineUserId, shop.id);
   const extraInfo = await getShopExtraInfo(shop.id);
 
-  // ✅ Feature 3: 기억하는 AI — 과거 예약 기억
+  // ✅ Feature 3: 과거 예약 기억
   const lastRes = await getLastReservation(lineUserId, shop.id);
   const memoryContext = lastRes
     ? `\n以前のご利用：${lastRes.reservation_date} ${lastRes.service_type}（${lastRes.customer_name}様）`
     : '';
 
-  // ✅ Feature 4: 마음을 담은 컨설턴트 AI 시스템 프롬프트
-  const basePrompt = template?.system_prompt || `あなたは${shop.shop_name}の親切なAI予約アシスタントです。`;
-  const fullSystemPrompt = `${basePrompt}
+  // ✅ Feature 4: 마음을 담은 예약 응대 시스템 프롬프트
+  // ✅ VIP 판정 (방문 10회 이상 OR 누적 매출 10만엔 이상)
+  const { data: carte } = await supabase
+    .from('customer_cartes')
+    .select('visit_count')
+    .eq('shop_id', shop.id)
+    .eq('line_user_id', lineUserId)
+    .single();
+
+  const { data: allReservations } = await supabase
+    .from('reservations')
+    .select('service_type')
+    .eq('shop_id', shop.id)
+    .eq('line_user_id', lineUserId)
+    .eq('status', 'confirmed');
+
+  const menuPriceMap = {};
+  (shop.menu_items || []).forEach(m => { menuPriceMap[m.name] = m.price || 0; });
+  const totalSpent = (allReservations || []).reduce((sum, r) => sum + (menuPriceMap[r.service_type] || 0), 0);
+  const visitCount = carte?.visit_count || 0;
+  const isVip = visitCount >= 10 || totalSpent >= 100000;
+
+  const vipGreeting = isVip
+    ? `このお客様は${visitCount}回ご来店のVIP顧客です。特別に丁寧で温かみのある対応をしてください。名前で呼びかけ、いつもの感謝を自然に伝えてください。`
+    : '';
+  const basePrompt = template?.system_prompt || `あなたは${shop.shop_name}の親切な予約アシスタントです。`;
+  const fullBasePrompt = basePrompt + (vipGreeting ? `\n\n${vipGreeting}` : '');
+  const fullSystemPrompt = `${fullBasePrompt}
 今日の日付は${today}です。${extraInfo}${memoryContext}
 
-あなたは親身になって接客する予約専門AIです。お客様の気持ちに寄り添い、丁寧で温かみのある対応をしてください。
+あなたは親身になって接客する予約専門スタッフです。お客様の気持ちに寄り添い、丁寧で温かみのある対応をしてください。
 
 予約・メニュー・料金・営業時間以外の質問には「申し訳ございませんが、予約に関するご質問のみお答えできます」と答えてください。
 
-【予約する場合】
-必ず返答の最後に以下のJSON形式を追加してください：
-[RESERVATION]{"name":"お客様名","service":"サービス内容","date":"YYYY-MM-DD","time":"HH:MM"}[/RESERVATION]
-・nameには必ずお客様の実際のお名前を入れてください
-・dateは必ず今日以降の日付にしてください
-予約情報が不明な場合は[RESERVATION]タグは不要です。
+	【予約する場合】
+	必ず返答の最後に以下のJSON形式を追加してください：
+	[RESERVATION]{"name":"お客様名","service":"サービス内容","date":"YYYY-MM-DD","time":"HH:MM"}[/RESERVATION]
+	・nameには必ずお客様の実際のお名前を入れてください
+	・dateは必ず今日以降の日付にしてください
+	・予約タグは、お名前・メニュー・日付・時間がすべて明確で、お客様が予約確定を希望している場合だけ付けてください
+	・「空いていますか」「午後」「来週あたり」など未確定の相談では予約タグを付けず、必要な情報を質問してください
+	予約情報が不明な場合は[RESERVATION]タグは不要です。
 
-【キャンセル・変更の場合】
-お客様がキャンセルや変更を希望する場合、返答の最後に以下を追加してください：
-[CANCEL_SEARCH]{"line_user_id":"${lineUserId}"}[/CANCEL_SEARCH]
+	【キャンセルの場合】
+	お客様がキャンセルを希望する場合、返答の最後に以下を追加してください：
+	[CANCEL_SEARCH]{"line_user_id":"${lineUserId}"}[/CANCEL_SEARCH]
+
+	【予約変更の場合】
+	お客様が既存予約の日時変更を希望し、変更後の日付と時間が分かる場合は返答の最後に以下を追加してください：
+	[CHANGE_RESERVATION]{"date":"YYYY-MM-DD","time":"HH:MM","service":"サービス内容"}[/CHANGE_RESERVATION]
+	変更後の日付または時間が不明な場合は、必要な情報を質問してください。
 
 【空き状況確認の場合】
 特定の日の空き状況を確認したい場合は返答の最後に以下を追加してください：
@@ -1075,13 +2321,93 @@ async function handleEvent(event, shop, template) {
     });
     replyText = aiResponse.content[0].text;
   } catch (aiError) {
-    console.error('AI 오류:', aiError);
+    console.error('응답 처리 오류:', aiError);
+    await logOpsEvent('error', 'auto_response_failed', aiError.message, { lineUserId }, shop.id);
     replyText = '申し訳ございません。一時的にサービスが混み合っています。しばらくしてからもう一度お試しください。';
     await client.replyMessage({ replyToken: event.replyToken, messages: [{ type: 'text', text: replyText }] });
     return;
   }
 
   await saveConversation(lineUserId, shop.id, 'user', userMessage);
+
+  const changeMatch = replyText.match(/\[CHANGE_RESERVATION\](.*?)\[\/CHANGE_RESERVATION\]/s);
+  if (changeMatch) {
+    try {
+      const changeData = JSON.parse(changeMatch[1]);
+      const normalizedTime = normalizeTime(changeData.time);
+      const serviceType = String(changeData.service || '').slice(0, 100);
+      const cleanReply = replyText.replace(/\[CHANGE_RESERVATION\].*?\[\/CHANGE_RESERVATION\]/gs, '').trim();
+      if (!isValidDateString(changeData.date) || !normalizedTime) {
+        const askMsg = cleanReply || '変更後の日付と時間を教えてください。（例：2026-05-10 14:00）';
+        await saveConversation(lineUserId, shop.id, 'assistant', askMsg);
+        await client.replyMessage({ replyToken: event.replyToken, messages: [{ type: 'text', text: askMsg }] });
+        return;
+      }
+
+      const { data: found } = await supabase.from('reservations')
+        .select('id, customer_name, reservation_date, reservation_time, service_type')
+        .eq('shop_id', shop.id).eq('line_user_id', lineUserId).eq('status', 'confirmed')
+        .order('reservation_date', { ascending: true });
+
+      if (!found || found.length === 0) {
+        const noResMsg = cleanReply || '変更可能なご予約が見つかりませんでした。';
+        await saveConversation(lineUserId, shop.id, 'assistant', noResMsg);
+        await client.replyMessage({ replyToken: event.replyToken, messages: [{ type: 'text', text: noResMsg }] });
+        return;
+      }
+      if (found.length > 1) {
+        const listText = found.map((r, i) =>
+          `${i + 1}. ${r.reservation_date}（${getDayJa(r.reservation_date)}） ${String(r.reservation_time).slice(0, 5)} ${r.service_type || ''}`
+        ).join('\n');
+        const multiMsg = `変更したいご予約が複数あります。まず変更前のご予約を番号で教えてください：\n\n${listText}`;
+        const pendingList = found.map(r => ({ id: r.id, name: r.customer_name, date: r.reservation_date, time: r.reservation_time, service: r.service_type }));
+        const saveContent = `${multiMsg}\n[CHANGE_PENDING_MULTI]${JSON.stringify({
+          reservations: pendingList,
+          next: { date: changeData.date, time: normalizedTime, service: serviceType || '予約' },
+        })}[/CHANGE_PENDING_MULTI]`;
+        await saveConversation(lineUserId, shop.id, 'assistant', saveContent);
+        await client.replyMessage({ replyToken: event.replyToken, messages: [{ type: 'text', text: multiMsg }] });
+        return;
+      }
+
+      const old = found[0];
+      const next = {
+        date: changeData.date,
+        time: normalizedTime,
+        service: serviceType || old.service_type || '予約',
+      };
+      const validation = validateReservationFields(shop, {
+        name: old.customer_name || 'お客様',
+        service: next.service,
+        date: next.date,
+        time: next.time,
+      }, { requireName: false });
+      if (!validation.ok) {
+        await saveConversation(lineUserId, shop.id, 'assistant', validation.message);
+        await client.replyMessage({ replyToken: event.replyToken, messages: [{ type: 'text', text: validation.message }] });
+        return;
+      }
+      const conflict = await checkReservationConflict(shop.id, validation.date, validation.time, validation.durationMinutes, old.id);
+      if (conflict) {
+        const conflictMsg = `申し訳ございません。${validation.date} ${validation.time}はすでに予約が入っております。他のお時間はいかがでしょうか？`;
+        await saveConversation(lineUserId, shop.id, 'assistant', conflictMsg);
+        await client.replyMessage({ replyToken: event.replyToken, messages: [{ type: 'text', text: conflictMsg }] });
+        return;
+      }
+
+      const confirmMsg = `以下の内容で予約を変更してよろしいですか？\n\n変更前：${old.reservation_date}（${getDayJa(old.reservation_date)}） ${String(old.reservation_time).slice(0, 5)}\n変更後：${validation.date}（${getDayJa(validation.date)}） ${validation.time}\n✂️ ${validation.service}\n\n「はい」または「お願いします」と送信してください。`;
+      const saveContent = `${confirmMsg}\n[CHANGE_PENDING]${JSON.stringify({
+        old: { id: old.id, name: old.customer_name, date: old.reservation_date, time: old.reservation_time, service: old.service_type },
+        next: { date: validation.date, time: validation.time, service: validation.service },
+      })}[/CHANGE_PENDING]`;
+      await saveConversation(lineUserId, shop.id, 'assistant', saveContent);
+      await client.replyMessage({ replyToken: event.replyToken, messages: [{ type: 'text', text: confirmMsg }] });
+      return;
+    } catch (e) {
+      console.error('予約変更準備エラー:', e);
+      await logOpsEvent('warn', 'auto_parse_failed', e.message, { tag: 'CHANGE_RESERVATION', lineUserId }, shop.id);
+    }
+  }
 
   // ✅ Feature 1: 취소 검색 처리
   const cancelSearchMatch = replyText.match(/\[CANCEL_SEARCH\](.*?)\[\/CANCEL_SEARCH\]/s);
@@ -1119,14 +2445,16 @@ async function handleEvent(event, shop, template) {
         await client.replyMessage({ replyToken: event.replyToken, messages: [{ type: 'text', text: multiMsg }] });
       }
       return;
-    } catch (e) {
-      console.error('キャンセル検索エラー:', e);
-    }
-  }
+	    } catch (e) {
+	      console.error('キャンセル検索エラー:', e);
+	      await logOpsEvent('warn', 'auto_parse_failed', e.message, { tag: 'CANCEL_SEARCH', lineUserId }, shop.id);
+	    }
+	  }
 
   // ✅ Feature 2: 공석 확인 처리
   let finalReply = replyText
     .replace(/\[CANCEL_SEARCH\].*?\[\/CANCEL_SEARCH\]/gs, '')
+    .replace(/\[CHANGE_RESERVATION\].*?\[\/CHANGE_RESERVATION\]/gs, '')
     .replace(/\[AVAIL_CHECK\].*?\[\/AVAIL_CHECK\]/gs, '')
     .replace(/\[RESERVATION\].*?\[\/RESERVATION\]/gs, '')
     .trim();
@@ -1148,51 +2476,68 @@ async function handleEvent(event, shop, template) {
           finalReply += `\n\n${date}（${dayJa}）の空き時間帯：\n${slots.available.join('、')}`;
         }
       }
-    } catch (e) {
-      console.error('空き確認エラー:', e);
-    }
-  }
+	    } catch (e) {
+	      console.error('空き確認エラー:', e);
+	      await logOpsEvent('warn', 'auto_parse_failed', e.message, { tag: 'AVAIL_CHECK', lineUserId }, shop.id);
+	    }
+	  }
 
   // ✅ Feature 1/7: 예약 처리 + 이메일 알림 + 리피트 메시지
   const reservationMatch = replyText.match(/\[RESERVATION\](.*?)\[\/RESERVATION\]/s);
   if (reservationMatch) {
     try {
       const reservationData = JSON.parse(reservationMatch[1]);
-      const normalizedTime = normalizeTime(reservationData.time);
-      const invalidNames = ['お客様名', 'お客様', '名前', 'name'];
+      const validation = validateReservationFields(shop, {
+        name: reservationData.name,
+        service: reservationData.service,
+        date: reservationData.date,
+        time: reservationData.time,
+      });
 
-      if (!reservationData.name || invalidNames.includes(reservationData.name)) {
-        finalReply = finalReply || 'ご予約のお名前を教えていただけますか？';
-      } else if (!normalizedTime) {
-        finalReply = finalReply || 'ご予約の時間を正しくお知らせください。（例：14:00）';
-      } else if (!reservationData.date || !/^\d{4}-\d{2}-\d{2}$/.test(reservationData.date)) {
-        finalReply = finalReply || 'ご予約の日付を正しくお知らせください。（例：2026-05-01）';
-      } else if (isPastDate(reservationData.date, normalizedTime)) {
-        finalReply = '申し訳ございません。過去の日時は予約できません。改めてご希望の日時をお聞かせください。';
+      if (!validation.ok) {
+        finalReply = validation.message;
       } else {
-        const conflict = await checkReservationConflict(shop.id, reservationData.date, normalizedTime);
-        if (conflict) {
-          finalReply = `申し訳ございません。${reservationData.date} ${normalizedTime}はすでに予約が入っております。他のお時間はいかがでしょうか？`;
-        } else {
-          const customerName = String(reservationData.name).slice(0, 100);
-          const serviceType  = String(reservationData.service || '予約').slice(0, 100);
-          await supabase.from('reservations').insert({
+        await withReservationLock(`${shop.id}:${validation.date}`, async () => {
+          const customerName = validation.name;
+          const serviceType  = validation.service;
+          const conflict = await checkReservationConflict(shop.id, validation.date, validation.time, validation.durationMinutes);
+          if (conflict) {
+            finalReply = `申し訳ございません。${validation.date} ${validation.time}はすでに予約が入っております。他のお時間はいかがでしょうか？`;
+            return;
+          }
+
+          const { error } = await supabase.from('reservations').insert({
             line_user_id: lineUserId, shop_id: shop.id,
             customer_name: customerName, service_type: serviceType,
-            reservation_date: reservationData.date, reservation_time: normalizedTime,
+            reservation_date: validation.date, reservation_time: validation.time,
+            duration_minutes: validation.durationMinutes,
             status: 'confirmed', reminder_sent: false,
           });
-          finalReply = finalReply || `ご予約を承りました！\n📅 ${reservationData.date} ${normalizedTime}\n✂️ ${serviceType}\nお待ちしております。`;
+          if (error) {
+            if (error.code === '23505') {
+              finalReply = `申し訳ございません。${validation.date} ${validation.time}はすでに予約が入っております。他のお時間はいかがでしょうか？`;
+              return;
+            }
+            throw error;
+          }
+          const dayJaConfirm = DAY_NAMES[new Date(validation.date + 'T00:00:00+09:00').getDay()];
+          const timeShort = validation.time.slice(0, 5);
+          const revisitWeeks = REVISIT_WEEKS[shop.business_type] || 4;
+
+          const confirmBase = `ご予約を承りました✅\n\n📅 ${validation.date}（${dayJaConfirm}） ${timeShort}\n✂️ ${serviceType}\n\nご来店をお待ちしております😊`;
+          const confirmSeed = `\n\n──────────────\n💡 次回の目安は約${revisitWeeks}週間後です\n次回ご希望の際は「予約」とお送りください\n──────────────`;
+
+          finalReply = finalReply || (confirmBase + confirmSeed);
 
           // ✅ Feature 7: 신규 예약 이메일 알림
-          const dayJa = DAY_NAMES[new Date(reservationData.date + 'T00:00:00+09:00').getDay()];
+          const dayJa = DAY_NAMES[new Date(validation.date + 'T00:00:00+09:00').getDay()];
           sendEmailNotification(
             shop.owner_email,
-            `【新規予約】${customerName}様 ${reservationData.date} ${normalizedTime}`,
-            buildNewResEmailHtml(shop.shop_name, customerName, reservationData.date, dayJa, normalizedTime, serviceType)
+            `【新規予約】${customerName}様 ${validation.date} ${validation.time}`,
+            buildNewResEmailHtml(shop.shop_name, customerName, validation.date, dayJa, validation.time, serviceType)
           ).catch(() => {});
 
-          updateCustomerCarte(shop.id, lineUserId, customerName, reservationData.date).catch(() => {});
+          updateCustomerCarte(shop.id, lineUserId, customerName, validation.date).catch(() => {});
 
           if (shop.review_request_enabled && shop.google_review_url) {
             finalReply += `\n\n⭐ よろしければ口コミをお願いします！\n${String(shop.google_review_url).replace(/[\n\r]/g, '')}`;
@@ -1202,12 +2547,13 @@ async function handleEvent(event, shop, template) {
           if (shop.repeat_message_enabled !== false) {
             finalReply += `\n\n${getReturnVisitMessage(shop.business_type)}`;
           }
-        }
+        });
       }
-    } catch (e) {
-      console.error('予約処理エラー:', e);
-    }
-  }
+	    } catch (e) {
+	      console.error('予約処理エラー:', e);
+	      await logOpsEvent('error', 'reservation_processing_failed', e.message, { lineUserId }, shop.id);
+	    }
+	  }
 
   if (!finalReply || finalReply.trim() === '') {
     finalReply = 'ご用件をお聞かせください。予約のご希望やご質問にお答えします。';
@@ -1217,7 +2563,24 @@ async function handleEvent(event, shop, template) {
   await client.replyMessage({ replyToken: event.replyToken, messages: [{ type: 'text', text: finalReply }] });
 }
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 서버 실행 중: http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`🚀 서버 실행 중: http://localhost:${PORT}`);
+  });
+}
+
+module.exports = {
+  app,
+  normalizeTime,
+  isValidDateString,
+  validateReservationFields,
+  getBusinessSlotIssue,
+  isReservationIntentText,
+  isUnresolvedAssistantText,
+  isResolvedAssistantText,
+  buildSystemHealth,
+  sanitizeBusinessHours,
+  sanitizeMenuItems,
+  sanitizeClosedDays,
+};
