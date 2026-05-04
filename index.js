@@ -2525,7 +2525,7 @@ async function handleEvent(event, shop, template) {
           const revisitWeeks = REVISIT_WEEKS[shop.business_type] || 4;
 
           const confirmBase = `ご予約を承りました✅\n\n📅 ${validation.date}（${dayJaConfirm}） ${timeShort}\n✂️ ${serviceType}\n\nご来店をお待ちしております😊`;
-          const confirmSeed = `\n\n──────────────\n💡 次回の目安は約${revisitWeeks}週間後です\n次回ご希望の際は「予約」とお送りください\n──────────────`;
+          const confirmSeed = `\n\n──────────────\n⏰ 当日のご案内\nもし予定が変わった場合は、お早めに「キャンセル」とお送りください。\n前日までのご連絡で、他のお客様にご案内できます🙏\n\n💡 次回の目安は約${revisitWeeks}週間後です\n次回ご希望の際は「予約」とお送りください\n──────────────`;
 
           finalReply = finalReply || (confirmBase + confirmSeed);
 
