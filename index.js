@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
+const { ipKeyGenerator } = rateLimit;
 const line = require('@line/bot-sdk');
 const Anthropic = require('@anthropic-ai/sdk');
 const { createClient } = require('@supabase/supabase-js');
@@ -30,6 +31,7 @@ const app = express();
 
 // ✅ Railway 리버스 프록시 신뢰 설정 (rate limit IP 정확도)
 app.set('trust proxy', 1);
+app.disable('x-powered-by');
 app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
@@ -62,6 +64,12 @@ const STARTED_AT = new Date();
 const OPS_EVENTS_LIMIT = 300;
 const opsEvents = [];
 const alertCooldowns = new Map();
+// ✅ alertCooldowns TTL cleanup (24시간마다 초기화)
+if (process.env.NODE_ENV !== 'test') {
+  setInterval(() => {
+    alertCooldowns.clear();
+  }, 24 * 60 * 60 * 1000);
+}
 
 function isAlertConfigured() {
   return Boolean(process.env.ALERT_WEBHOOK_URL || (process.env.ALERT_EMAIL && process.env.RESEND_API_KEY));
@@ -164,6 +172,17 @@ function adminAuth(req, res, next) {
 }
 
 const adminAttempts = new Map();
+// ✅ adminAttempts TTL cleanup (1시간마다 만료된 잠금 제거)
+if (process.env.NODE_ENV !== 'test') {
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, val] of adminAttempts.entries()) {
+      if (!val.lockedUntil || val.lockedUntil < now) {
+        adminAttempts.delete(key);
+      }
+    }
+  }, 60 * 60 * 1000);
+}
 
 // ✅ 입력값 검증
 function validateRegisterInput({ email, shopName, businessType, channelSecret, channelToken }) {
@@ -326,6 +345,12 @@ function validateReservationFields(shop, { name, service, date, time }, options 
 }
 
 const reservationLocks = new Map();
+// ✅ reservationLocks TTL cleanup (1시간마다 오래된 항목 제거)
+if (process.env.NODE_ENV !== 'test') {
+  setInterval(() => {
+    reservationLocks.clear();
+  }, 60 * 60 * 1000);
+}
 async function withReservationLock(key, fn) {
   const previous = reservationLocks.get(key) || Promise.resolve();
   let release;
@@ -1472,6 +1497,15 @@ const adminLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: 'リクエストが多すぎます。' },
 });
+// LINE webhook: shopId당 1분에 100회
+const webhookLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => `webhook:${req.params.shopId || ipKeyGenerator(req.ip)}`,
+  message: { error: 'Too many requests' },
+});
 
 // ============================
 // ✅ Google OAuth 라우트 (JWT 방식)
@@ -2414,7 +2448,17 @@ levelの意味: red=要注意・改善が必要, yellow=チャンス・検討推
 
     const raw = aiRes.content[0].text.trim();
     const clean = raw.replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(clean);
+    let parsed;
+    try {
+      parsed = JSON.parse(clean);
+    } catch (parseError) {
+      console.error('advice JSON parse 실패:', parseError.message);
+      parsed = {
+        advices: [
+          { level: 'yellow', text: 'データを蓄積中です。来月以降により詳しいアドバイスをお届けします。' }
+        ]
+      };
+    }
     res.json(parsed);
   } catch (e) {
     console.error('advice API error:', e);
@@ -2458,7 +2502,7 @@ app.put('/api/customer-carte/:id', requireJWT, async (req, res) => {
 // ============================
 // LINE Webhook
 // ============================
-app.post('/webhook/:shopId', async (req, res) => {
+app.post('/webhook/:shopId', webhookLimiter, async (req, res) => {
   try {
     const { shopId } = req.params;
       const { data: shop } = await supabase.from('shops').select('*').eq('id', shopId).single();
