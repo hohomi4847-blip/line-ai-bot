@@ -10,6 +10,7 @@ const line = require('@line/bot-sdk');
 const Anthropic = require('@anthropic-ai/sdk');
 const { createClient } = require('@supabase/supabase-js');
 const path = require('path');
+const helmet = require('helmet');
 const ical = require('ical-generator').default;
 const cron = require('node-cron');
 
@@ -29,6 +30,10 @@ const app = express();
 
 // ✅ Railway 리버스 프록시 신뢰 설정 (rate limit IP 정확도)
 app.set('trust proxy', 1);
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+}));
 
 // ✅ Paddle webhook은 raw body 필요 - 반드시 먼저
 app.use('/paddle/webhook', express.raw({ type: 'application/json' }));
@@ -1574,7 +1579,10 @@ app.post('/paddle/webhook', async (req, res) => {
     const shopId = body.data?.custom_data?.shopId
                 || body.data?.customData?.shopId
                 || null;
-    const customerEmail = body.data?.customer?.email || null;
+    const customerEmail = body.data?.customer?.email
+      || body.data?.custom_data?.email
+      || body.data?.customData?.email
+      || null;
 
     console.log(`📦 Paddle webhook: ${eventType} | shopId=${shopId} | email=${customerEmail}`);
     await logOpsEvent('info', 'paddle_webhook_received', eventType, { eventId, shopId, customerEmail }, shopId);
@@ -1593,7 +1601,12 @@ app.post('/paddle/webhook', async (req, res) => {
       return null;
     }
 
-    if (eventType === 'transaction.completed' || eventType === 'subscription.created') {
+    // ✅ 1회성 서비스 여부 판단
+    const txPriceId = body.data?.items?.[0]?.price?.id || null;
+    const isOneTimeService = Boolean(SERVICE_QUESTION_TEMPLATES[txPriceId]);
+    const isSubscriptionTx = (Boolean(body.data?.subscription_id) || eventType === 'subscription.created') && !isOneTimeService;
+
+    if ((eventType === 'transaction.completed' && isSubscriptionTx) || eventType === 'subscription.created') {
       if (!shopId && !customerEmail) {
         console.warn('⚠️ shopId も email もなし — スキップ');
       } else {
@@ -1649,7 +1662,7 @@ app.post('/paddle/webhook', async (req, res) => {
     }
 
     // ✅ 1회성 서비스 구매 완료 처리
-    if (eventType === 'transaction.completed') {
+    if (eventType === 'transaction.completed' && isOneTimeService) {
       try {
         const items = body.data?.items || [];
         const priceId = items[0]?.price?.id || null;
