@@ -1598,6 +1598,17 @@ app.post('/paddle/webhook', async (req, res) => {
   if (!verifyPaddleSignature(rawBody, sig, webhookSecret)) {
     console.warn(`⚠️ [Paddle] 서명 검증 실패 | IP=${req.ip} | Paddle-Signature: ${sig || '(없음)'}`);
     logOpsEvent('warn', 'paddle_signature_failed', 'Invalid Paddle webhook signature', { ip: req.ip }).catch(() => {});
+    if (isAlertConfigured()) {
+      sendOpsAlert({
+        id: crypto.randomUUID(),
+        created_at: new Date().toISOString(),
+        level: 'warn',
+        type: 'paddle_signature_failed_repeated',
+        message: `Paddle署名検証失敗 IP: ${req.ip}`,
+        shop_id: null,
+        meta: { ip: req.ip },
+      }).catch(() => {});
+    }
     return res.status(401).json({ error: 'Invalid signature' });
   }
   console.log(`✅ [Paddle] 서명 검증 성공 | IP=${req.ip}`);
@@ -1701,6 +1712,28 @@ app.post('/paddle/webhook', async (req, res) => {
         const items = body.data?.items || [];
         const priceId = items[0]?.price?.id || null;
         const template = priceId ? SERVICE_QUESTION_TEMPLATES[priceId] : null;
+
+        // ✅ 고객 이메일 누락 감지
+        if (!customerEmail) {
+          await logOpsEvent(
+            'warn',
+            'service_purchase_no_email',
+            `1回限りサービス購入: 顧客メール取得失敗`,
+            { priceId: txPriceId, eventId },
+            null
+          );
+        }
+
+        // ✅ 알 수 없는 priceId 감지
+        if (txPriceId && !template) {
+          await logOpsEvent(
+            'warn',
+            'service_purchase_unknown_price',
+            `不明なpriceId: ${txPriceId}`,
+            { priceId: txPriceId, customerEmail, eventId },
+            null
+          );
+        }
 
         if (template && customerEmail) {
           const OWNER_EMAIL = process.env.OWNER_EMAIL || process.env.ALERT_EMAIL;
