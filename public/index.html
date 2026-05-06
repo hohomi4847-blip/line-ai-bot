@@ -250,6 +250,8 @@
     }
     .pain-card { display: flex; gap: 16px; align-items: flex-start; font-weight: 700; }
     .pain-icon { font-size: 30px; line-height: 1; }
+    .pain-title { font-weight: 800; color: #111; margin-bottom: 8px; }
+    .pain-desc { color: #666; font-size: 14px; font-weight: 500; line-height: 1.8; }
     .impact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
     .impact-card { text-align: center; }
     .impact-from { color: #777; font-size: 14px; }
@@ -341,6 +343,7 @@
     .ba-list li { padding: 9px 0; color: #444; }
     .flow-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
     .flow-num { width: 48px; height: 48px; border-radius: 50%; background: var(--green); color: #fff; display: grid; place-items: center; font-family: var(--serif); font-weight: 700; margin-bottom: 16px; }
+    .flow-desc { color: #666; font-size: 14px; margin-top: 12px; line-height: 1.8; }
     .faq-list { max-width: 820px; margin: 0 auto; display: grid; gap: 12px; }
     .faq-q {
       width: 100%;
@@ -437,9 +440,9 @@
       <div class="badge fade-up">7日間無料体験 実施中</div>
       <h1 class="hero-title" id="heroTitle"></h1>
       <p class="hero-copy fade-up">
-        美容室・飲食店・整骨院・ネイル・ジムなど、<br>
-        予約が必要なすべての業種に対応。<br>
-        24時間365日、自動で予約を受付。月額¥3,980で完結。
+        施術中に鳴るLINE、もう出なくていい。<br>
+        24時間365日、AIが自動で予約を受付・管理。<br>
+        美容室・飲食店・整骨院など全業種対応。月額¥3,980で完結。
       </p>
       <div class="hero-actions fade-up">
         <a href="#start" class="btn-primary">7日間無料で試す →</a>
@@ -507,10 +510,34 @@
     <div class="wrap">
       <div class="section-head fade-up"><div class="eyebrow">Problems</div><h2>こんなお悩み、ありませんか？</h2></div>
       <div class="cards">
-        <div class="card pain-card fade-up"><span class="pain-icon">📞</span><span>電話対応に追われて施術に集中できない</span></div>
-        <div class="card pain-card fade-up"><span class="pain-icon">🌙</span><span>営業時間外の予約を取りこぼしている</span></div>
-        <div class="card pain-card fade-up"><span class="pain-icon">📊</span><span>経営状況を数字で把握できていない</span></div>
-        <div class="card pain-card fade-up"><span class="pain-icon">😓</span><span>ノーショーで売上が飛んでいく</span></div>
+        <div class="card pain-card fade-up">
+          <span class="pain-icon">📞</span>
+          <div>
+            <div class="pain-title">電話対応に追われて施術に集中できない</div>
+            <p class="pain-desc">お客様の施術中に電話が鳴るたびに手を止めなければならない。<br>本来の仕事に集中できていますか？</p>
+          </div>
+        </div>
+        <div class="card pain-card fade-up">
+          <span class="pain-icon">🌙</span>
+          <div>
+            <div class="pain-title">営業時間外の予約を取りこぼしている</div>
+            <p class="pain-desc">夜中や早朝にLINEで来た予約問い合わせ。<br>翌朝返信したら、すでに他の店に行っていた。</p>
+          </div>
+        </div>
+        <div class="card pain-card fade-up">
+          <span class="pain-icon">😓</span>
+          <div>
+            <div class="pain-title">ノーショーで売上が飛んでいく</div>
+            <p class="pain-desc">当日キャンセルや無断欠席が月に何件も。<br>その時間、別のお客様を入れられたのに。</p>
+          </div>
+        </div>
+        <div class="card pain-card fade-up">
+          <span class="pain-icon">📊</span>
+          <div>
+            <div class="pain-title">経営の数字が全く見えない</div>
+            <p class="pain-desc">今月の売上・リピート率・人気メニュー。<br>感覚ではなく数字で経営判断したい。</p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -553,17 +580,17 @@
       <div class="section-head fade-up"><div class="eyebrow">Comparison</div><h2>なぜ当サービスが選ばれるのか</h2></div>
       <div class="table-wrap fade-up">
         <table>
-          <thead><tr><th>機能</th><th>A社<br><small>LINE特化型</small></th><th>B社<br><small>予約管理型</small></th><th class="our">スマート予約Pro★</th></tr></thead>
+          <thead><tr><th>機能</th><th>A社<br><small>LINE特化型</small></th><th>B社<br><small>予約管理型</small></th><th class="our" style="background:#06C755;color:white;font-weight:800;font-size:16px;">スマート予約Pro★</th></tr></thead>
           <tbody>
-            <tr><td>月額料金</td><td>¥9,800</td><td>¥5,500</td><td class="our">¥3,980</td></tr>
-            <tr><td>自然な会話で予約受付</td><td>✅</td><td>❌</td><td class="our">✅</td></tr>
-            <tr><td>LINE予約完結</td><td>✅</td><td>❌</td><td class="our">✅</td></tr>
-            <tr><td>取消・変更LINEで完結</td><td>❌</td><td>❌</td><td class="our">✅</td></tr>
-            <tr><td>経営分析ダッシュボード</td><td>❌</td><td>❌</td><td class="our">✅</td></tr>
-            <tr><td>顧客カルテ自動蓄積</td><td>❌</td><td>❌</td><td class="our">✅</td></tr>
-            <tr><td>Googleクチコミ自動化</td><td>❌</td><td>❌</td><td class="our">✅</td></tr>
-            <tr><td>リピート促進メッセージ</td><td>❌</td><td>❌</td><td class="our">✅</td></tr>
-            <tr><td>解約後データ保持</td><td>❌</td><td>❌</td><td class="our">✅</td></tr>
+            <tr><td>月額料金</td><td>¥9,800</td><td>¥5,500</td><td class="our" style="background:rgba(6,199,85,0.06);">¥3,980</td></tr>
+            <tr><td>自然な会話で予約受付</td><td>✅</td><td>❌</td><td class="our" style="background:rgba(6,199,85,0.06);">✅</td></tr>
+            <tr><td>LINE予約完結</td><td>✅</td><td>❌</td><td class="our" style="background:rgba(6,199,85,0.06);">✅</td></tr>
+            <tr><td>取消・変更LINEで完結</td><td>❌</td><td>❌</td><td class="our" style="background:rgba(6,199,85,0.06);">✅</td></tr>
+            <tr><td>経営分析ダッシュボード</td><td>❌</td><td>❌</td><td class="our" style="background:rgba(6,199,85,0.06);">✅</td></tr>
+            <tr><td>顧客カルテ自動蓄積</td><td>❌</td><td>❌</td><td class="our" style="background:rgba(6,199,85,0.06);">✅</td></tr>
+            <tr><td>Googleクチコミ自動化</td><td>❌</td><td>❌</td><td class="our" style="background:rgba(6,199,85,0.06);">✅</td></tr>
+            <tr><td>リピート促進メッセージ</td><td>❌</td><td>❌</td><td class="our" style="background:rgba(6,199,85,0.06);">✅</td></tr>
+            <tr><td>解約後データ保持</td><td>❌</td><td>❌</td><td class="our" style="background:rgba(6,199,85,0.06);">✅</td></tr>
           </tbody>
         </table>
       </div>
@@ -756,10 +783,10 @@
     <div class="wrap">
       <div class="section-head fade-up"><div class="eyebrow">Flow</div><h2>導入の流れ</h2></div>
       <div class="flow-grid">
-        <div class="card fade-up"><div class="flow-num">1</div><h3>Googleアカウントでログイン</h3></div>
-        <div class="card fade-up"><div class="flow-num">2</div><h3>お店の情報を入力</h3></div>
-        <div class="card fade-up"><div class="flow-num">3</div><h3>決済完了</h3></div>
-        <div class="card fade-up"><div class="flow-num">4</div><h3>予約受付スタート</h3></div>
+        <div class="card fade-up"><div class="flow-num">1</div><h3>Googleアカウントでログイン</h3><p class="flow-desc">お持ちのGoogleアカウントで<br>すぐにログインできます。新規登録不要。</p></div>
+        <div class="card fade-up"><div class="flow-num">2</div><h3>お店の情報を入力</h3><p class="flow-desc">店舗名・業種・LINEの認証情報を入力。<br>5分もあれば完了します。</p></div>
+        <div class="card fade-up"><div class="flow-num">3</div><h3>決済完了</h3><p class="flow-desc">クレジットカードで7日間無料体験開始。<br>無料期間中の解約は費用¥0です。</p></div>
+        <div class="card fade-up"><div class="flow-num">4</div><h3>予約受付スタート</h3><p class="flow-desc">LINEにWebhook URLを設定するだけ。<br>すぐにAI自動応答が起動します。</p></div>
       </div>
     </div>
   </section>
@@ -768,19 +795,29 @@
     <div class="wrap">
       <div class="section-head fade-up"><div class="eyebrow">FAQ</div><h2>よくあるご質問</h2></div>
       <div class="faq-list">
-        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">LINEの設定は自分でやる必要がありますか？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">いいえ、全て代行いたします。</div></div>
-        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">解約したらデータはどうなりますか？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">データは削除されません。解約後も安全に保持され、再開するといつでも元通りに復元されます。</div></div>
-        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">対応している業種を教えてください。<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">美容室・ネイルサロン・整骨院・マッサージ・鍼灸院・ペットサロン・飲食店など、予約が必要なあらゆる業種に対応しています。</div></div>
-        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">サポート体制はどうなっていますか？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">LINEまたはSNSのDMにて随時対応いたします。</div></div>
-        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">途中でプランを変更できますか？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">はい、いつでも変更・解約が可能です。</div></div>
+        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">LINEの設定は自分でやる必要がありますか？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">いいえ、全て代行いたします。<br>必要な情報をお送りいただくだけで、<br>設定から動作確認まで完全サポートします。</div></div>
+        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">LINE公式アカウントを持っていませんが大丈夫ですか？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">問題ありません。LINE公式アカウントの開設から<br>サポートいたします。すでにお持ちの場合はそのまま連携できます。</div></div>
+        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">AIが間違えた予約をしたらどうなりますか？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">AIは日付・時間・メニュー・お名前の4項目が<br>揃った場合のみ予約を確定します。<br>不明な情報がある場合はお客様に確認してから確定するため、<br>誤予約のリスクは最小限です。<br>また重複予約も自動でブロックします。</div></div>
+        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">予約はLINEだけですか？電話やネットからは？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">現在はLINEからの予約に対応しています。<br>お客様がLINEで話しかけるだけで<br>自動的に予約が完了します。</div></div>
+        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">LINEの月額費用は別途かかりますか？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">LINE公式アカウントの無料プランでも<br>お使いいただけます。<br>月500件の自動応答は無料で対応可能です。<br>それ以上の場合はLINE側の有料プランが必要になります。</div></div>
+        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">設定にどれくらい時間がかかりますか？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">お店の情報入力から決済完了まで約5分です。<br>その後LINEのWebhook URLを設定するだけで<br>すぐに自動応答が起動します。</div></div>
+        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">スマートフォンだけでも使えますか？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">はい、スマートフォンだけで全ての操作が可能です。<br>ダッシュボードもスマートフォンに最適化されています。</div></div>
+        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">複数店舗に対応していますか？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">はい、店舗ごとに独立した管理が可能です。<br>それぞれの店舗に個別のLINE連携・予約管理・<br>経営分析が提供されます。</div></div>
+        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">解約したらデータはどうなりますか？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">データは削除されません。<br>解約後も安全に保持され、<br>再開するといつでも元通りに復元されます。<br>1年分の予約データ・顧客カルテが全て残ります。</div></div>
+        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">無料期間終了後の解約方法は？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">マイページまたはメールにていつでも解約できます。<br>解約手数料は¥0、違約金もありません。<br>解約の翌月から請求は発生しません。</div></div>
+        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">予約データはどこに保存されますか？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">Supabase（PostgreSQL）という<br>セキュアなクラウドデータベースに保存されます。<br>SSL暗号化通信・アクセス制限で安全に管理されます。</div></div>
+        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">飲食店のコース予約や人数指定にも対応していますか？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">メニュー設定でコース名・料金・所要時間を<br>自由に設定できます。<br>人数指定については現在対応中です。</div></div>
+        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">対応している業種を教えてください。<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">美容室・ネイルサロン・整骨院・マッサージ・<br>鍼灸院・ペットサロン・飲食店・ジム・<br>アイブロウ・まつ毛サロン・ヨガ・ピラティスなど、<br>予約が必要なあらゆる業種に対応しています。</div></div>
+        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">サポート体制はどうなっていますか？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">LINEまたはSNSのDMにて随時対応いたします。<br>設定後も不明な点はいつでもご相談ください。</div></div>
+        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">途中でプランを変更・解約できますか？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">はい、いつでも変更・解約が可能です。<br>最低契約期間はありません。<br>解約手数料も一切かかりません。</div></div>
       </div>
     </div>
   </section>
 
   <section class="section cta" id="cta">
     <div class="wrap fade-up">
-      <h2>まず、7日間試してみてください。</h2>
-      <p class="sub">クレジットカード登録で7日間無料。いつでも解約できます。</p>
+      <h2>今日から、予約対応をゼロにする。</h2>
+      <p class="sub">7日間完全無料で全機能をお試しいただけます。<br>気に入らなければ即解約。費用は¥0です。</p>
       <div style="margin-top:34px;"><a href="#start" class="btn-primary">無料体験を始める →</a></div>
       <p class="hero-note">初期費用¥0 · 解約手数料¥0 · データ永久保持</p>
     </div>
@@ -792,7 +829,7 @@
       <div class="reg-card fade-up" id="step1">
         <div class="reg-head"><div class="reg-num">1</div><h3>Googleアカウントでログイン</h3></div>
         <a href="/auth/google" class="google-btn" id="googleBtn">Googleでログイン</a>
-        <div class="user-info" id="userInfo" style="display:none;"><p id="userEmail"></p></div>
+        <div class="user-info" id="userInfo" style="display:none !important;"><p id="userEmail"></p></div>
       </div>
       <div class="reg-card fade-up" id="step2" style="opacity:0.5; pointer-events:none;">
         <div class="reg-head"><div class="reg-num">2</div><h3>お店の情報を入力</h3></div>
@@ -836,11 +873,11 @@
           </span>
         </div>
       </div>
-      <div class="reg-card fade-up" id="step3" style="display:none;">
+      <div class="reg-card fade-up" id="step3" style="display:none !important;">
         <div class="reg-head"><div class="reg-num">3</div><h3>7日間無料体験開始</h3></div>
         <div class="success-box" style="display:block;">7日間、完全無料。無料期間中の解約は費用が一切かかりません。トライアル終了後、¥3,980/月の自動更新となります。</div>
         <button class="btn-primary" id="payBtn" onclick="startPayment()" style="width:100%; margin-top:16px;">7日間無料で始める</button>
-        <div class="success-box" id="successBox" style="display:none;">
+        <div class="success-box" id="successBox" style="display:none !important;">
           <strong>登録完了！</strong>
           <p>予約受付が起動しました。LINE Webhook URLを設定してください。</p>
           <div class="webhook" id="webhookUrl"></div>
@@ -882,47 +919,24 @@
       setTimeout(type, 500);
     })();
 
-    function animateCounter(el, target, duration, isPrice) {
-      if (!el) return;
-      let start = 0;
-      const step = target / (duration / 16);
-      function tick() {
-        start = Math.min(start + step, target);
-        if (isPrice) {
-          el.textContent = Math.round(start).toLocaleString('ja-JP');
-        } else {
-          el.textContent = Math.round(start);
+    document.addEventListener('DOMContentLoaded', function() {
+      function animateCounter(el, target, duration, isPrice) {
+        if (!el) return;
+        var start = 0;
+        var step = target / (duration / 16);
+        function tick() {
+          start = Math.min(start + step, target);
+          el.textContent = isPrice
+            ? Math.round(start).toLocaleString('ja-JP')
+            : Math.round(start);
+          if (start < target) requestAnimationFrame(tick);
         }
-        if (start < target) requestAnimationFrame(tick);
+        tick();
       }
-      tick();
-    }
-
-    var countersStarted = false;
-    function startCounters() {
-      if (countersStarted) return;
-      countersStarted = true;
       animateCounter(document.getElementById('ctr1'), 24, 1200, false);
       animateCounter(document.getElementById('ctr2'), 3980, 1400, true);
       animateCounter(document.getElementById('ctr3'), 11, 800, false);
-    }
-
-    if (window.IntersectionObserver) {
-      var heroEl = document.querySelector('.hero-counters') ||
-                   document.getElementById('ctr1')?.closest('div');
-      if (heroEl) {
-        var ctrObs = new IntersectionObserver(function(entries) {
-          entries.forEach(function(e) {
-            if (e.isIntersecting) { startCounters(); ctrObs.disconnect(); }
-          });
-        }, { threshold: 0.3 });
-        ctrObs.observe(heroEl);
-      } else {
-        startCounters();
-      }
-    } else {
-      startCounters();
-    }
+    });
 
     function switchSvcTab(tab, btn) {
       document.querySelectorAll('.svc-tab-btn').forEach(function(item) { item.classList.remove('active'); });
