@@ -1171,87 +1171,29 @@
   <div class="section-wrap">
     <div class="fade-up">
       <div class="section-eyebrow">Services</div>
-      <h2 class="section-title">集客から予約まで、ワンストップで</h2>
+      <h2 class="section-title">サービス一覧</h2>
+      <p class="section-sub">
+        初期費用¥0・業界最安値水準・AI自動予約システム連動込み
+      </p>
     </div>
+
     <div class="svc-tabs fade-up">
-      <button class="svc-tab-btn active" onclick="switchSvcTab('initial', this)">初期導入サービス（一回限り）</button>
-      <button class="svc-tab-btn" onclick="switchSvcTab('monthly', this)">予約自動化システム（月額）</button>
+      <button class="svc-tab-btn active"
+        onclick="switchSvcTab('monthly', this)">
+        予約自動化システム（月額）
+      </button>
+      <button class="svc-tab-btn"
+        onclick="switchSvcTab('initial', this)">
+        初期導入サービス（一回限り）
+      </button>
+      <button class="svc-tab-btn"
+        onclick="switchSvcTab('option', this)">
+        オプション
+      </button>
     </div>
 
-    <!-- Tab 1: Initial packs -->
-    <div class="svc-panel active" id="svc-initial">
-      <div class="svc-grid">
-        <div class="svc-card fade-up">
-          <span class="svc-icon">💬</span>
-          <div class="svc-name">LINEスタートパック</div>
-          <div class="svc-subtitle">LINE公式アカウント + 予約自動化システム連携</div>
-          <ul class="svc-features">
-            <li>LINE公式アカウント開設</li>
-            <li>リッチメニューデザイン制作</li>
-            <li>予約自動化システム連携設定</li>
-            <li>動作確認まで完全サポート</li>
-          </ul>
-          <div class="svc-price-area">
-            <div class="svc-original">市場相場 ¥50,000〜¥150,000</div>
-            <div class="svc-price-main">¥19,800<span class="svc-price-tax">（税込）</span></div>
-            <div class="svc-price-sub">一回限り</div>
-          </div>
-          <a href="#" class="btn-dm">お申し込みはDMで →</a>
-        </div>
-        <div class="svc-card fade-up">
-          <span class="svc-icon">🗺️</span>
-          <div class="svc-name">Googleパック</div>
-          <div class="svc-subtitle">Googleビジネスプロフィール完全設定</div>
-          <ul class="svc-features">
-            <li>アカウント開設・オーナー認証</li>
-            <li>基本情報・写真登録</li>
-            <li>営業時間・カテゴリ最適化</li>
-          </ul>
-          <div class="svc-price-area">
-            <div class="svc-original">市場相場 ¥15,000〜¥40,000</div>
-            <div class="svc-price-main">¥9,800<span class="svc-price-tax">（税込）</span></div>
-            <div class="svc-price-sub">一回限り</div>
-          </div>
-          <a href="#" class="btn-dm">お申し込みはDMで →</a>
-        </div>
-        <div class="svc-card fade-up">
-          <span class="svc-icon">📸</span>
-          <div class="svc-name">Instagramパック</div>
-          <div class="svc-subtitle">Instagramアカウント開設・集客導線設定</div>
-          <ul class="svc-features">
-            <li>アカウント作成・プロフィール設定</li>
-            <li>ハイライト作成</li>
-            <li>LINE予約導線設定</li>
-            <li>最初の3投稿作成</li>
-          </ul>
-          <div class="svc-price-area">
-            <div class="svc-original">市場相場 ¥30,000〜¥80,000</div>
-            <div class="svc-price-main">¥14,800<span class="svc-price-tax">（税込）</span></div>
-            <div class="svc-price-sub">一回限り</div>
-          </div>
-          <a href="#" class="btn-dm">お申し込みはDMで →</a>
-        </div>
-        <div class="svc-card featured fade-up">
-          <div class="svc-hot-badge">🔥 最もお得</div>
-          <span class="svc-icon">🚀</span>
-          <div class="svc-name">集客フルパック</div>
-          <div class="svc-subtitle">LINE + Google + Instagram 全部まとめて</div>
-          <ul class="svc-features">
-            <li>上記3パック全て含む</li>
-            <li>優先対応</li>
-          </ul>
-          <div class="svc-price-area">
-            <div class="svc-original">市場相場 ¥95,000〜¥270,000</div>
-            <div class="svc-price-main">¥39,800<span class="svc-price-tax">（税込）</span></div>
-            <div class="svc-price-sub">一回限り &nbsp;|&nbsp; ¥55,400 お得</div>
-          </div>
-          <a href="#" class="btn-dm">お申し込みはDMで →</a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tab 2: Monthly -->
-    <div class="svc-panel" id="svc-monthly">
+    <!-- ── Tab 1: 월구독 ── -->
+    <div class="svc-panel active" id="svc-monthly">
       <div class="monthly-panel fade-up">
         <div class="monthly-glow"></div>
         <div class="monthly-trial-badge">✦ 7日間 無料体験</div>
@@ -1260,20 +1202,398 @@
           <div class="monthly-price-unit">/ 月</div>
         </div>
         <p class="monthly-note">税込・月次自動更新・いつでも解約可</p>
-        <div class="monthly-features-grid">
-          <div class="monthly-feature-item"><span class="mf-check">✅</span> 24時間自動予約受付</div>
-          <div class="monthly-feature-item"><span class="mf-check">✅</span> キャンセル・変更もLINEで完結</div>
-          <div class="monthly-feature-item"><span class="mf-check">✅</span> 経営分析ダッシュボード</div>
-          <div class="monthly-feature-item"><span class="mf-check">✅</span> 顧客カルテ自動蓄積</div>
-          <div class="monthly-feature-item"><span class="mf-check">✅</span> Googleクチコミ自動化</div>
-          <div class="monthly-feature-item"><span class="mf-check">✅</span> リピート促進メッセージ</div>
-          <div class="monthly-feature-item"><span class="mf-check">✅</span> Googleカレンダー連携</div>
-          <div class="monthly-feature-item"><span class="mf-check">✅</span> 解約後もデータ保持・即復元</div>
+
+        <!-- 경쟁사 비교 -->
+        <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.3);
+                    border-radius:10px;padding:14px 16px;margin-bottom:24px;">
+          <p style="font-size:13px;color:var(--gold);font-weight:700;margin-bottom:8px;">
+            💡 競合サービスとの比較
+          </p>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:12px;">
+            <div style="text-align:center;">
+              <div style="color:var(--text3);margin-bottom:4px;">他社LINE自動化</div>
+              <div style="color:var(--text2);font-weight:700;text-decoration:line-through;">
+                ¥9,800〜/月
+              </div>
+            </div>
+            <div style="text-align:center;">
+              <div style="color:var(--text3);margin-bottom:4px;">ホットペッパー</div>
+              <div style="color:var(--text2);font-weight:700;text-decoration:line-through;">
+                ¥30,000〜/月
+              </div>
+            </div>
+            <div style="text-align:center;">
+              <div style="color:var(--text3);margin-bottom:4px;">スマート予約Pro</div>
+              <div style="color:var(--gold);font-weight:800;font-size:16px;">
+                ¥3,980/月
+              </div>
+            </div>
+          </div>
         </div>
-        <p class="monthly-tagline">「競合の1/3の価格で、競合以上の機能を。」</p>
-        <a href="#start" class="btn-monthly-cta">今すぐ無料で始める →</a>
+
+        <div class="monthly-features-grid">
+          <div class="monthly-feature-item">
+            <span class="mf-check">✅</span>
+            24時間自動予約受付
+          </div>
+          <div class="monthly-feature-item">
+            <span class="mf-check">✅</span>
+            キャンセル・変更もLINEで完結
+          </div>
+          <div class="monthly-feature-item">
+            <span class="mf-check">✅</span>
+            経営分析ダッシュボード
+          </div>
+          <div class="monthly-feature-item">
+            <span class="mf-check">✅</span>
+            顧客カルテ自動蓄積
+          </div>
+          <div class="monthly-feature-item">
+            <span class="mf-check">✅</span>
+            AIが経営アドバイスを自動生成
+          </div>
+          <div class="monthly-feature-item">
+            <span class="mf-check">✅</span>
+            VIP顧客を自動判定・特別対応
+          </div>
+          <div class="monthly-feature-item">
+            <span class="mf-check">✅</span>
+            Googleクチコミ自動化
+          </div>
+          <div class="monthly-feature-item">
+            <span class="mf-check">✅</span>
+            Googleカレンダー連携
+          </div>
+          <div class="monthly-feature-item">
+            <span class="mf-check">✅</span>
+            ノーショー防止メッセージ
+          </div>
+          <div class="monthly-feature-item">
+            <span class="mf-check">✅</span>
+            解約後もデータ保持・即復元
+          </div>
+        </div>
+
+        <p class="monthly-tagline">
+          「施術に集中してください。予約はAIがやります。」
+        </p>
+        <a href="#start" class="btn-monthly-cta">
+          今すぐ7日間無料で試す →
+        </a>
+        <p style="font-size:12px;color:var(--text3);text-align:center;margin-top:12px;">
+          美容室・飲食店・整骨院・ネイル・ジムなど全業種対応
+        </p>
       </div>
     </div>
+
+    <!-- ── Tab 2: 초기 도입 서비스 ── -->
+    <div class="svc-panel" id="svc-initial">
+
+      <!-- 공통 안내 -->
+      <div style="background:rgba(6,199,85,0.06);border:1px solid rgba(6,199,85,0.2);
+                  border-radius:12px;padding:16px 20px;margin-bottom:28px;" class="fade-up">
+        <p style="font-size:14px;color:var(--text2);line-height:1.8;">
+          🎯 <strong style="color:var(--white);">ご購入後3営業日以内</strong>に必要情報をメールでご案内します。<br>
+          情報をご返信いただき次第、作業を開始いたします。<br>
+          <span style="font-size:12px;color:var(--text3);">
+            ※ 設定代行はすべて完了後にご報告します。
+          </span>
+        </p>
+      </div>
+
+      <div class="svc-grid">
+
+        <!-- LINE 스타트팩 -->
+        <div class="svc-card fade-up">
+          <span class="svc-icon">💬</span>
+          <div class="svc-name">LINEスタートパック</div>
+          <div class="svc-subtitle">
+            LINE公式アカウント＋AI自動予約システム連動まで完全代行
+          </div>
+          <ul class="svc-features">
+            <li>LINE公式アカウント開設サポート</li>
+            <li>リッチメニューデザイン制作</li>
+            <li>ウェルカムメッセージ作成</li>
+            <li>AI自動予約システム連動設定</li>
+            <li>動作確認まで完全サポート</li>
+            <li>設定完了後マニュアル納品</li>
+          </ul>
+          <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);
+                      border-radius:8px;padding:10px 12px;margin-bottom:16px;">
+            <p style="font-size:12px;color:var(--text3);margin-bottom:4px;">
+              他社の相場
+            </p>
+            <p style="font-size:13px;color:var(--text2);">
+              <span style="text-decoration:line-through;">¥50,000〜¥150,000</span>
+              <span style="color:var(--gold);font-weight:700;margin-left:8px;">
+                しかも自動化なし
+              </span>
+            </p>
+          </div>
+          <div class="svc-price-area">
+            <div class="svc-original">業界最安値水準</div>
+            <div class="svc-price-main">
+              ¥19,800
+              <span class="svc-price-tax">（税込）</span>
+            </div>
+            <div class="svc-price-sub">一回限り・AI自動予約システム連動込み</div>
+          </div>
+          <button class="btn-dm"
+            onclick="openServiceCheckout('pri_01kqxxs9xvygq5rtm2ch9398nw', 'LINEスタートパック')">
+            今すぐ申し込む →
+          </button>
+        </div>
+
+        <!-- 구글 팩 -->
+        <div class="svc-card fade-up">
+          <span class="svc-icon">🗺️</span>
+          <div class="svc-name">Googleビジネスプロフィール設定パック</div>
+          <div class="svc-subtitle">
+            Google検索・マップへの店舗登録＋SEO最適化まで完全代行
+          </div>
+          <ul class="svc-features">
+            <li>オーナー認証サポート</li>
+            <li>基本情報・写真登録</li>
+            <li>SEOに強い店舗説明文作成</li>
+            <li>営業時間・カテゴリ最適化</li>
+            <li>「○○駅近く」検索で上位表示を狙う設定</li>
+            <li>設定完了後マニュアル納品</li>
+          </ul>
+          <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);
+                      border-radius:8px;padding:10px 12px;margin-bottom:16px;">
+            <p style="font-size:12px;color:var(--text3);margin-bottom:4px;">
+              他社の相場
+            </p>
+            <p style="font-size:13px;color:var(--text2);">
+              <span style="text-decoration:line-through;">¥20,000〜¥50,000</span>
+            </p>
+          </div>
+          <div class="svc-price-area">
+            <div class="svc-original">業界最安値水準</div>
+            <div class="svc-price-main">
+              ¥9,800
+              <span class="svc-price-tax">（税込）</span>
+            </div>
+            <div class="svc-price-sub">一回限り</div>
+          </div>
+          <button class="btn-dm"
+            onclick="openServiceCheckout('pri_01kqxxx1dpg4tqm7c3mdg6d4cv', 'Googleビジネスプロフィール設定パック')">
+            今すぐ申し込む →
+          </button>
+        </div>
+
+        <!-- 인스타그램 팩 -->
+        <div class="svc-card fade-up">
+          <span class="svc-icon">📸</span>
+          <div class="svc-name">Instagramスタートパック</div>
+          <div class="svc-subtitle">
+            Instagram開設＋初回投稿3本＋LINE予約導線設定まで完全代行
+          </div>
+          <ul class="svc-features">
+            <li>アカウント作成・プロフィール設定</li>
+            <li>ハイライト作成</li>
+            <li>LINE予約導線設定</li>
+            <li>最初の3投稿＋ハッシュタグ作成</li>
+            <li>フォロワーを増やす投稿戦略アドバイス</li>
+            <li>設定完了後マニュアル納品</li>
+          </ul>
+          <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);
+                      border-radius:8px;padding:10px 12px;margin-bottom:16px;">
+            <p style="font-size:12px;color:var(--text3);margin-bottom:4px;">
+              他社の相場
+            </p>
+            <p style="font-size:13px;color:var(--text2);">
+              <span style="text-decoration:line-through;">¥30,000〜¥80,000</span>
+            </p>
+          </div>
+          <div class="svc-price-area">
+            <div class="svc-original">業界最安値水準</div>
+            <div class="svc-price-main">
+              ¥14,800
+              <span class="svc-price-tax">（税込）</span>
+            </div>
+            <div class="svc-price-sub">一回限り</div>
+          </div>
+          <button class="btn-dm"
+            onclick="openServiceCheckout('pri_01kqxxz153aqjsmcgp11ewm9dm', 'Instagramスタートパック')">
+            今すぐ申し込む →
+          </button>
+        </div>
+
+        <!-- 풀팩 -->
+        <div class="svc-card featured fade-up">
+          <div class="svc-hot-badge">🔥 最もお得</div>
+          <span class="svc-icon">🚀</span>
+          <div class="svc-name">集客フルパック</div>
+          <div class="svc-subtitle">
+            LINE＋Google＋Instagram 全部まとめて完全代行
+          </div>
+          <ul class="svc-features">
+            <li>上記3パック全て含む</li>
+            <li>優先対応（3営業日以内納品）</li>
+            <li>統合運用ガイド納品</li>
+          </ul>
+          <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);
+                      border-radius:8px;padding:10px 12px;margin-bottom:16px;">
+            <p style="font-size:12px;color:var(--text3);margin-bottom:4px;">
+              3つ別々に買うと ¥44,400
+            </p>
+            <p style="font-size:13px;color:var(--gold);font-weight:700;">
+              フルパックなら ¥4,600 お得
+            </p>
+          </div>
+          <div class="svc-price-area">
+            <div class="svc-original">¥44,400 → まとめ割</div>
+            <div class="svc-price-main">
+              ¥39,800
+              <span class="svc-price-tax">（税込）</span>
+            </div>
+            <div class="svc-price-sub">一回限り・¥4,600お得</div>
+          </div>
+          <button class="btn-dm"
+            onclick="openServiceCheckout('pri_01kqxy12gs97a00wx47w0bdq44', '集客フルパック')"
+            style="background:var(--gold-light);border-color:var(--gold-border);color:var(--gold);">
+            今すぐ申し込む →
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Tab 3: 옵션 서비스 ── -->
+    <div class="svc-panel" id="svc-option">
+
+      <!-- 공통 안내 -->
+      <div style="background:rgba(6,199,85,0.06);border:1px solid rgba(6,199,85,0.2);
+                  border-radius:12px;padding:16px 20px;margin-bottom:28px;" class="fade-up">
+        <p style="font-size:14px;color:var(--text2);line-height:1.8;">
+          🎯 <strong style="color:var(--white);">ご購入後3営業日以内</strong>に必要情報をメールでご案内します。<br>
+          情報をご返信いただき次第、作業を開始いたします。
+        </p>
+      </div>
+
+      <div class="svc-grid">
+
+        <!-- 리치메뉴 리뉴얼 -->
+        <div class="svc-card fade-up">
+          <span class="svc-icon">🎨</span>
+          <div class="svc-name">LINEリッチメニューリニューアル</div>
+          <div class="svc-subtitle">
+            季節・イベントに合わせたリッチメニューに刷新
+          </div>
+          <ul class="svc-features">
+            <li>ボタン構成の再設計</li>
+            <li>デザイン制作（Canva）</li>
+            <li>LINE設定まで完了</li>
+            <li>春夏秋冬・イベント対応</li>
+          </ul>
+          <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);
+                      border-radius:8px;padding:10px 12px;margin-bottom:16px;">
+            <p style="font-size:12px;color:var(--text3);margin-bottom:4px;">
+              他社の相場
+            </p>
+            <p style="font-size:13px;color:var(--text2);">
+              <span style="text-decoration:line-through;">¥30,000〜¥55,000</span>
+            </p>
+          </div>
+          <div class="svc-price-area">
+            <div class="svc-original">業界最安値水準</div>
+            <div class="svc-price-main">
+              ¥9,800
+              <span class="svc-price-tax">（税込）</span>
+            </div>
+            <div class="svc-price-sub">一回限り・季節ごとのリピート歓迎</div>
+          </div>
+          <button class="btn-dm"
+            onclick="openServiceCheckout('pri_01kqxy42cpb268xw8nep10s0ma', 'LINEリッチメニューリニューアル')">
+            今すぐ申し込む →
+          </button>
+        </div>
+
+        <!-- 명함·전단지 -->
+        <div class="svc-card fade-up">
+          <span class="svc-icon">🪪</span>
+          <div class="svc-name">名刺・チラシ作成パック</div>
+          <div class="svc-subtitle">
+            LINE予約QRコード連動の名刺・チラシをデザイン納品
+          </div>
+          <ul class="svc-features">
+            <li>キャッチコピー・文章作成</li>
+            <li>Canvaデザイン制作</li>
+            <li>LINE予約QRコード挿入</li>
+            <li>印刷用PDF納品</li>
+            <li>修正1回無料</li>
+          </ul>
+          <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);
+                      border-radius:8px;padding:10px 12px;margin-bottom:16px;">
+            <p style="font-size:12px;color:var(--text3);margin-bottom:4px;">
+              他社の相場
+            </p>
+            <p style="font-size:13px;color:var(--text2);">
+              <span style="text-decoration:line-through;">¥15,000〜¥50,000</span>
+            </p>
+          </div>
+          <div class="svc-price-area">
+            <div class="svc-original">業界最安値水準</div>
+            <div class="svc-price-main">
+              ¥9,800
+              <span class="svc-price-tax">（税込）</span>
+            </div>
+            <div class="svc-price-sub">一回限り・印刷は別途</div>
+          </div>
+          <button class="btn-dm"
+            onclick="openServiceCheckout('pri_01kqxy6bzc3ffzfkrttr0vrznj', '名刺・チラシ作成パック')">
+            今すぐ申し込む →
+          </button>
+        </div>
+
+        <!-- 개업 완전 세트 -->
+        <div class="svc-card featured fade-up">
+          <div class="svc-hot-badge">🎉 開業・移転専用</div>
+          <span class="svc-icon">🏪</span>
+          <div class="svc-name">開業・移転完全サポートセット</div>
+          <div class="svc-subtitle">
+            開業前のSNS全設定＋告知コンテンツ一式を2日以内に納品
+          </div>
+          <ul class="svc-features">
+            <li>LINE完全設定</li>
+            <li>Googleビジネスプロフィール設定</li>
+            <li>Instagram開設・初回投稿</li>
+            <li>開業告知文・キャンペーン文作成</li>
+            <li>名刺デザイン含む</li>
+            <li>開業後の運用ガイド納品</li>
+            <li>優先対応（2営業日以内）</li>
+          </ul>
+          <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);
+                      border-radius:8px;padding:10px 12px;margin-bottom:16px;">
+            <p style="font-size:12px;color:var(--text3);margin-bottom:4px;">
+              他社に頼むと
+            </p>
+            <p style="font-size:13px;color:var(--text2);">
+              <span style="text-decoration:line-through;">¥130,000〜¥300,000</span>
+              <span style="color:var(--gold);font-weight:700;margin-left:8px;">
+                が相場
+              </span>
+            </p>
+          </div>
+          <div class="svc-price-area">
+            <div class="svc-original">相場の1/3以下</div>
+            <div class="svc-price-main">
+              ¥49,800
+              <span class="svc-price-tax">（税込）</span>
+            </div>
+            <div class="svc-price-sub">一回限り・開業前に全部整います</div>
+          </div>
+          <button class="btn-dm"
+            onclick="openServiceCheckout('pri_01kqxy7z4bewp58sxe6vwgf00q', '開業・移転完全サポートセット')"
+            style="background:var(--gold-light);border-color:var(--gold-border);color:var(--gold);">
+            今すぐ申し込む →
+          </button>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1974,6 +2294,40 @@
       daysEl.addEventListener('input', updateCalc);
       updateCalc();
     }
+  })();
+
+  /* ── 1회성 서비스 결제 ── */
+  function openServiceCheckout(priceId, serviceName) {
+    if (!currentUser) {
+      alert('ご購入にはGoogleログインが必要です。\nページ下部の「今すぐ無料で始める」からログインしてください。');
+      document.getElementById('start').scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    try {
+      Paddle.Checkout.open({
+        settings: {
+          displayMode: 'overlay',
+          locale: 'ja',
+          successUrl: window.location.origin + '/?service_purchased=1&service=' + encodeURIComponent(serviceName),
+        },
+        items: [{ priceId: priceId, quantity: 1 }],
+        customer: { email: currentUser.email.trim() },
+      });
+    } catch (e) {
+      console.error('Checkout error:', e);
+      alert('決済画面を開けませんでした。もう一度お試しください。');
+    }
+  }
+
+  /* ── 서비스 구매 완료 처리 ── */
+  (function() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('service_purchased') !== '1') return;
+    const serviceName = params.get('service') || 'サービス';
+    history.replaceState(null, '', '/');
+    setTimeout(() => {
+      alert(`【ご購入ありがとうございます】\n\n「${decodeURIComponent(serviceName)}」のご購入が完了しました。\n\n3営業日以内に必要情報のご案内メールをお送りします。\nしばらくお待ちください。`);
+    }, 500);
   })();
 </script>
 
