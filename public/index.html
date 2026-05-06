@@ -447,9 +447,9 @@
       </div>
       <p class="hero-note fade-up">クレジットカード登録で7日間無料 · いつでも解約可能</p>
       <div class="counters fade-up">
-        <div class="counter"><div class="counter-num"><span id="ctr1">0</span>時間対応</div><div class="counter-label">24時間365日</div></div>
-        <div class="counter"><div class="counter-num">¥<span id="ctr2">0</span>/月</div><div class="counter-label">月額定額</div></div>
-        <div class="counter"><div class="counter-num"><span id="ctr3">0</span>業種対応</div><div class="counter-label">幅広い自営業に対応</div></div>
+        <div class="counter"><div class="counter-num"><span id="ctr1">24</span>時間対応</div><div class="counter-label">24時間365日</div></div>
+        <div class="counter"><div class="counter-num">¥<span id="ctr2">3,980</span>/月</div><div class="counter-label">月額定額</div></div>
+        <div class="counter"><div class="counter-num"><span id="ctr3">11</span>業種対応</div><div class="counter-label">幅広い自営業に対応</div></div>
       </div>
     </div>
   </section>
@@ -768,11 +768,11 @@
     <div class="wrap">
       <div class="section-head fade-up"><div class="eyebrow">FAQ</div><h2>よくあるご質問</h2></div>
       <div class="faq-list">
-        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">LINEの設定は自分でやる必要がありますか？<span class="faq-plus">+</span></button><div class="faq-a">いいえ、全て代行いたします。</div></div>
-        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">解約したらデータはどうなりますか？<span class="faq-plus">+</span></button><div class="faq-a">データは削除されません。解約後も安全に保持され、再開するといつでも元通りに復元されます。</div></div>
-        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">対応している業種を教えてください。<span class="faq-plus">+</span></button><div class="faq-a">美容室・ネイルサロン・整骨院・マッサージ・鍼灸院・ペットサロン・飲食店など、予約が必要なあらゆる業種に対応しています。</div></div>
-        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">サポート体制はどうなっていますか？<span class="faq-plus">+</span></button><div class="faq-a">LINEまたはSNSのDMにて随時対応いたします。</div></div>
-        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">途中でプランを変更できますか？<span class="faq-plus">+</span></button><div class="faq-a">はい、いつでも変更・解約が可能です。</div></div>
+        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">LINEの設定は自分でやる必要がありますか？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">いいえ、全て代行いたします。</div></div>
+        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">解約したらデータはどうなりますか？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">データは削除されません。解約後も安全に保持され、再開するといつでも元通りに復元されます。</div></div>
+        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">対応している業種を教えてください。<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">美容室・ネイルサロン・整骨院・マッサージ・鍼灸院・ペットサロン・飲食店など、予約が必要なあらゆる業種に対応しています。</div></div>
+        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">サポート体制はどうなっていますか？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">LINEまたはSNSのDMにて随時対応いたします。</div></div>
+        <div class="faq-item fade-up"><button class="faq-q" onclick="toggleFaq(this)">途中でプランを変更できますか？<span class="faq-plus">+</span></button><div class="faq-a" style="display:none;">はい、いつでも変更・解約が可能です。</div></div>
       </div>
     </div>
   </section>
@@ -792,7 +792,7 @@
       <div class="reg-card fade-up" id="step1">
         <div class="reg-head"><div class="reg-num">1</div><h3>Googleアカウントでログイン</h3></div>
         <a href="/auth/google" class="google-btn" id="googleBtn">Googleでログイン</a>
-        <div class="user-info" id="userInfo"><p id="userEmail"></p></div>
+        <div class="user-info" id="userInfo" style="display:none;"><p id="userEmail"></p></div>
       </div>
       <div class="reg-card fade-up" id="step2" style="opacity:0.5; pointer-events:none;">
         <div class="reg-head"><div class="reg-num">2</div><h3>お店の情報を入力</h3></div>
@@ -840,7 +840,7 @@
         <div class="reg-head"><div class="reg-num">3</div><h3>7日間無料体験開始</h3></div>
         <div class="success-box" style="display:block;">7日間、完全無料。無料期間中の解約は費用が一切かかりません。トライアル終了後、¥3,980/月の自動更新となります。</div>
         <button class="btn-primary" id="payBtn" onclick="startPayment()" style="width:100%; margin-top:16px;">7日間無料で始める</button>
-        <div class="success-box" id="successBox">
+        <div class="success-box" id="successBox" style="display:none;">
           <strong>登録完了！</strong>
           <p>予約受付が起動しました。LINE Webhook URLを設定してください。</p>
           <div class="webhook" id="webhookUrl"></div>
@@ -882,42 +882,47 @@
       setTimeout(type, 500);
     })();
 
-    function animateCounter(el, target, duration, mode) {
-      var current = 0;
-      var step = target / (duration / 16);
+    function animateCounter(el, target, duration, isPrice) {
+      if (!el) return;
+      let start = 0;
+      const step = target / (duration / 16);
       function tick() {
-        current = Math.min(current + step, target);
-        el.textContent = mode === 'price'
-          ? Math.round(current).toLocaleString('ja-JP')
-          : Math.round(current);
-        if (current < target) requestAnimationFrame(tick);
+        start = Math.min(start + step, target);
+        if (isPrice) {
+          el.textContent = Math.round(start).toLocaleString('ja-JP');
+        } else {
+          el.textContent = Math.round(start);
+        }
+        if (start < target) requestAnimationFrame(tick);
       }
       tick();
     }
 
-    (function() {
-      var started = false;
-      function start() {
-        if (started) return;
-        started = true;
-        animateCounter(document.getElementById('ctr1'), 24, 1000, '');
-        animateCounter(document.getElementById('ctr2'), 3980, 1200, 'price');
-        animateCounter(document.getElementById('ctr3'), 11, 900, '');
-      }
-      if (window.IntersectionObserver) {
-        var obs = new IntersectionObserver(function(entries) {
-          entries.forEach(function(entry) {
-            if (entry.isIntersecting) {
-              start();
-              obs.disconnect();
-            }
+    var countersStarted = false;
+    function startCounters() {
+      if (countersStarted) return;
+      countersStarted = true;
+      animateCounter(document.getElementById('ctr1'), 24, 1200, false);
+      animateCounter(document.getElementById('ctr2'), 3980, 1400, true);
+      animateCounter(document.getElementById('ctr3'), 11, 800, false);
+    }
+
+    if (window.IntersectionObserver) {
+      var heroEl = document.querySelector('.hero-counters') ||
+                   document.getElementById('ctr1')?.closest('div');
+      if (heroEl) {
+        var ctrObs = new IntersectionObserver(function(entries) {
+          entries.forEach(function(e) {
+            if (e.isIntersecting) { startCounters(); ctrObs.disconnect(); }
           });
-        }, { threshold: .25 });
-        obs.observe(document.querySelector('.counters'));
+        }, { threshold: 0.3 });
+        ctrObs.observe(heroEl);
       } else {
-        start();
+        startCounters();
       }
-    })();
+    } else {
+      startCounters();
+    }
 
     function switchSvcTab(tab, btn) {
       document.querySelectorAll('.svc-tab-btn').forEach(function(item) { item.classList.remove('active'); });
@@ -935,10 +940,28 @@
     }
 
     function toggleFaq(btn) {
-      var item = btn.closest('.faq-item');
-      var open = item.classList.contains('open');
-      document.querySelectorAll('.faq-item.open').forEach(function(el) { el.classList.remove('open'); });
-      if (!open) item.classList.add('open');
+      var item = btn.closest('.faq-item') ||
+                 btn.parentElement;
+      var answer = item.querySelector('.faq-answer') ||
+                   item.querySelector('[class*="answer"]') ||
+                   item.querySelector('.faq-a') ||
+                   item.querySelector('p') ||
+                   btn.nextElementSibling;
+      if (!answer) return;
+      var isOpen = answer.style.display !== 'none';
+      document.querySelectorAll('.faq-item, .faq-question')
+        .forEach(function(el) {
+          var ans = el.querySelector('.faq-answer') ||
+                    el.querySelector('[class*="answer"]') ||
+                    el.querySelector('.faq-a') ||
+                    el.querySelector('p');
+          if (ans) ans.style.display = 'none';
+          el.classList && el.classList.remove('open');
+        });
+      if (!isOpen) {
+        answer.style.display = 'block';
+        item.classList && item.classList.add('open');
+      }
     }
 
     (function() {
