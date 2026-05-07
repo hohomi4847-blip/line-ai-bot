@@ -1035,14 +1035,9 @@
       setTimeout(type, 500);
     })();
 
-    (function() {
-      var el1 = document.getElementById('ctr1');
-      var el2 = document.getElementById('ctr2');
-      var el3 = document.getElementById('ctr3');
-      if (el1) el1.textContent = '24';
-      if (el2) el2.textContent = '3,980';
-      if (el3) el3.textContent = '11';
-    })();
+    document.getElementById('ctr1').textContent = '24';
+    document.getElementById('ctr2').textContent = '3,980';
+    document.getElementById('ctr3').textContent = '11';
 
     function switchSvcTab(tab, btn) {
       document.querySelectorAll('.svc-tab-btn').forEach(function(item) { item.classList.remove('active'); });
