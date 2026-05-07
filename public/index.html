@@ -919,24 +919,14 @@
       setTimeout(type, 500);
     })();
 
-    document.addEventListener('DOMContentLoaded', function() {
-      function animateCounter(el, target, duration, isPrice) {
-        if (!el) return;
-        var start = 0;
-        var step = target / (duration / 16);
-        function tick() {
-          start = Math.min(start + step, target);
-          el.textContent = isPrice
-            ? Math.round(start).toLocaleString('ja-JP')
-            : Math.round(start);
-          if (start < target) requestAnimationFrame(tick);
-        }
-        tick();
-      }
-      animateCounter(document.getElementById('ctr1'), 24, 1200, false);
-      animateCounter(document.getElementById('ctr2'), 3980, 1400, true);
-      animateCounter(document.getElementById('ctr3'), 11, 800, false);
-    });
+    (function() {
+      var el1 = document.getElementById('ctr1');
+      var el2 = document.getElementById('ctr2');
+      var el3 = document.getElementById('ctr3');
+      if (el1) el1.textContent = '24';
+      if (el2) el2.textContent = '3,980';
+      if (el3) el3.textContent = '11';
+    })();
 
     function switchSvcTab(tab, btn) {
       document.querySelectorAll('.svc-tab-btn').forEach(function(item) { item.classList.remove('active'); });
