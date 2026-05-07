@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>制作代行サービス | スマート予約Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&family=Noto+Serif+JP:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #06C755;
+      --green-dark: #05A847;
+      --green-soft: #F0FDF4;
+      --bg: #F7F7F5;
+      --white: #FFFFFF;
+      --text: #111827;
+      --text2: #4B5563;
+      --text3: #8A8F98;
+      --border: #E5E7EB;
+      --serif: 'Noto Serif JP', serif;
+      --shadow: 0 12px 34px rgba(17, 24, 39, 0.08);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Noto Sans JP', 'Helvetica Neue', Arial, sans-serif;
+      color: var(--text);
+      background: var(--white);
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      height: 68px;
+      background: rgba(255,255,255,0.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      transition: box-shadow 0.2s ease;
+    }
+    .nav.scrolled { box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08); }
+    .nav-inner {
+      max-width: 1120px;
+      height: 100%;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      color: var(--white);
+      background: #111;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      margin-left: auto;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text2);
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 18px;
+      border-radius: 999px;
+      background: var(--green);
+      color: var(--white);
+      font-size: 13px;
+      font-weight: 800;
+      box-shadow: 0 10px 22px rgba(6,199,85,0.22);
+      white-space: nowrap;
+    }
+
+    .section { padding: 96px 24px; }
+    .section.bg { background: var(--bg); }
+    .wrap { max-width: 1120px; margin: 0 auto; }
+    .eyebrow {
+      display: inline-flex;
+      color: var(--green-dark);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .section-head { text-align: center; max-width: 780px; margin: 0 auto 44px; }
+    h1, h2, h3 { letter-spacing: 0; line-height: 1.35; }
+    h1, h2 { font-family: var(--serif); }
+    h1 { font-size: clamp(40px, 7vw, 72px); font-weight: 700; }
+    h2 { font-size: clamp(30px, 4.6vw, 46px); font-weight: 700; }
+    h3 { font-size: 20px; font-weight: 800; }
+    .lead { color: var(--text2); font-size: 16px; line-height: 2; margin-top: 16px; }
+
+    .hero {
+      padding: 150px 24px 84px;
+      background:
+        radial-gradient(circle at 20% 16%, rgba(6,199,85,0.13), transparent 34%),
+        linear-gradient(180deg, #FFFFFF 0%, #F1FFF6 100%);
+      overflow: hidden;
+    }
+    .hero-inner { max-width: 1120px; margin: 0 auto; text-align: center; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      border: 1px solid #BBF7D0;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.82);
+      color: var(--green-dark);
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 24px;
+    }
+    .hero-copy { max-width: 760px; margin: 22px auto 0; color: var(--text2); font-size: 18px; line-height: 2; }
+    .trust-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 52px;
+    }
+    .trust-card {
+      padding: 18px;
+      border: 1px solid rgba(6,199,85,0.18);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.9);
+      font-size: 14px;
+      font-weight: 800;
+      box-shadow: 0 8px 24px rgba(6,199,85,0.07);
+    }
+
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+    }
+    .card-icon { font-size: 32px; margin-bottom: 12px; }
+    .card p { color: var(--text2); font-size: 14px; margin-top: 12px; line-height: 1.9; }
+
+    .services-list { display: grid; gap: 28px; }
+    .service-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1.04fr 0.96fr;
+      gap: 28px;
+      padding: 34px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--white);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .service-card.featured {
+      border-color: rgba(6,199,85,0.42);
+      background: linear-gradient(180deg, #FFFFFF 0%, #F4FFF7 100%);
+    }
+    .service-tag {
+      display: inline-flex;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: #111;
+      color: var(--white);
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+    .service-tag.green { background: var(--green); }
+    .service-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .service-title span { font-size: 34px; }
+    .solve-box {
+      margin-top: 22px;
+      padding: 18px;
+      border-radius: 12px;
+      background: var(--green-soft);
+      border: 1px solid #BBF7D0;
+    }
+    .solve-box strong { display: block; margin-bottom: 8px; color: #064E3B; }
+    .solve-box ul, .work-box ul { list-style: none; display: grid; gap: 6px; color: var(--text2); font-size: 14px; }
+    .work-box {
+      padding: 20px;
+      border-radius: 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+    .work-box h4, .price-box h4 { font-size: 14px; font-weight: 800; margin-bottom: 10px; }
+    .service-side { display: grid; gap: 14px; align-content: start; }
+    .market {
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid #FDE68A;
+      background: #FFFBEB;
+      color: #92400E;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.8;
+    }
+    .price-box {
+      padding: 22px;
+      border-radius: 14px;
+      background: #111;
+      color: var(--white);
+    }
+    .price { font-family: var(--serif); font-size: 38px; font-weight: 700; line-height: 1.1; }
+    .price-note { color: #D1D5DB; font-size: 13px; margin-top: 8px; }
+    .meta-grid { display: grid; gap: 8px; font-size: 13px; color: var(--text2); }
+    .meta-grid div { padding: 10px 12px; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); }
+    .service-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      border: none;
+      border-radius: 999px;
+      background: #111;
+      color: var(--white);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .service-btn.green { background: var(--green); box-shadow: 0 12px 24px rgba(6,199,85,0.22); }
+
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .flow-card {
+      min-height: 190px;
+      padding: 24px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--white);
+    }
+    .step-num { color: var(--green-dark); font-size: 13px; font-weight: 800; margin-bottom: 8px; }
+    .notice {
+      margin-top: 28px;
+      padding: 22px;
+      border-radius: 14px;
+      border: 1px solid #FDE68A;
+      background: #FFFBEB;
+      color: #92400E;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.9;
+    }
+    .notice a { color: var(--green-dark); font-weight: 800; }
+
+    .faq-list { max-width: 860px; margin: 0 auto; display: grid; gap: 10px; }
+    .faq-item { border: 1px solid var(--border); border-radius: 12px; background: var(--white); overflow: hidden; }
+    .faq-q {
+      width: 100%;
+      border: none;
+      background: transparent;
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-align: left;
+      gap: 16px;
+      cursor: pointer;
+      color: var(--text);
+      font-weight: 800;
+    }
+    .faq-plus { color: var(--green-dark); font-size: 22px; line-height: 1; }
+    .faq-a {
+      display: none;
+      padding: 0 20px 20px;
+      color: var(--text2);
+      font-size: 14px;
+      line-height: 2;
+    }
+    .faq-item.open .faq-a { display: block; }
+
+    .cta {
+      text-align: center;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(6,199,85,0.18), transparent 34%),
+        linear-gradient(180deg, #F0FFF5 0%, #FFFFFF 100%);
+    }
+    .cta-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 30px;
+    }
+    .btn-primary, .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 54px;
+      padding: 0 26px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 800;
+    }
+    .btn-primary { background: #111; color: var(--white); box-shadow: 0 16px 34px rgba(17, 24, 39, 0.18); }
+    .btn-secondary { background: var(--white); color: #111; border: 1px solid var(--border); }
+
+    .footer { background: #111; color: #D1D5DB; padding: 40px 24px; }
+    .footer-inner { max-width: 1120px; margin: 0 auto; display: flex; justify-content: space-between; gap: 24px; align-items: center; flex-wrap: wrap; }
+    .footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; }
+    .footer-links a { color: #D1D5DB; }
+    .copyright { width: 100%; color: #777; font-size: 12px; margin-top: 16px; }
+
+    .fade-up {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+    .fade-up.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 980px) {
+      .nav-links { display: none; }
+      .trust-grid, .problem-grid, .flow-grid { grid-template-columns: 1fr; }
+      .service-card { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .nav { height: 62px; }
+      .nav-inner { padding: 0 16px; }
+      .brand { font-size: 14px; }
+      .brand-mark { width: 30px; height: 30px; }
+      .nav-cta { min-height: 36px; padding: 0 14px; font-size: 12px; }
+      .hero { padding: 118px 16px 64px; }
+      .section { padding: 72px 16px; }
+      .service-card, .card, .flow-card { padding: 22px; border-radius: 12px; }
+      .service-title { align-items: flex-start; }
+      .price { font-size: 32px; }
+      .footer-inner { align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a class="brand" href="/">
+        <span class="brand-mark">⚡</span>
+        <span>スマート予約Pro</span>
+      </a>
+      <nav class="nav-links" aria-label="主要ナビゲーション">
+        <a href="#services">サービス一覧</a>
+        <a href="/guide.html">月額プラン</a>
+        <a href="#faq">よくある質問</a>
+      </nav>
+      <a class="nav-cta" href="/guide.html">月額プランを見る</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="badge fade-up">初期導入サービス · 業界最安値水準</div>
+        <h1 class="fade-up">開業・集客の準備を、<br>プロに丸ごとお任せ</h1>
+        <p class="hero-copy fade-up">LINE・Google・Instagramの設定から<br>開業告知まで、経験豊富なスタッフが<br>すべて代行します。競合他社の1/3以下の価格で。</p>
+        <div class="trust-grid">
+          <div class="trust-card fade-up">✅ 購入後3営業日以内に案内メール</div>
+          <div class="trust-card fade-up">✅ 作業開始前キャンセルは全額返金</div>
+          <div class="trust-card fade-up">✅ 納品後サポートあり</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section bg" id="why">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <div class="eyebrow">なぜ必要か</div>
+          <h2>自分でやると、こんな落とし穴が</h2>
+        </div>
+        <div class="problem-grid">
+          <article class="card fade-up"><div class="card-icon">⏰</div><h3>設定に時間がかかりすぎる</h3><p>LINE公式アカウントの開設・設定には慣れていない方だと数日かかることも。開業準備の忙しい時期に余分な時間は使えません。</p></article>
+          <article class="card fade-up"><div class="card-icon">❌</div><h3>設定ミスでAIが動かない</h3><p>Webhook URLの設定やChannel Secretの入力ミスでシステムが動かないケースが多発。プロが設定すれば動作確認まで完全保証。</p></article>
+          <article class="card fade-up"><div class="card-icon">📉</div><h3>集客の機会損失</h3><p>GoogleマップやInstagramの設定が不完全だと検索に表示されません。最初から正しく設定することで開業初日から集客できます。</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="services">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <div class="eyebrow">サービス一覧</div>
+          <h2>あなたのお店に必要なものを選んでください</h2>
+          <p class="lead">すべてのサービスはスマート予約Proの月額プランと連動しています。</p>
+        </div>
+        <div class="services-list">
+          <article class="service-card fade-up">
+            <div>
+              <span class="service-tag">最も人気</span>
+              <div class="service-title"><span>💬</span><div><h3>LINEスタートパック</h3><p class="lead">LINE公式アカウント開設からAI自動予約システム連動まで完全代行</p></div></div>
+              <div class="solve-box"><strong>このサービスで解決できること</strong><ul><li>✓ 施術中の電話・LINE対応から解放される</li><li>✓ 深夜・休日も自動で予約受付できる</li><li>✓ 予約の重複・ミスがなくなる</li></ul></div>
+            </div>
+            <div class="service-side">
+              <div class="work-box"><h4>📋 作業内容</h4><ul><li>・LINE公式アカウント開設サポート</li><li>・リッチメニューデザイン制作（6ボタン）</li><li>・ウェルカムメッセージ作成</li><li>・AI自動予約システム連動設定</li><li>・営業時間・メニュー・休業日の初期設定</li><li>・動作確認（テスト予約3回）</li><li>・設定完了後マニュアル納品</li></ul></div>
+              <div class="market">他社の相場: ¥50,000〜¥150,000<br>しかも自動予約システムは別途費用</div>
+              <div class="price-box"><h4>価格</h4><div class="price">¥19,800</div><div class="price-note">（税込）AI自動予約システム連動込み</div></div>
+              <div class="meta-grid"><div>納品まで3営業日以内</div><div>情報ご提出前のキャンセルは全額返金</div></div>
+              <button class="service-btn" type="button" onclick="window.location.href='/#services'">申し込む →</button>
+            </div>
+          </article>
+
+          <article class="service-card fade-up">
+            <div>
+              <div class="service-title"><span>🗺️</span><div><h3>Google設定パック</h3><p class="lead">Google検索・マップへの店舗登録とSEO最適化を完全代行</p></div></div>
+              <div class="solve-box"><strong>このサービスで解決できること</strong><ul><li>✓ Googleマップで「近くのお店」として表示される</li><li>✓ 「○○駅近く 美容室」で検索上位を狙える</li><li>✓ オーナー認証の複雑な手続きをプロが対応</li></ul></div>
+            </div>
+            <div class="service-side">
+              <div class="work-box"><h4>📋 作業内容</h4><ul><li>・オーナー認証サポート（郵送確認コード対応）</li><li>・店舗基本情報登録（住所・電話・営業時間）</li><li>・SEOに強い店舗説明文作成（400字）</li><li>・カテゴリ最適化設定</li><li>・写真登録（お客様提供素材使用）</li><li>・設定完了後マニュアル納品</li></ul></div>
+              <div class="market">他社の相場: ¥20,000〜¥50,000</div>
+              <div class="price-box"><h4>価格</h4><div class="price">¥9,800</div><div class="price-note">（税込）</div></div>
+              <div class="meta-grid"><div>3営業日以内</div><div>情報ご提出前のキャンセルは全額返金</div></div>
+              <button class="service-btn" type="button" onclick="window.location.href='/#services'">申し込む →</button>
+            </div>
+          </article>
+
+          <article class="service-card fade-up">
+            <div>
+              <div class="service-title"><span>📸</span><div><h3>Instagramスタートパック</h3><p class="lead">Instagram開設から初回投稿まで完全代行。LINE予約への導線も設定。</p></div></div>
+              <div class="solve-box"><strong>このサービスで解決できること</strong><ul><li>✓ 「何を投稿すればいいか」を最初から解決</li><li>✓ お客様がInstagramから直接LINE予約できる動線を構築</li><li>✓ フォロワーが増えやすいプロフィール設定</li></ul></div>
+            </div>
+            <div class="service-side">
+              <div class="work-box"><h4>📋 作業内容</h4><ul><li>・アカウント作成・プロフィール設定</li><li>・ハイライト作成（メニュー/アクセス/予約方法）</li><li>・LINE予約導線設定（バイオリンク）</li><li>・最初の3投稿作成（写真選定・文章・ハッシュタグ）</li><li>・フォロワーを増やすための投稿戦略アドバイス</li><li>・設定完了後マニュアル納品</li></ul></div>
+              <div class="market">他社の相場: ¥30,000〜¥80,000</div>
+              <div class="price-box"><h4>価格</h4><div class="price">¥14,800</div><div class="price-note">（税込）</div></div>
+              <div class="meta-grid"><div>3営業日以内</div><div>情報ご提出前のキャンセルは全額返金</div></div>
+              <button class="service-btn" type="button" onclick="window.location.href='/#services'">申し込む →</button>
+            </div>
+          </article>
+
+          <article class="service-card featured fade-up">
+            <div>
+              <span class="service-tag green">🔥 最もお得 · ¥4,600節約</span>
+              <div class="service-title"><span>🚀</span><div><h3>集客フルパック</h3><p class="lead">LINE + Google + Instagram すべてまとめて完全代行</p></div></div>
+              <div class="solve-box"><strong>このサービスで解決できること</strong><ul><li>✓ オンライン集客の基盤を一気に構築</li><li>✓ 3つ個別に頼むより¥4,600お得</li><li>✓ 優先対応で最短3営業日以内に納品</li></ul></div>
+            </div>
+            <div class="service-side">
+              <div class="work-box"><h4>📋 作業内容</h4><ul><li>・上記3パックの全内容を含む</li><li>・統合運用ガイド納品</li></ul></div>
+              <div class="market">3つ個別に依頼した場合: ¥44,400<br>他社に依頼した場合: ¥100,000〜</div>
+              <div class="price-box"><h4>価格</h4><div class="price">¥39,800</div><div class="price-note">（税込）¥4,600お得</div></div>
+              <div class="meta-grid"><div>優先対応・3営業日以内</div><div>情報ご提出前のキャンセルは全額返金</div></div>
+              <button class="service-btn green" type="button" onclick="window.location.href='/#services'">申し込む →</button>
+            </div>
+          </article>
+
+          <article class="service-card fade-up">
+            <div>
+              <div class="service-title"><span>🎨</span><div><h3>リッチメニューリニューアル</h3><p class="lead">季節・イベントに合わせたリッチメニューに刷新</p></div></div>
+              <div class="solve-box"><strong>このサービスで解決できること</strong><ul><li>✓ 古くなったリッチメニューを新鮮な印象に</li><li>✓ 季節・イベントに合わせた演出でお客様の興味を引く</li><li>✓ ボタン配置の最適化でLINE予約率が上がる</li></ul></div>
+            </div>
+            <div class="service-side">
+              <div class="work-box"><h4>📋 作業内容</h4><ul><li>・ボタン構成の再設計提案</li><li>・デザイン制作（Canva使用）</li><li>・LINE設定まで完了</li><li>・春夏秋冬・記念日・キャンペーンに対応</li></ul></div>
+              <div class="market">他社の相場: ¥30,000〜¥55,000</div>
+              <div class="price-box"><h4>価格</h4><div class="price">¥9,800</div><div class="price-note">（税込）季節ごとのご依頼歓迎</div></div>
+              <div class="meta-grid"><div>3営業日以内</div><div>情報ご提出前のキャンセルは全額返金</div></div>
+              <button class="service-btn" type="button" onclick="window.location.href='/#services'">申し込む →</button>
+            </div>
+          </article>
+
+          <article class="service-card fade-up">
+            <div>
+              <div class="service-title"><span>🪪</span><div><h3>名刺・チラシ作成パック</h3><p class="lead">LINE予約QRコード連動の名刺・チラシをデザイン納品</p></div></div>
+              <div class="solve-box"><strong>このサービスで解決できること</strong><ul><li>✓ 名刺を渡すだけでLINE予約につながる動線を構築</li><li>✓ 「また来たい」と思わせるプロのデザイン</li><li>✓ 印刷用PDFで納品。すぐに印刷会社に発注できる</li></ul></div>
+            </div>
+            <div class="service-side">
+              <div class="work-box"><h4>📋 作業内容</h4><ul><li>・キャッチコピー・文章作成</li><li>・デザイン制作（Canva使用）</li><li>・LINE予約QRコード挿入</li><li>・印刷用PDF納品（A4/名刺サイズ対応）</li><li>・修正1回無料</li></ul></div>
+              <div class="market">他社の相場: ¥15,000〜¥50,000</div>
+              <div class="price-box"><h4>価格</h4><div class="price">¥9,800</div><div class="price-note">（税込）※ 印刷費は別途お客様にてご手配ください</div></div>
+              <div class="meta-grid"><div>3営業日以内</div><div>情報ご提出前のキャンセルは全額返金</div></div>
+              <button class="service-btn" type="button" onclick="window.location.href='/#services'">申し込む →</button>
+            </div>
+          </article>
+
+          <article class="service-card featured fade-up">
+            <div>
+              <span class="service-tag green">🎉 開業・移転専用</span>
+              <div class="service-title"><span>🏪</span><div><h3>開業・移転完全サポートセット</h3><p class="lead">開業前のオンライン準備をすべてまとめて2営業日以内に納品</p></div></div>
+              <div class="solve-box"><strong>このサービスで解決できること</strong><ul><li>✓ 開業当日からオンラインで集客できる状態を作る</li><li>✓ SNS設定・告知文・名刺まで一気に完成</li><li>✓ 開業準備の忙しい時期に、プロに任せて本業に集中</li></ul></div>
+            </div>
+            <div class="service-side">
+              <div class="work-box"><h4>📋 作業内容</h4><ul><li>・LINE完全設定（AI自動予約連動）</li><li>・Googleビジネスプロフィール設定</li><li>・Instagram開設・初回投稿3本</li><li>・開業告知文・キャンペーン文章作成</li><li>・名刺デザイン制作</li><li>・開業後の運用ガイド（PDF）納品</li><li>・優先対応（2営業日以内）</li></ul></div>
+              <div class="market">他社に個別依頼した場合: ¥130,000〜¥300,000</div>
+              <div class="price-box"><h4>価格</h4><div class="price">¥49,800</div><div class="price-note">（税込）相場の1/3以下</div></div>
+              <div class="meta-grid"><div>優先対応・2営業日以内</div><div>情報ご提出前のキャンセルは全額返金</div></div>
+              <button class="service-btn green" type="button" onclick="window.location.href='/#services'">申し込む →</button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section bg" id="flow">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <div class="eyebrow">申し込みの流れ</div>
+          <h2>ご購入からお届けまで</h2>
+        </div>
+        <div class="flow-grid">
+          <article class="flow-card fade-up"><div class="step-num">STEP 1</div><h3>ご購入</h3><p>クレジットカード決済でお申し込みください。</p></article>
+          <article class="flow-card fade-up"><div class="step-num">STEP 2</div><h3>案内メール</h3><p>3営業日以内に必要情報のご案内メールをお送りします。</p></article>
+          <article class="flow-card fade-up"><div class="step-num">STEP 3</div><h3>情報を返信</h3><p>必要事項をメールでご返信ください。</p></article>
+          <article class="flow-card fade-up"><div class="step-num">STEP 4</div><h3>納品</h3><p>作業完了後にメールでご報告・納品します。</p></article>
+        </div>
+        <div class="notice fade-up">⚠️ キャンセルについて<br>作業開始前（情報ご提出前）のキャンセルは全額返金します。情報ご提出後（作業開始後）のキャンセルは承れません。詳しくは<a href="/refund.html">返金ポリシー</a>をご確認ください。</div>
+      </div>
+    </section>
+
+    <section class="section" id="faq">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <div class="eyebrow">よくある質問</div>
+          <h2>制作代行の疑問にお答えします</h2>
+        </div>
+        <div class="faq-list">
+          <div class="faq-item fade-up"><button class="faq-q" type="button">購入後、どのくらいで作業が始まりますか？<span class="faq-plus">+</span></button><div class="faq-a">ご購入後3営業日以内に必要情報のご案内メールをお送りします。情報をご返信いただき次第、作業を開始します。</div></div>
+          <div class="faq-item fade-up"><button class="faq-q" type="button">必要な情報は何ですか？<span class="faq-plus">+</span></button><div class="faq-a">サービスによって異なりますが、主に店舗名・業種・営業時間・メニュー・写真素材などです。ご購入後の案内メールに詳細を記載します。</div></div>
+          <div class="faq-item fade-up"><button class="faq-q" type="button">写真や素材がない場合はどうなりますか？<span class="faq-plus">+</span></button><div class="faq-a">素材がない場合はその旨をお知らせください。テキストのみでの制作や、フリー素材の使用で対応できます。</div></div>
+          <div class="faq-item fade-up"><button class="faq-q" type="button">修正はできますか？<span class="faq-plus">+</span></button><div class="faq-a">納品後の修正は1回まで無料です。2回目以降は別途ご相談ください。</div></div>
+          <div class="faq-item fade-up"><button class="faq-q" type="button">LINE公式アカウントを持っていません。<span class="faq-plus">+</span></button><div class="faq-a">問題ありません。LINEスタートパックにはアカウント開設のサポートが含まれています。</div></div>
+          <div class="faq-item fade-up"><button class="faq-q" type="button">月額プランに加入していなくても購入できますか？<span class="faq-plus">+</span></button><div class="faq-a">はい、購入できます。ただし、LINEスタートパックはスマート予約Proの月額プランと連動する設定が含まれるため、月額プランへのご加入を推奨しています。</div></div>
+          <div class="faq-item fade-up"><button class="faq-q" type="button">領収書は発行されますか？<span class="faq-plus">+</span></button><div class="faq-a">Paddleからの自動メールが領収書としてご利用いただけます。インボイス対応の領収書が必要な場合はお問い合わせください。</div></div>
+          <div class="faq-item fade-up"><button class="faq-q" type="button">法人での購入は可能ですか？<span class="faq-plus">+</span></button><div class="faq-a">はい、法人でのご購入も可能です。特定商取引法に基づく表記をご確認ください。</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section cta">
+      <div class="wrap fade-up">
+        <h2>まず、月額プランから始めませんか？</h2>
+        <p class="lead">初期費用¥0・7日間完全無料。<br>制作代行サービスは必要になったときに追加できます。</p>
+        <div class="cta-actions">
+          <a class="btn-primary" href="/">月額プランを7日間無料で試す →</a>
+          <a class="btn-secondary" href="/#services">制作代行を申し込む</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="brand"><span class="brand-mark">⚡</span><span>スマート予約Pro</span></div>
+      <div class="footer-links">
+        <a href="/">トップページ</a>
+        <a href="/refund.html">返金ポリシー</a>
+        <a href="/terms.html">利用規約</a>
+        <a href="/privacy.html">プライバシーポリシー</a>
+        <a href="/tokusho.html">特定商取引法</a>
+      </div>
+      <div class="copyright">© 2026 スマート予約Pro</div>
+    </div>
+  </footer>
+
+  <script>
+    'use strict';
+
+    function initFadeUp() {
+      var items = document.querySelectorAll('.fade-up');
+      if (!('IntersectionObserver' in window)) {
+        items.forEach(function(item) { item.classList.add('show'); });
+        return;
+      }
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('show');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      items.forEach(function(item) { observer.observe(item); });
+    }
+
+    function initFaq() {
+      document.querySelectorAll('.faq-q').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var item = btn.closest('.faq-item');
+          var plus = btn.querySelector('.faq-plus');
+          item.classList.toggle('open');
+          plus.textContent = item.classList.contains('open') ? '-' : '+';
+        });
+      });
+    }
+
+    function initSmoothLinks() {
+      document.querySelectorAll('a[href^="#"]').forEach(function(link) {
+        link.addEventListener('click', function(event) {
+          var target = document.querySelector(link.getAttribute('href'));
+          if (!target) return;
+          event.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+    }
+
+    function initNavShadow() {
+      var nav = document.getElementById('nav');
+      function onScroll() {
+        nav.classList.toggle('scrolled', window.scrollY > 8);
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      initNavShadow();
+      initFadeUp();
+      initFaq();
+      initSmoothLinks();
+    });
+  </script>
+</body>
+</html>
