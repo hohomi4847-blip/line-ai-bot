@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>店舗管理ダッシュボード</title>
+  <title>マイページ | スマート予約Pro</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&family=Noto+Serif+JP:wght@600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -15,19 +15,20 @@
       --green-d:      #05A847;
       --green-light:  #F0FDF4;
       --green-border: #BBF7D0;
-      --bg:           #F3F4F6;
+      --bg:           #F7F7F5;
       --white:        #FFFFFF;
       --text:         #111827;
       --text2:        #4B5563;
       --text3:        #9CA3AF;
       --border:       #E5E7EB;
-      --radius:       12px;
-      --shadow-sm:    0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-      --shadow-md:    0 4px 16px rgba(0,0,0,0.08);
+      --radius:       14px;
+      --shadow-sm:    0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+      --shadow-md:    0 4px 20px rgba(0,0,0,0.06);
+      --serif:        'Noto Serif JP', serif;
     }
 
     body {
-      font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+      font-family: 'Noto Sans JP', 'Helvetica Neue', Arial, sans-serif;
       background: var(--bg); color: var(--text);
       -webkit-font-smoothing: antialiased;
       min-height: 100vh;
@@ -52,53 +53,78 @@
     .loading-text { font-size: 14px; color: var(--text3); font-weight: 500; }
 
     .block-card {
-      background: var(--white); border: 1px solid var(--border);
-      border-radius: 20px; padding: 48px 40px;
-      box-shadow: var(--shadow-md); max-width: 440px; width: 100%;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 52px 44px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.06);
+      max-width: 440px;
+      width: 100%;
       text-align: center;
     }
     .block-icon { font-size: 52px; margin-bottom: 20px; }
     .block-title { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 12px; letter-spacing: -0.03em; }
     .block-desc { color: var(--text2); font-size: 15px; line-height: 1.7; margin-bottom: 28px; }
     .block-btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--green); color: white;
-      font-size: 15px; font-weight: 700; padding: 14px 32px;
-      border-radius: 10px; text-decoration: none; border: none; cursor: pointer;
-      transition: background 0.15s, box-shadow 0.15s;
-      box-shadow: 0 4px 14px rgba(6,199,85,0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #111;
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 14px 32px;
+      border-radius: 999px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s;
+      box-shadow: none;
     }
-    .block-btn:hover { background: var(--green-d); box-shadow: 0 6px 20px rgba(6,199,85,0.4); }
+    .block-btn:hover { background: #333; }
 
     /* ── HEADER ─────────────────────────────────────────── */
     .dash-header {
-      background: #111827; color: white;
+      background: #ffffff;
+      color: #111;
       padding: 0 28px;
-      display: flex; align-items: center; justify-content: space-between;
-      height: 60px; position: sticky; top: 0; z-index: 100;
-      border-bottom: 1px solid #1F2937;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.04);
     }
     .dash-header-left { display: flex; align-items: center; gap: 12px; }
     .dash-logo {
-      width: 32px; height: 32px; background: var(--green);
-      border-radius: 8px; display: flex; align-items: center;
+      width: 32px; height: 32px; background: #111;
+      border-radius: 10px; display: flex; align-items: center;
       justify-content: center; font-size: 16px; flex-shrink: 0;
     }
-    .dash-shop-name { font-size: 15px; font-weight: 700; color: white; letter-spacing: -0.02em; }
+    .dash-shop-name { font-size: 16px; font-weight: 700; color: #111; letter-spacing: -0.02em; font-family: var(--serif); }
     .dash-header-right { display: flex; align-items: center; gap: 16px; }
     .dash-date { font-size: 13px; color: #9CA3AF; }
     .dash-logout {
-      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
-      color: #D1D5DB; padding: 7px 16px; border-radius: 8px;
-      text-decoration: none; font-size: 13px; font-weight: 500;
+      background: #F3F4F6;
+      border: 1px solid var(--border);
+      color: #555;
+      padding: 7px 16px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
       transition: background 0.15s, color 0.15s;
     }
-    .dash-logout:hover { background: rgba(255,255,255,0.14); color: white; }
+    .dash-logout:hover { background: #E5E7EB; color: #111; }
 
     /* ── STATUS STRIP ───────────────────────────────────── */
     .status-strip {
-      background: #1F2937; border-bottom: 1px solid #374151;
-      padding: 8px 28px;
+      background: #F7F7F5;
+      border-bottom: 1px solid var(--border);
+      padding: 10px 28px;
     }
     .status-inner { max-width: 900px; margin: 0 auto; }
     #statusRow { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -114,7 +140,8 @@
 
     /* ── TAB NAVIGATION ─────────────────────────────────── */
     .tab-nav {
-      background: var(--white); border-bottom: 1px solid var(--border);
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
       padding: 0 28px;
     }
     .tab-nav-inner {
@@ -122,39 +149,69 @@
       display: flex; gap: 0; overflow-x: auto;
     }
     .tab-btn {
-      display: flex; align-items: center; gap: 7px;
-      padding: 14px 18px; background: none; border: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 16px 18px;
+      background: none;
+      border: none;
       border-bottom: 2.5px solid transparent;
-      font-size: 14px; font-weight: 600; color: var(--text3);
-      cursor: pointer; white-space: nowrap;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text3);
+      cursor: pointer;
+      white-space: nowrap;
       transition: color 0.15s, border-color 0.15s;
-      font-family: inherit; margin-bottom: -1px;
+      font-family: inherit;
+      margin-bottom: -1px;
+      letter-spacing: 0.01em;
     }
     .tab-btn:hover { color: var(--text2); }
-    .tab-btn.tab-active { color: var(--green); border-bottom-color: var(--green); }
+    .tab-btn.tab-active { color: #111; border-bottom-color: #111; }
 
     /* ── MAIN CONTAINER ─────────────────────────────────── */
     .dash-body { max-width: 900px; margin: 0 auto; padding: 28px; }
 
     /* ── CARDS ──────────────────────────────────────────── */
     .card {
-      background: var(--white); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 24px;
-      box-shadow: var(--shadow-sm); margin-bottom: 20px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 20px;
     }
     .card-title {
-      font-size: 15px; font-weight: 700; color: var(--text);
-      margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
-      padding-bottom: 14px; border-bottom: 1px solid var(--border);
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--serif);
+      letter-spacing: -0.01em;
     }
 
     /* ── INTEGRATION INFO ───────────────────────────────── */
     .info-row {
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 10px; padding: 14px 16px; margin-bottom: 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 14px;
     }
     .info-row:last-child { margin-bottom: 0; }
-    .info-label { font-size: 12px; font-weight: 600; color: var(--text3); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .info-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text3);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
     .info-code-wrap {
       display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
     }
@@ -165,13 +222,21 @@
       border: 1px solid var(--border);
     }
     .copy-btn {
-      background: none; border: 1.5px solid var(--green); color: var(--green);
-      padding: 6px 14px; border-radius: 7px; cursor: pointer;
-      font-size: 12px; font-weight: 600; white-space: nowrap;
-      transition: background 0.15s; font-family: inherit; flex-shrink: 0;
+      background: #111;
+      border: none;
+      color: white;
+      padding: 7px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      transition: background 0.15s;
+      font-family: inherit;
+      flex-shrink: 0;
     }
-    .copy-btn:hover { background: var(--green-light); }
-    .copy-btn:active { background: var(--green-border); }
+    .copy-btn:hover { background: #333; }
+    .copy-btn:active { background: #333; }
 
     /* ── RESERVATION TABLE ──────────────────────────────── */
     .res-table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -286,15 +351,23 @@
     }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-green {
-      background: var(--green); color: white;
-      box-shadow: 0 2px 8px rgba(6,199,85,0.28);
+      background: #111;
+      color: white;
+      box-shadow: none;
     }
-    .btn-green:hover:not(:disabled) { background: var(--green-d); }
+    .btn-green:hover:not(:disabled) {
+      background: #333;
+    }
     .btn-outline {
-      background: var(--white); color: var(--green);
-      border: 1.5px solid var(--green); margin-top: 8px;
+      background: var(--white);
+      color: #111;
+      border: 1.5px solid var(--border);
+      margin-top: 8px;
     }
-    .btn-outline:hover:not(:disabled) { background: var(--green-light); }
+    .btn-outline:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: #111;
+    }
 
     /* ── TOAST ──────────────────────────────────────────── */
     .toast {
@@ -315,22 +388,41 @@
 
     /* ── ANALYTICS ─────────────────────────────────────── */
     .savings-card {
-      background: linear-gradient(135deg, #06C755 0%, #05A847 100%);
-      color: white; border-radius: var(--radius); padding: 28px;
-      margin-bottom: 16px; text-align: center;
-      box-shadow: 0 4px 20px rgba(6,199,85,0.3);
+      background: #111;
+      color: white;
+      border-radius: 18px;
+      padding: 32px;
+      margin-bottom: 16px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
     }
     .savings-title { font-size: 15px; font-weight: 600; opacity: 0.9; margin-bottom: 8px; }
-    .savings-amount { font-size: 40px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 4px; }
+    .savings-amount {
+      font-size: 44px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 4px;
+      font-family: var(--serif);
+      color: #06C755;
+    }
     .savings-desc { font-size: 12px; opacity: 0.8; }
     .ana-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
     .ana-card {
-      background: var(--white); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 20px;
-      text-align: center; box-shadow: var(--shadow-sm);
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
     }
     .ana-label { font-size: 12px; color: var(--text3); font-weight: 500; margin-bottom: 6px; }
-    .ana-value { font-size: 28px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; }
+    .ana-value {
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      font-family: var(--serif);
+    }
     .ana-growth { font-size: 12px; margin-top: 4px; font-weight: 600; }
     .rank-section { margin-bottom: 20px; }
     .rank-section:last-child { margin-bottom: 0; }
@@ -519,11 +611,17 @@
   <!-- Header -->
   <header class="dash-header">
     <div class="dash-header-left">
-      <div class="dash-logo">🏪</div>
+      <div class="dash-logo" style="font-size:18px;">⚡</div>
       <span class="dash-shop-name" id="shopNameHeader"></span>
     </div>
     <div class="dash-header-right">
       <span class="dash-date" id="todayDate"></span>
+      <a href="/" style="font-size:13px;color:#9CA3AF;text-decoration:none;font-weight:600;
+   padding:7px 14px;border-radius:999px;transition:background 0.15s;"
+   onmouseover="this.style.background='#F3F4F6'"
+   onmouseout="this.style.background='transparent'">
+  ← トップ
+</a>
       <a href="/auth/logout" class="dash-logout">ログアウト</a>
     </div>
   </header>
