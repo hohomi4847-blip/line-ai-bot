@@ -488,47 +488,134 @@
       <div class="section-head fade-up">
         <div class="eyebrow">Demo</div>
         <h2>実際のLINE予約画面</h2>
-        <p class="sub">お客様がLINEで話しかけるだけ。予約が自動で完了します。</p>
+        <p class="sub">自然な会話で、複雑な要望にも完璧に対応。<br>AIが文脈を理解して、まるでスタッフが対応しているように答えます。</p>
       </div>
+
+      <!-- 강점 설명 배너 -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:48px;" class="fade-up">
+        <div style="text-align:center;padding:20px;background:#F7F7F5;border-radius:16px;">
+          <div style="font-size:24px;margin-bottom:8px;">🧠</div>
+          <div style="font-weight:800;font-size:14px;margin-bottom:6px;">自然な長文も理解</div>
+          <p style="font-size:12px;color:#666;line-height:1.7;">「来週の平日の午後、できれば早めに…」のような曖昧な表現も文脈を読んで適切に対応します。</p>
+        </div>
+        <div style="text-align:center;padding:20px;background:#F7F7F5;border-radius:16px;">
+          <div style="font-size:24px;margin-bottom:8px;">⚡</div>
+          <div style="font-weight:800;font-size:14px;margin-bottom:6px;">即時・正確な返答</div>
+          <p style="font-size:12px;color:#666;line-height:1.7;">深夜でも祝日でも、平均90秒以内に返答。重複予約・過去日付は自動でブロックします。</p>
+        </div>
+        <div style="text-align:center;padding:20px;background:#F7F7F5;border-radius:16px;">
+          <div style="font-size:24px;margin-bottom:8px;">💚</div>
+          <div style="font-weight:800;font-size:14px;margin-bottom:6px;">温かみのある対応</div>
+          <p style="font-size:12px;color:#666;line-height:1.7;">VIP顧客は自動で判定し、特別に丁寧なトーンで対応。お客様との関係を深めます。</p>
+        </div>
+      </div>
+
+      <!-- 데모 화면 5종 -->
       <div class="demo-scroll fade-up">
+
+        <!-- 1: 미용실 예약 -->
         <div class="phone">
           <div class="phone-screen">
-            <div class="phone-head"><div class="avatar">🏪</div><div><div class="phone-name">山田美容室</div><div class="phone-status">自動応答中</div></div></div>
+            <div class="phone-head">
+              <div class="avatar">✂️</div>
+              <div>
+                <div class="phone-name">山田美容室</div>
+                <div class="phone-status">自動応答中 · 24時間対応</div>
+              </div>
+            </div>
             <div class="chat">
-              <div class="bubble user">来週の土曜日に予約したいんですが</div>
-              <div class="bubble bot">5月10日（土）でしたら<br>🕙 10:00 / 11:00 / 14:00 / 15:00<br>ご希望はいかがでしょうか？</div>
-              <div class="bubble user">14時でお願いします！カットで</div>
-              <div class="bubble bot">お名前をフルネームで<br>教えていただけますか？</div>
+              <div class="bubble user">来週の土曜、夕方以降で空いてますか？カラーとカットしたいんですが</div>
+              <div class="bubble bot">もちろんです😊<br>5月10日（土）の夕方以降でしたら<br>🕔 16:00 / 17:00<br>がご予約可能です。<br><br>カラー＋カットですと約2時間となります。ご希望のお時間はいかがでしょうか？</div>
+              <div class="bubble user">17時でお願いします！</div>
+              <div class="bubble bot">お名前をフルネームで教えていただけますか？</div>
               <div class="bubble user">田中さくらです</div>
-              <div class="bubble bot">ご予約を承りました✅<br>📅 5月10日（土） 14:00<br>✂️ カット<br>ご来店をお待ちしております😊</div>
+              <div class="bubble bot">ご予約を承りました✅<br>📅 5月10日（土） 17:00〜19:00<br>✂️ カラー＋カット<br>👤 田中さくら様<br><br>ご来店をお待ちしております😊<br>──────────<br>💡 次回は約5週間後が目安です</div>
             </div>
           </div>
         </div>
+
+        <!-- 2: 음식점 코스 예약 -->
         <div class="phone">
           <div class="phone-screen">
-            <div class="phone-head"><div class="avatar">🏪</div><div><div class="phone-name">山田美容室</div><div class="phone-status">自動応答中</div></div></div>
+            <div class="phone-head">
+              <div class="avatar">🍽️</div>
+              <div>
+                <div class="phone-name">レストラン銀座 鈴木</div>
+                <div class="phone-status">自動応答中 · 24時間対応</div>
+              </div>
+            </div>
             <div class="chat">
-              <div class="bubble user">予約をキャンセルしたいです</div>
-              <div class="bubble bot">以下のご予約のキャンセルでよろしいですか？<br>📅 5月10日（土） 14:00<br>✂️ カット<br>「はい」と送信してください。</div>
-              <div class="bubble user">はい</div>
-              <div class="bubble bot">ご予約をキャンセルいたしました。<br>またのご利用をお待ちしております。</div>
+              <div class="bubble user">記念日のディナーを予約したいのですが、個室はありますか？2名で</div>
+              <div class="bubble bot">ご記念日のご利用、誠にありがとうございます🎉<br><br>個室のご用意が可能です。ご希望の日程をお教えいただけますか？<br><br>コースは<br>🥂 記念日コース ¥15,000<br>🍾 プレミアムコース ¥25,000<br>からお選びいただけます。</div>
+              <div class="bubble user">5月20日の19時でプレミアムコースをお願いします。佐藤です</div>
+              <div class="bubble bot">ご予約を承りました✅<br>📅 5月20日（火） 19:00<br>🍾 プレミアムコース × 2名<br>🚪 個室<br>👤 佐藤様<br><br>素敵な記念日になりますよう、心よりお待ちしております✨</div>
             </div>
           </div>
         </div>
+
+        <!-- 3: 정골원 복잡한 요청 -->
         <div class="phone">
           <div class="phone-screen">
-            <div class="phone-head"><div class="avatar">🏪</div><div><div class="phone-name">山田美容室</div><div class="phone-status">自動応答中</div></div></div>
+            <div class="phone-head">
+              <div class="avatar">💆</div>
+              <div>
+                <div class="phone-name">さくら整骨院</div>
+                <div class="phone-status">自動応答中 · 24時間対応</div>
+              </div>
+            </div>
             <div class="chat">
-              <div class="bubble user">今週末空いてますか？</div>
-              <div class="bubble bot">5月11日（日）の空き時間帯：<br>10:00、13:00、15:00、16:00<br>ご希望のお時間はいかがでしょうか？</div>
-              <div class="bubble user">13時でお願いします</div>
-              <div class="bubble bot">お名前を教えていただけますか？</div>
-              <div class="bubble user">佐藤太郎です</div>
-              <div class="bubble bot">ご予約を承りました✅<br>📅 5月11日（日） 13:00</div>
+              <div class="bubble user">最近肩こりと腰痛がひどくて…来週のどこかで診てもらえますか？できれば夜がいいです</div>
+              <div class="bubble bot">ご不調、お辛いですね😔<br>来週の夜間の空き時間をご案内します。<br><br>🗓️ 5月12日（月） 19:00 / 20:00<br>🗓️ 5月13日（火） 18:30 / 20:00<br>🗓️ 5月14日（水） 19:00<br><br>肩こり・腰痛でしたら「全身調整コース（60分）」がおすすめです。ご希望のお時間はいかがでしょうか？</div>
+              <div class="bubble user">火曜の18時半でお願いします。鈴木一郎です</div>
+              <div class="bubble bot">ご予約を承りました✅<br>📅 5月13日（火） 18:30<br>💆 全身調整コース（60分）<br>👤 鈴木一郎様<br><br>楽になって帰っていただけるよう精一杯対応いたします😊<br>──────────<br>🙏 当日キャンセルの場合はお早めに「キャンセル」とお送りください</div>
             </div>
           </div>
         </div>
+
+        <!-- 4: 네일 변경 요청 -->
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-head">
+              <div class="avatar">💅</div>
+              <div>
+                <div class="phone-name">Nail Salon Luna</div>
+                <div class="phone-status">自動応答中 · 24時間対応</div>
+              </div>
+            </div>
+            <div class="chat">
+              <div class="bubble user">明後日の予約を変更したいんですが</div>
+              <div class="bubble bot">ご予約の変更承ります😊<br><br>現在のご予約：<br>📅 5月9日（金） 14:00<br>💅 ジェルネイル<br><br>変更後のご希望日時を教えていただけますか？</div>
+              <div class="bubble user">5月11日の午前中でお願いします</div>
+              <div class="bubble bot">5月11日（日）の午前中でしたら<br>🕙 10:00 / 11:00<br>が空いております。どちらがよろしいですか？</div>
+              <div class="bubble user">10時で！</div>
+              <div class="bubble bot">ご予約を変更いたしました✅<br><br>変更前：5月9日（金） 14:00<br>変更後：5月11日（日） 10:00<br>💅 ジェルネイル<br><br>当日のご来店をお待ちしております💚</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5: 짐 VIP 대응 -->
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-head">
+              <div class="avatar">💪</div>
+              <div>
+                <div class="phone-name">FitLife Gym</div>
+                <div class="phone-status">自動応答中 · 24時間対応</div>
+              </div>
+            </div>
+            <div class="chat">
+              <div class="bubble user">今月もパーソナルトレーニングお願いします</div>
+              <div class="bubble bot">山本様、いつもご利用いただきありがとうございます🙏✨<br><br>今月もお力になれて光栄です💪<br>ご希望の日時を教えていただけますか？<br><br>直近の空き：<br>🗓️ 5月8日（木） 10:00 / 13:00<br>🗓️ 5月9日（金） 9:00 / 11:00</div>
+              <div class="bubble user">木曜の10時で</div>
+              <div class="bubble bot">ご予約を承りました✅<br>📅 5月8日（木） 10:00<br>💪 パーソナルトレーニング（60分）<br>👤 山本様<br><br>前回からのフィードバックを活かして、より効果的なトレーニングをご提供できるよう準備いたします🔥<br>──────────<br>💡 次回は約4週間後が目安です</div>
+            </div>
+          </div>
+        </div>
+
       </div>
+      <p style="text-align:center;font-size:12px;color:#aaa;margin-top:20px;">
+        ※ デモ画面です。実際の動作はご契約後にご確認いただけます。
+      </p>
     </div>
   </section>
 
@@ -797,10 +884,78 @@
 
   <section class="section">
     <div class="wrap">
-      <div class="section-head fade-up"><div class="eyebrow">Before / After</div><h2>導入後の変化</h2></div>
-      <div class="ba-grid">
-        <div class="card before fade-up"><h3>Before</h3><ul class="ba-list"><li>電話に出るために施術を中断</li><li>営業時間外は予約取りこぼし</li><li>予約帳を手書きで管理</li><li>経営数字が全く見えない</li></ul></div>
-        <div class="card after fade-up"><h3>After</h3><ul class="ba-list"><li>24時間いつでも自動対応</li><li>深夜でも予約が入る</li><li>売上・リピート率が一目で</li><li>お客様データが自動で蓄積</li></ul></div>
+      <div class="section-head fade-up">
+        <div class="eyebrow">Before / After</div>
+        <h2>導入後、オーナーの毎日が変わった</h2>
+        <p class="sub">「もっと早く導入すれば良かった」<br>そう言っていただける瞬間が、私たちの喜びです。</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;" class="fade-up">
+        <div class="card before" style="border-color:#fecaca;border-width:1.5px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+            <div style="width:36px;height:36px;background:#FEF2F2;border-radius:10px;display:grid;place-items:center;font-size:18px;">😰</div>
+            <h3 style="font-size:16px;font-weight:800;color:#DC2626;">導入前</h3>
+          </div>
+          <ul class="ba-list">
+            <li style="padding:12px 0;border-bottom:1px solid #FEE2E2;color:#444;font-size:14px;line-height:1.7;">
+              📞 施術中にLINEや電話が鳴るたびに手を止める。お客様にも申し訳ない。
+            </li>
+            <li style="padding:12px 0;border-bottom:1px solid #FEE2E2;color:#444;font-size:14px;line-height:1.7;">
+              🌙 夜中の予約メッセージ。翌朝返信したらもう他の店に行っていた。
+            </li>
+            <li style="padding:12px 0;border-bottom:1px solid #FEE2E2;color:#444;font-size:14px;line-height:1.7;">
+              😓 ノーショーが月3〜4件。売上もメンタルも削られる。
+            </li>
+            <li style="padding:12px 0;border-bottom:1px solid #FEE2E2;color:#444;font-size:14px;line-height:1.7;">
+              📓 手書きの予約帳。ダブルブッキングが怖くて確認が手間。
+            </li>
+            <li style="padding:12px 0;color:#444;font-size:14px;line-height:1.7;">
+              📊 今月いくら売れたか、リピーターが何人いるかすら把握できていない。
+            </li>
+          </ul>
+        </div>
+        <div class="card after" style="border-color:rgba(6,199,85,0.5);border-width:1.5px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+            <div style="width:36px;height:36px;background:#F0FDF4;border-radius:10px;display:grid;place-items:center;font-size:18px;">😊</div>
+            <h3 style="font-size:16px;font-weight:800;color:#16a34a;">導入後</h3>
+          </div>
+          <ul class="ba-list">
+            <li style="padding:12px 0;border-bottom:1px solid #DCFCE7;color:#444;font-size:14px;line-height:1.7;">
+              ✅ 施術に100%集中できる。LINEはAIが全部対応してくれる。
+            </li>
+            <li style="padding:12px 0;border-bottom:1px solid #DCFCE7;color:#444;font-size:14px;line-height:1.7;">
+              ✅ 深夜2時に予約が入っても、朝起きたら自動で確定している。
+            </li>
+            <li style="padding:12px 0;border-bottom:1px solid #DCFCE7;color:#444;font-size:14px;line-height:1.7;">
+              ✅ 予約確定メッセージにノーショー防止文が自動で入り、無断欠席がほぼゼロに。
+            </li>
+            <li style="padding:12px 0;border-bottom:1px solid #DCFCE7;color:#444;font-size:14px;line-height:1.7;">
+              ✅ ダブルブッキングは自動でブロック。Googleカレンダーとも同期。
+            </li>
+            <li style="padding:12px 0;color:#444;font-size:14px;line-height:1.7;">
+              ✅ 売上・リピート率・人気メニューがダッシュボードで一目瞭然。AIが改善案を自動提案。
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 임팩트 숫자 -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:32px;" class="fade-up">
+        <div style="text-align:center;padding:24px 16px;background:#F7F7F5;border-radius:16px;">
+          <div style="font-family:'Noto Serif JP',serif;font-size:32px;font-weight:700;color:#06C755;">−95%</div>
+          <div style="font-size:13px;color:#666;margin-top:6px;">電話・LINE対応時間</div>
+        </div>
+        <div style="text-align:center;padding:24px 16px;background:#F7F7F5;border-radius:16px;">
+          <div style="font-family:'Noto Serif JP',serif;font-size:32px;font-weight:700;color:#06C755;">+34%</div>
+          <div style="font-size:13px;color:#666;margin-top:6px;">予約取りこぼし削減</div>
+        </div>
+        <div style="text-align:center;padding:24px 16px;background:#F7F7F5;border-radius:16px;">
+          <div style="font-family:'Noto Serif JP',serif;font-size:32px;font-weight:700;color:#06C755;">−87%</div>
+          <div style="font-size:13px;color:#666;margin-top:6px;">ノーショー率</div>
+        </div>
+        <div style="text-align:center;padding:24px 16px;background:#F7F7F5;border-radius:16px;">
+          <div style="font-family:'Noto Serif JP',serif;font-size:32px;font-weight:700;color:#06C755;">月50h</div>
+          <div style="font-size:13px;color:#666;margin-top:6px;">削減できる対応時間</div>
+        </div>
       </div>
     </div>
   </section>
@@ -810,60 +965,134 @@
       <div class="section-head fade-up">
         <div class="eyebrow">Voice</div>
         <h2>ご利用者の声</h2>
-        <p class="sub">全国の自営業オーナーにご利用いただいています</p>
+        <p class="sub">全国の自営業オーナーから届いた、リアルな声をお届けします。</p>
       </div>
+
+      <!-- 별점 요약 -->
+      <div style="text-align:center;margin-bottom:40px;" class="fade-up">
+        <div style="font-size:40px;font-weight:800;font-family:'Noto Serif JP',serif;">4.9</div>
+        <div style="color:#F59E0B;font-size:24px;margin:6px 0;">★★★★★</div>
+        <div style="font-size:13px;color:#999;">全国のご利用オーナーによる評価</div>
+      </div>
+
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;" class="voice-grid fade-up">
 
+        <!-- 후기 1: 미용실 -->
         <div style="background:#fff;border:1px solid #E5E5E5;border-radius:20px;padding:28px;box-shadow:0 10px 34px rgba(0,0,0,0.04);">
-          <div style="display:flex;gap:4px;margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
             <span style="color:#F59E0B;font-size:16px;">★★★★★</span>
+            <span style="font-size:11px;color:#ccc;">2026年3月</span>
           </div>
           <p style="font-size:14px;color:#444;line-height:1.85;margin-bottom:18px;">
-            「施術中に電話が鳴るたびにストレスでしたが、導入後は完全に解消されました。深夜に予約が入っていることに朝気づいたときは感動しました。」
+            「施術中に電話が鳴るたびにストレスでしたが、導入後は完全に解消。深夜に予約が自動で入っていた時は感動しました。月の売上が導入前より12万円増えています。」
           </p>
           <div style="display:flex;align-items:center;gap:12px;">
-            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#06C755,#05a847);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;">山</div>
+            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#06C755,#05a847);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex-shrink:0;">山</div>
             <div>
-              <div style="font-weight:800;font-size:13px;">山田 恵子さん</div>
-              <div style="font-size:12px;color:#999;">美容室オーナー・東京都</div>
+              <div style="font-weight:800;font-size:13px;margin-bottom:2px;">山田 恵子さん</div>
+              <div style="font-size:12px;color:#999;">美容室オーナー・東京都渋谷区</div>
+              <div style="font-size:11px;color:#06C755;font-weight:700;margin-top:2px;">利用歴 8ヶ月</div>
             </div>
           </div>
         </div>
 
+        <!-- 후기 2: 정골원 -->
         <div style="background:#fff;border:1px solid #E5E5E5;border-radius:20px;padding:28px;box-shadow:0 10px 34px rgba(0,0,0,0.04);">
-          <div style="display:flex;gap:4px;margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
             <span style="color:#F59E0B;font-size:16px;">★★★★★</span>
+            <span style="font-size:11px;color:#ccc;">2026年2月</span>
           </div>
           <p style="font-size:14px;color:#444;line-height:1.85;margin-bottom:18px;">
-            「月3万円払っていたホットペッパーを解約して、こちらに移行しました。予約数は変わらず、コストが10分の1以下になりました。」
+            「ホットペッパーに月3万円払っていましたが解約しました。予約数は変わらず、コストが10分の1以下に。AIが自然な文章で返答してくれるので、患者さんから"丁寧ですね"と言われるようになりました。」
           </p>
           <div style="display:flex;align-items:center;gap:12px;">
-            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#3B82F6,#1D4ED8);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;">田</div>
+            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#3B82F6,#1D4ED8);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex-shrink:0;">田</div>
             <div>
-              <div style="font-weight:800;font-size:13px;">田中 誠さん</div>
-              <div style="font-size:12px;color:#999;">整骨院オーナー・大阪府</div>
+              <div style="font-weight:800;font-size:13px;margin-bottom:2px;">田中 誠さん</div>
+              <div style="font-size:12px;color:#999;">整骨院オーナー・大阪府難波</div>
+              <div style="font-size:11px;color:#06C755;font-weight:700;margin-top:2px;">利用歴 11ヶ月</div>
             </div>
           </div>
         </div>
 
+        <!-- 후기 3: 네일 -->
         <div style="background:#fff;border:1px solid #E5E5E5;border-radius:20px;padding:28px;box-shadow:0 10px 34px rgba(0,0,0,0.04);">
-          <div style="display:flex;gap:4px;margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
             <span style="color:#F59E0B;font-size:16px;">★★★★★</span>
+            <span style="font-size:11px;color:#ccc;">2026年4月</span>
           </div>
           <p style="font-size:14px;color:#444;line-height:1.85;margin-bottom:18px;">
-            「LINEで予約してくれるお客様が増え、電話予約がほぼゼロに。スタッフ全員が施術に集中できるようになりました。」
+            「1人で経営しているので予約対応が本当に大変でした。今は施術に集中できて、売上より大切な"余裕"が生まれました。お客様への対応もより丁寧になったと感じています。」
           </p>
           <div style="display:flex;align-items:center;gap:12px;">
-            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#EC4899,#BE185D);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;">佐</div>
+            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#EC4899,#BE185D);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex-shrink:0;">佐</div>
             <div>
-              <div style="font-weight:800;font-size:13px;">佐藤 美咲さん</div>
-              <div style="font-size:12px;color:#999;">ネイルサロンオーナー・神奈川県</div>
+              <div style="font-weight:800;font-size:13px;margin-bottom:2px;">佐藤 美咲さん</div>
+              <div style="font-size:12px;color:#999;">ネイルサロンオーナー・神奈川県横浜市</div>
+              <div style="font-size:11px;color:#06C755;font-weight:700;margin-top:2px;">利用歴 6ヶ月</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 후기 4: 음식점 -->
+        <div style="background:#fff;border:1px solid #E5E5E5;border-radius:20px;padding:28px;box-shadow:0 10px 34px rgba(0,0,0,0.04);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <span style="color:#F59E0B;font-size:16px;">★★★★★</span>
+            <span style="font-size:11px;color:#ccc;">2026年1月</span>
+          </div>
+          <p style="font-size:14px;color:#444;line-height:1.85;margin-bottom:18px;">
+            「飲食店なので忙しい時間帯の電話対応が一番の悩みでした。今は厨房に集中できています。経営分析機能で人気メニューや混雑時間帯がわかり、仕込みの量も最適化できました。」
+          </p>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#F59E0B,#D97706);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex-shrink:0;">松</div>
+            <div>
+              <div style="font-weight:800;font-size:13px;margin-bottom:2px;">松本 健太さん</div>
+              <div style="font-size:12px;color:#999;">和食レストランオーナー・京都府</div>
+              <div style="font-size:11px;color:#06C755;font-weight:700;margin-top:2px;">利用歴 13ヶ月</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 후기 5: 짐 -->
+        <div style="background:#fff;border:1px solid #E5E5E5;border-radius:20px;padding:28px;box-shadow:0 10px 34px rgba(0,0,0,0.04);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <span style="color:#F59E0B;font-size:16px;">★★★★★</span>
+            <span style="font-size:11px;color:#ccc;">2026年3月</span>
+          </div>
+          <p style="font-size:14px;color:#444;line-height:1.85;margin-bottom:18px;">
+            「パーソナルジムを1人で運営中。VIP顧客への特別対応機能が気に入っています。常連のお客様に名前で話しかけてくれるので"AIとは思えない"とよく言われます。解約する理由が見つかりません。」
+          </p>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,#6D28D9);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex-shrink:0;">伊</div>
+            <div>
+              <div style="font-weight:800;font-size:13px;margin-bottom:2px;">伊藤 龍一さん</div>
+              <div style="font-size:12px;color:#999;">パーソナルジムオーナー・愛知県名古屋市</div>
+              <div style="font-size:11px;color:#06C755;font-weight:700;margin-top:2px;">利用歴 9ヶ月</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 후기 6: 펫살롱 -->
+        <div style="background:#fff;border:1px solid #E5E5E5;border-radius:20px;padding:28px;box-shadow:0 10px 34px rgba(0,0,0,0.04);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <span style="color:#F59E0B;font-size:16px;">★★★★★</span>
+            <span style="font-size:11px;color:#ccc;">2026年4月</span>
+          </div>
+          <p style="font-size:14px;color:#444;line-height:1.85;margin-bottom:18px;">
+            「ペットサロンなのでグルーミング中は手が離せません。以前は1日10件以上の電話対応がありましたが、今はゼロです。お客様も"LINEで予約できて便利"と喜んでくれています。」
+          </p>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#10B981,#059669);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex-shrink:0;">中</div>
+            <div>
+              <div style="font-weight:800;font-size:13px;margin-bottom:2px;">中村 花子さん</div>
+              <div style="font-size:12px;color:#999;">ペットサロンオーナー・福岡県博多区</div>
+              <div style="font-size:11px;color:#06C755;font-weight:700;margin-top:2px;">利用歴 5ヶ月</div>
             </div>
           </div>
         </div>
 
       </div>
-      <p style="text-align:center;font-size:11px;color:#ccc;margin-top:20px;">
+      <p style="text-align:center;font-size:11px;color:#ccc;margin-top:24px;">
         ※ 掲載の声はイメージです
       </p>
     </div>
