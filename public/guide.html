@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>完全ガイド | スマート予約Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&family=Noto+Serif+JP:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #06C755;
+      --green-dark: #05A847;
+      --green-soft: #F0FDF4;
+      --bg: #F7F7F5;
+      --white: #FFFFFF;
+      --text: #111827;
+      --text2: #4B5563;
+      --text3: #8A8F98;
+      --border: #E5E7EB;
+      --serif: 'Noto Serif JP', serif;
+      --shadow: 0 12px 34px rgba(17, 24, 39, 0.08);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Noto Sans JP', 'Helvetica Neue', Arial, sans-serif;
+      color: var(--text);
+      background: var(--white);
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    button, input { font: inherit; }
+
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      height: 68px;
+      background: rgba(255,255,255,0.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      transition: box-shadow 0.2s ease;
+    }
+    .nav.scrolled { box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08); }
+    .nav-inner {
+      max-width: 1120px;
+      height: 100%;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      color: var(--white);
+      background: #111;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      margin-left: auto;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text2);
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 18px;
+      border-radius: 999px;
+      background: var(--green);
+      color: var(--white);
+      font-size: 13px;
+      font-weight: 800;
+      box-shadow: 0 10px 22px rgba(6,199,85,0.22);
+      white-space: nowrap;
+    }
+
+    .section { padding: 96px 24px; }
+    .section.bg { background: var(--bg); }
+    .wrap { max-width: 1120px; margin: 0 auto; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--green-dark);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .section-head { text-align: center; max-width: 760px; margin: 0 auto 44px; }
+    h1, h2, h3 { letter-spacing: 0; line-height: 1.35; }
+    h1, h2 { font-family: var(--serif); }
+    h1 { font-size: clamp(40px, 7vw, 72px); font-weight: 700; }
+    h2 { font-size: clamp(30px, 4.6vw, 46px); font-weight: 700; }
+    h3 { font-size: 18px; font-weight: 800; }
+    .lead { color: var(--text2); font-size: 16px; line-height: 2; margin-top: 16px; }
+
+    .hero {
+      padding: 150px 24px 84px;
+      background:
+        radial-gradient(circle at 20% 16%, rgba(6,199,85,0.13), transparent 34%),
+        linear-gradient(180deg, #FFFFFF 0%, #F1FFF6 100%);
+      overflow: hidden;
+    }
+    .hero-inner { max-width: 1120px; margin: 0 auto; text-align: center; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      border: 1px solid #BBF7D0;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.82);
+      color: var(--green-dark);
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 24px;
+    }
+    .hero-copy { max-width: 680px; margin: 22px auto 0; color: var(--text2); font-size: 18px; line-height: 2; }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 54px;
+      margin-top: 34px;
+      padding: 0 28px;
+      border-radius: 999px;
+      background: #111;
+      color: var(--white);
+      font-size: 15px;
+      font-weight: 800;
+      box-shadow: 0 16px 34px rgba(17, 24, 39, 0.18);
+    }
+    .toc-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 56px;
+    }
+    .toc-card {
+      border: 1px solid rgba(6,199,85,0.18);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.88);
+      padding: 20px 16px;
+      font-size: 15px;
+      font-weight: 800;
+      box-shadow: 0 8px 24px rgba(6,199,85,0.07);
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease;
+    }
+    .toc-card:hover { transform: translateY(-3px); border-color: var(--green); }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+    }
+    .feature-icon { font-size: 30px; margin-bottom: 12px; }
+    .card p { color: var(--text2); font-size: 14px; margin-top: 12px; line-height: 1.9; }
+
+    .steps { display: grid; gap: 34px; }
+    .line-step {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 34px;
+      align-items: center;
+      padding: 28px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--white);
+      box-shadow: var(--shadow);
+    }
+    .step-num { color: var(--green-dark); font-size: 13px; font-weight: 800; margin-bottom: 8px; }
+    .chat-box, .mail-box {
+      background: #F9FAFB;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+    }
+    .bubble {
+      max-width: 88%;
+      padding: 12px 14px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.8;
+      white-space: pre-line;
+    }
+    .bubble.user { margin-left: auto; background: var(--green); color: var(--white); border-bottom-right-radius: 4px; }
+    .bubble.bot { background: var(--white); color: var(--text); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+    .mail-box { background: var(--white); }
+    .mail-head { font-weight: 800; color: var(--green-dark); margin-bottom: 12px; }
+    .mail-subject { border: 1px solid var(--border); border-radius: 10px; padding: 14px; font-weight: 800; background: var(--bg); }
+
+    .compare-wrap { overflow-x: auto; border-radius: 16px; box-shadow: var(--shadow); }
+    table { width: 100%; border-collapse: collapse; min-width: 760px; background: var(--white); }
+    th, td { padding: 16px 14px; border-bottom: 1px solid var(--border); text-align: center; font-size: 14px; }
+    th:first-child, td:first-child { text-align: left; font-weight: 800; }
+    th { background: #111; color: var(--white); font-weight: 800; }
+    th.best, td.best { background: var(--green-soft); color: #064E3B; font-weight: 800; }
+    .compare-note {
+      margin-top: 24px;
+      padding: 20px;
+      border-radius: 14px;
+      background: #111;
+      color: var(--white);
+      text-align: center;
+      font-weight: 800;
+    }
+
+    .pricing-card {
+      max-width: 620px;
+      margin: 0 auto 38px;
+      text-align: center;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 38px;
+      box-shadow: var(--shadow);
+      background: var(--white);
+    }
+    .price-main { font-family: var(--serif); font-size: clamp(42px, 6vw, 64px); font-weight: 700; line-height: 1.1; }
+    .price-main span { font-size: 18px; font-family: 'Noto Sans JP', sans-serif; }
+    .price-sub { color: var(--green-dark); font-weight: 800; margin-top: 10px; }
+    .price-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 26px;
+      text-align: left;
+    }
+    .price-list div { padding: 12px 14px; background: var(--bg); border-radius: 10px; font-size: 14px; font-weight: 700; }
+    .calc-card {
+      max-width: 760px;
+      margin: 0 auto;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 30px;
+      background: var(--bg);
+    }
+    .slider-row { margin-top: 20px; }
+    .slider-head { display: flex; justify-content: space-between; gap: 12px; font-weight: 800; font-size: 14px; }
+    .slider-value { color: var(--green-dark); }
+    input[type="range"] { width: 100%; margin-top: 12px; accent-color: var(--green); }
+    .calc-results { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 26px; }
+    .calc-result { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 18px; text-align: center; }
+    .calc-label { color: var(--text3); font-size: 12px; font-weight: 700; }
+    .calc-num { font-size: 22px; font-weight: 800; margin-top: 4px; }
+    .green { color: var(--green-dark); }
+    .disclaimer { color: var(--text3); font-size: 12px; margin-top: 16px; text-align: center; }
+
+    .faq-list { max-width: 860px; margin: 0 auto; display: grid; gap: 10px; }
+    .faq-item { border: 1px solid var(--border); border-radius: 12px; background: var(--white); overflow: hidden; }
+    .faq-q {
+      width: 100%;
+      border: none;
+      background: transparent;
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-align: left;
+      gap: 16px;
+      cursor: pointer;
+      color: var(--text);
+      font-weight: 800;
+    }
+    .faq-plus { color: var(--green-dark); font-size: 22px; line-height: 1; }
+    .faq-a {
+      display: none;
+      padding: 0 20px 20px;
+      color: var(--text2);
+      font-size: 14px;
+      line-height: 2;
+    }
+    .faq-item.open .faq-a { display: block; }
+
+    .install-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .install-card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      background: var(--white);
+      min-height: 260px;
+    }
+    .install-icon { font-size: 32px; margin-bottom: 12px; }
+    .install-time { display: inline-flex; padding: 4px 10px; border-radius: 999px; background: var(--green-soft); color: var(--green-dark); font-size: 12px; font-weight: 800; margin: 10px 0; }
+
+    .cta {
+      text-align: center;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(6,199,85,0.18), transparent 34%),
+        linear-gradient(180deg, #F0FFF5 0%, #FFFFFF 100%);
+    }
+    .cta-note { color: var(--text2); font-size: 13px; font-weight: 800; margin-top: 18px; }
+
+    .footer { background: #111; color: #D1D5DB; padding: 40px 24px; }
+    .footer-inner { max-width: 1120px; margin: 0 auto; display: flex; justify-content: space-between; gap: 24px; align-items: center; flex-wrap: wrap; }
+    .footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; }
+    .footer-links a { color: #D1D5DB; }
+    .copyright { width: 100%; color: #777; font-size: 12px; margin-top: 16px; }
+
+    .fade-up {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+    .fade-up.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 900px) {
+      .nav-links { display: none; }
+      .toc-grid, .install-grid { grid-template-columns: repeat(2, 1fr); }
+      .feature-grid, .line-step { grid-template-columns: 1fr; }
+      .calc-results { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .nav { height: 62px; }
+      .nav-inner { padding: 0 16px; }
+      .brand { font-size: 14px; }
+      .brand-mark { width: 30px; height: 30px; }
+      .nav-cta { min-height: 36px; padding: 0 14px; font-size: 12px; }
+      .hero { padding: 118px 16px 64px; }
+      .section { padding: 72px 16px; }
+      .toc-grid, .install-grid, .price-list { grid-template-columns: 1fr; }
+      .card, .line-step, .pricing-card, .calc-card { padding: 22px; border-radius: 12px; }
+      .footer-inner { align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a class="brand" href="/">
+        <span class="brand-mark">⚡</span>
+        <span>スマート予約Pro</span>
+      </a>
+      <nav class="nav-links" aria-label="主要ナビゲーション">
+        <a href="#usage">使い方</a>
+        <a href="#compare">他社との違い</a>
+        <a href="#price">料金</a>
+        <a href="#install">導入手順</a>
+      </nav>
+      <a class="nav-cta" href="/">無料で始める</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="badge fade-up">完全ガイド · 初心者でもわかる</div>
+        <h1 class="fade-up">スマート予約Proの<br>すべてがわかるガイド</h1>
+        <p class="hero-copy fade-up">設定から活用まで、このページを読めば<br>あなたのお店でAI予約が動き出します。</p>
+        <a class="btn-primary fade-up" href="/">今すぐ無料で始める →</a>
+        <div class="toc-grid">
+          <button class="toc-card fade-up" data-scroll="#usage">📱 基本の使い方</button>
+          <button class="toc-card fade-up" data-scroll="#compare">💡 他社との違い</button>
+          <button class="toc-card fade-up" data-scroll="#price">💰 料金のしくみ</button>
+          <button class="toc-card fade-up" data-scroll="#install">🚀 導入手順</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section bg" id="features">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <div class="eyebrow">できること</div>
+          <h2>AIが、あなたの代わりに予約を受ける</h2>
+          <p class="lead">電話もLINEも、もう出なくていい。</p>
+        </div>
+        <div class="feature-grid">
+          <article class="card fade-up"><div class="feature-icon">📅</div><h3>24時間自動予約受付</h3><p>お客様がLINEで「予約したい」と送るだけ。日付・時間・メニュー・お名前を確認して自動で予約を確定します。深夜でも祝日でも、あなたの代わりに対応。</p></article>
+          <article class="card fade-up"><div class="feature-icon">🔄</div><h3>変更・キャンセルも自動</h3><p>「予約を変更したい」「キャンセルしたい」というメッセージにも自動対応。お客様はLINEだけで完結できます。</p></article>
+          <article class="card fade-up"><div class="feature-icon">👑</div><h3>VIP顧客を自動で特別対応</h3><p>10回以上来店または累計10万円以上のお客様をAIが自動でVIP認定。より丁寧なトーンで特別な対応をします。</p></article>
+          <article class="card fade-up"><div class="feature-icon">📊</div><h3>経営分析ダッシュボード</h3><p>今月の予約数・推定売上・リピート率を自動集計。6ヶ月トレンドや人気メニューも一目でわかります。</p></article>
+          <article class="card fade-up"><div class="feature-icon">🛡️</div><h3>ノーショー防止</h3><p>予約確定メッセージに自動でキャンセル案内文を追加。無断欠席を大幅に削減。次回予約の促しメッセージも自動送信。</p></article>
+          <article class="card fade-up"><div class="feature-icon">📈</div><h3>AIが経営アドバイスを自動生成</h3><p>予約データをAIが分析して、「今月はリピーターが少ないのでクーポン施策を」などの具体的なアドバイスを毎月自動で提案。</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="usage">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <div class="eyebrow">実際の画面</div>
+          <h2>お客様との会話はこう見える</h2>
+          <p class="lead">難しい操作は一切なし。お客様はいつものLINEで話しかけるだけ。</p>
+        </div>
+        <div class="steps">
+          <article class="line-step fade-up">
+            <div><div class="step-num">STEP 1</div><h3>お客様がLINEで話しかける</h3><p class="lead">お客様は普段使っているLINEから「予約したい」と送るだけ。電話もアプリのインストールも不要です。</p></div>
+            <div class="chat-box"><div class="bubble user">来週の土曜日に予約したいんですが</div></div>
+          </article>
+          <article class="line-step fade-up">
+            <div><div class="step-num">STEP 2</div><h3>AIが空き時間を確認して返答</h3><p class="lead">AIがリアルタイムで空き時間を確認。あなたの営業時間・休業日の設定に基づいて正確な空き時間を案内します。</p></div>
+            <div class="chat-box"><div class="bubble bot">5月10日（土）でしたら
+10:00 / 14:00 / 16:00が空いています。
+ご希望はいかがでしょうか？</div></div>
+          </article>
+          <article class="line-step fade-up">
+            <div><div class="step-num">STEP 3</div><h3>必要な情報を確認して予約確定</h3><p class="lead">メニュー・日時・お名前が揃った時点で自動で予約を確定。重複予約は自動でブロック。過去の日付への予約も自動で弾きます。</p></div>
+            <div class="chat-box"><div class="bubble bot">ご予約を承りました✅
+📅 5月10日（土） 14:00
+✂️ カット
+👤 田中さくら様
+ご来店をお待ちしております😊</div></div>
+          </article>
+          <article class="line-step fade-up">
+            <div><div class="step-num">STEP 4</div><h3>オーナーにメールで即時通知</h3><p class="lead">予約が確定すると、あなたのメールアドレスに即座に通知が届きます。変更・キャンセルも同様に通知されます。</p></div>
+            <div class="mail-box"><div class="mail-head">スマート予約Pro 通知メール</div><div class="mail-subject">【新規予約】田中さくら様 5月10日 14:00</div></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section bg" id="compare">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <div class="eyebrow">他社との違い</div>
+          <h2>同じ価格帯で、これだけ違う</h2>
+          <p class="lead">なぜスマート予約Proが選ばれるのか、数字で比較します。</p>
+        </div>
+        <div class="compare-wrap fade-up">
+          <table>
+            <thead><tr><th>比較項目</th><th>一般的なLINE自動化</th><th>予約管理システム</th><th class="best">スマート予約Pro ★</th></tr></thead>
+            <tbody>
+              <tr><td>月額料金</td><td>¥9,800〜</td><td>¥5,500〜</td><td class="best">¥3,980</td></tr>
+              <tr><td>自然な会話で予約</td><td>✅</td><td>❌</td><td class="best">✅</td></tr>
+              <tr><td>変更・キャンセル対応</td><td>❌</td><td>❌</td><td class="best">✅</td></tr>
+              <tr><td>VIP顧客の自動判定</td><td>❌</td><td>❌</td><td class="best">✅</td></tr>
+              <tr><td>経営分析ダッシュボード</td><td>❌</td><td>❌</td><td class="best">✅</td></tr>
+              <tr><td>AIが経営アドバイス</td><td>❌</td><td>❌</td><td class="best">✅</td></tr>
+              <tr><td>Googleクチコミ自動化</td><td>❌</td><td>❌</td><td class="best">✅</td></tr>
+              <tr><td>ノーショー防止メッセージ</td><td>❌</td><td>❌</td><td class="best">✅</td></tr>
+              <tr><td>解約後データ保持</td><td>❌</td><td>❌</td><td class="best">✅</td></tr>
+              <tr><td>初期費用</td><td>¥50,000〜</td><td>¥10,000〜</td><td class="best">¥0</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="compare-note fade-up">業界平均の1/3以下の価格で、最も多くの機能を提供しています。</div>
+      </div>
+    </section>
+
+    <section class="section" id="price">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <div class="eyebrow">料金</div>
+          <h2>シンプルな料金体系</h2>
+          <p class="lead">隠れた費用は一切ありません。</p>
+        </div>
+        <div class="pricing-card fade-up">
+          <div class="price-main">¥3,980<span>/月（税込）</span></div>
+          <div class="price-sub">7日間無料体験あり</div>
+          <div class="price-list">
+            <div>✅ 初期費用: ¥0</div>
+            <div>✅ 解約手数料: ¥0</div>
+            <div>✅ 従量課金: なし</div>
+            <div>✅ 機能制限: なし（全機能使い放題）</div>
+          </div>
+        </div>
+        <div class="calc-card fade-up">
+          <h3>あなたのお店でのROIを計算してみましょう</h3>
+          <div class="slider-row">
+            <div class="slider-head"><span>1日の電話・LINE対応時間</span><span class="slider-value" id="calcMinutesLabel">30分</span></div>
+            <input type="range" id="calcMinutes" min="10" max="120" value="30" step="10">
+          </div>
+          <div class="slider-row">
+            <div class="slider-head"><span>月の営業日数</span><span class="slider-value" id="calcDaysLabel">25日</span></div>
+            <input type="range" id="calcDays" min="15" max="30" value="25" step="1">
+          </div>
+          <div class="calc-results">
+            <div class="calc-result"><div class="calc-label">月間対応時間</div><div class="calc-num" id="calcHours">12.5時間</div></div>
+            <div class="calc-result"><div class="calc-label">月間削減コスト</div><div class="calc-num green" id="calcSavings">¥14,013</div></div>
+            <div class="calc-result"><div class="calc-label">ROI</div><div class="calc-num" id="calcRoi">352%</div><div class="green" id="calcRoiLabel">のROI</div></div>
+          </div>
+          <p class="disclaimer">※ 令和7年度 全国加重平均最低賃金 ¥1,121/時間 をもとに算出</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section bg" id="faq">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <div class="eyebrow">よくある疑問</div>
+          <h2>気になることを解決</h2>
+        </div>
+        <div class="faq-list">
+          <div class="faq-item fade-up"><button class="faq-q" type="button">LINEの設定は自分でやる必要がありますか？<span class="faq-plus">+</span></button><div class="faq-a">いいえ。LINEスタートパック（¥19,800）をご利用いただくと、LINE公式アカウントの開設からAIシステムの連動まですべて代行いたします。ご自身で設定される場合は、LINE Developersコンソールでの作業が必要です。</div></div>
+          <div class="faq-item fade-up"><button class="faq-q" type="button">今すぐ始めるには何が必要ですか？<span class="faq-plus">+</span></button><div class="faq-a">①Googleアカウント ②LINE公式アカウント ③クレジットカードの3つだけです。LINE公式アカウントをお持ちでない場合はLINEスタートパックをご利用ください。</div></div>
+          <div class="faq-item fade-up"><button class="faq-q" type="button">AIが間違えた予約をしたらどうなりますか？<span class="faq-plus">+</span></button><div class="faq-a">日付・時間・メニュー・お名前の4項目が揃った場合のみ予約を確定します。不明な情報はお客様に確認してから確定するため誤予約のリスクは最小限です。重複予約も自動でブロックします。</div></div>
+          <div class="faq-item fade-up"><button class="faq-q" type="button">既存の予約システムと併用できますか？<span class="faq-plus">+</span></button><div class="faq-a">はい。Googleカレンダーと連携できるため、既存の管理方法と併用が可能です。</div></div>
+          <div class="faq-item fade-up"><button class="faq-q" type="button">解約したらデータはどうなりますか？<span class="faq-plus">+</span></button><div class="faq-a">データは削除されません。再開するといつでも元通りに復元されます。</div></div>
+          <div class="faq-item fade-up"><button class="faq-q" type="button">対応業種を教えてください。<span class="faq-plus">+</span></button><div class="faq-a">美容室・ネイルサロン・整骨院・マッサージ・鍼灸院・ペットサロン・飲食店・ジム・アイブロウ・まつ毛サロン・ヨガ・ピラティスなど11業種に対応しています。</div></div>
+          <div class="faq-item fade-up"><button class="faq-q" type="button">LINEの月額費用は別途かかりますか？<span class="faq-plus">+</span></button><div class="faq-a">月500件までは無料プランで対応可能です。それ以上の場合はLINE側の有料プランが必要です。</div></div>
+          <div class="faq-item fade-up"><button class="faq-q" type="button">スマートフォンだけで管理できますか？<span class="faq-plus">+</span></button><div class="faq-a">はい。ダッシュボードはスマートフォンに完全対応しています。</div></div>
+          <div class="faq-item fade-up"><button class="faq-q" type="button">無料体験はいつでも解約できますか？<span class="faq-plus">+</span></button><div class="faq-a">はい。7日間の無料体験中の解約は費用が一切発生しません。</div></div>
+          <div class="faq-item fade-up"><button class="faq-q" type="button">サポートはありますか？<span class="faq-plus">+</span></button><div class="faq-a">SNS（X / Instagram）のDMにて随時対応いたします。</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="install">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <div class="eyebrow">導入手順</div>
+          <h2>最短5分で始められます</h2>
+          <p class="lead">難しい操作は一切ありません。</p>
+        </div>
+        <div class="install-grid">
+          <article class="install-card fade-up"><div class="install-icon">🔑</div><div class="step-num">STEP 1</div><h3>Googleアカウントでログイン</h3><div class="install-time">約1分</div><p>お持ちのGoogleアカウントでログインするだけ。新規登録は不要です。</p></article>
+          <article class="install-card fade-up"><div class="install-icon">📝</div><div class="step-num">STEP 2</div><h3>お店の情報を入力</h3><div class="install-time">約3分</div><p>店舗名・業種・LINE Channel情報を入力。フォームに従って入力するだけです。</p></article>
+          <article class="install-card fade-up"><div class="install-icon">🎉</div><div class="step-num">STEP 3</div><h3>7日間無料体験スタート</h3><div class="install-time">即時</div><p>クレジットカードを登録して無料体験開始。7日間は一切費用がかかりません。</p></article>
+          <article class="install-card fade-up"><div class="install-icon">⚡</div><div class="step-num">STEP 4</div><h3>LINEにWebhook URLを設定</h3><div class="install-time">約1分</div><p>ダッシュボードに表示されるURLをLINEに貼り付けるだけ。すぐにAI自動応答が起動します。</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section cta">
+      <div class="wrap fade-up">
+        <h2>今日から、予約対応をゼロにする。</h2>
+        <p class="lead">7日間完全無料。気に入らなければ即解約。費用は¥0。</p>
+        <a class="btn-primary" href="/#start">無料で始める →</a>
+        <div class="cta-note">初期費用¥0 · 解約手数料¥0 · データ永久保持</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="brand"><span class="brand-mark">⚡</span><span>スマート予約Pro</span></div>
+      <div class="footer-links">
+        <a href="/">トップページ</a>
+        <a href="/refund.html">返金ポリシー</a>
+        <a href="/terms.html">利用規約</a>
+        <a href="/privacy.html">プライバシーポリシー</a>
+        <a href="/tokusho.html">特定商取引法</a>
+      </div>
+      <div class="copyright">© 2026 スマート予約Pro</div>
+    </div>
+  </footer>
+
+  <script>
+    'use strict';
+
+    var WAGE = 1121;
+    var PLAN = 3980;
+
+    function formatYen(value) {
+      return '¥' + Math.round(value).toLocaleString('ja-JP');
+    }
+
+    function updateCalculator() {
+      var minutes = Number(document.getElementById('calcMinutes').value);
+      var days = Number(document.getElementById('calcDays').value);
+      var hours = minutes * days / 60;
+      var savings = hours * WAGE;
+      var roi = savings / PLAN * 100;
+      document.getElementById('calcMinutesLabel').textContent = minutes + '分';
+      document.getElementById('calcDaysLabel').textContent = days + '日';
+      document.getElementById('calcHours').textContent = hours.toFixed(1) + '時間';
+      document.getElementById('calcSavings').textContent = formatYen(savings);
+      document.getElementById('calcRoi').textContent = Math.round(roi) + '%';
+      document.getElementById('calcRoiLabel').textContent = 'のROI';
+    }
+
+    function initFadeUp() {
+      var items = document.querySelectorAll('.fade-up');
+      if (!('IntersectionObserver' in window)) {
+        items.forEach(function(item) { item.classList.add('show'); });
+        return;
+      }
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('show');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      items.forEach(function(item) { observer.observe(item); });
+    }
+
+    function initFaq() {
+      document.querySelectorAll('.faq-q').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var item = btn.closest('.faq-item');
+          var plus = btn.querySelector('.faq-plus');
+          item.classList.toggle('open');
+          plus.textContent = item.classList.contains('open') ? '-' : '+';
+        });
+      });
+    }
+
+    function initToc() {
+      document.querySelectorAll('[data-scroll]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var target = document.querySelector(btn.getAttribute('data-scroll'));
+          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+    }
+
+    function initNavShadow() {
+      var nav = document.getElementById('nav');
+      function onScroll() {
+        nav.classList.toggle('scrolled', window.scrollY > 8);
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      initNavShadow();
+      initFadeUp();
+      initFaq();
+      initToc();
+      updateCalculator();
+      document.getElementById('calcMinutes').addEventListener('input', updateCalculator);
+      document.getElementById('calcDays').addEventListener('input', updateCalculator);
+    });
+  </script>
+</body>
+</html>
