@@ -19,7 +19,8 @@ const cron = require('node-cron');
 const REQUIRED_ENV = [
   'SESSION_SECRET', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET',
   'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'ANTHROPIC_API_KEY',
-  'ADMIN_PASSWORD', 'PADDLE_WEBHOOK_SECRET',
+  'ADMIN_PASSWORD', 'PADDLE_WEBHOOK_SECRET', 'RESEND_API_KEY',
+  'OWNER_EMAIL',
 ];
 const missingEnv = REQUIRED_ENV.filter(k => !process.env[k]);
 if (missingEnv.length > 0) {
@@ -2259,7 +2260,7 @@ app.get('/api/calendar/:shopId', async (req, res) => {
   }
 });
 
-app.get('/api/calendar', adminAuth, async (req, res) => {
+app.get('/api/calendar', adminLimiter, adminAuth, async (req, res) => {
   try {
     const { data: reservations } = await supabase.from('reservations').select('*').order('reservation_date', { ascending: true });
     const calendar = ical({ name: 'スマート予約Pro - 全予約', timezone: 'Asia/Tokyo' });
@@ -2538,7 +2539,8 @@ app.put('/api/customer-carte/:id', requireJWT, async (req, res) => {
 app.post('/webhook/:shopId', webhookLimiter, async (req, res) => {
   try {
     const { shopId } = req.params;
-      const { data: shop } = await supabase.from('shops').select('*').eq('id', shopId).single();
+    if (!isUuid(shopId)) return res.status(404).json({ status: 'not_found' });
+    const { data: shop } = await supabase.from('shops').select('*').eq('id', shopId).single();
     if (!shop) {
       await logOpsEvent('warn', 'line_shop_not_found', 'LINE webhook received for unknown shop', { shopId }, shopId);
       return res.status(200).json({ status: 'shop_not_found' });
