@@ -1,4 +1,18 @@
 require('dotenv').config();
+
+/*
+shops 테이블 추가 컬럼 (Supabase 대시보드 SQL Editor에서 실행)
+ALTER TABLE shops ADD COLUMN IF NOT EXISTS shop_address TEXT;
+ALTER TABLE shops ADD COLUMN IF NOT EXISTS shop_phone TEXT;
+ALTER TABLE shops ADD COLUMN IF NOT EXISTS shop_parking TEXT;
+ALTER TABLE shops ADD COLUMN IF NOT EXISTS shop_sns TEXT;
+ALTER TABLE shops ADD COLUMN IF NOT EXISTS payment_methods JSONB DEFAULT '[]';
+ALTER TABLE shops ADD COLUMN IF NOT EXISTS booking_rules JSONB DEFAULT '{}';
+ALTER TABLE shops ADD COLUMN IF NOT EXISTS faq_items JSONB DEFAULT '[]';
+ALTER TABLE shops ADD COLUMN IF NOT EXISTS ai_policy JSONB DEFAULT '{}';
+ALTER TABLE shops ADD COLUMN IF NOT EXISTS tone_settings JSONB DEFAULT '{}';
+*/
+
 const express = require('express');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
@@ -1964,6 +1978,149 @@ app.post('/api/shop-update', requireJWT, async (req, res) => {
   }
 });
 
+// ── 店舗基本情報 저장 ──────────────────────────────
+app.post('/api/shop/:shopId/basic-info', requireJWT, async (req, res) => {
+  try {
+    const { shopId } = req.params;
+    if (!isUuid(shopId)) return res.status(400).json({ error: 'invalid shopId' });
+    const { address, phone, parking, sns, payment } = req.body;
+
+    const { data: shop } = await supabase.from('shops')
+      .select('id').eq('id', shopId).eq('owner_email', req.user.email).single();
+    if (!shop) return res.status(403).json({ error: 'forbidden' });
+
+    const { error } = await supabase.from('shops').update({
+      shop_address: address || '',
+      shop_phone: phone || '',
+      shop_parking: parking || '',
+      shop_sns: sns || '',
+      payment_methods: Array.isArray(payment) ? payment : []
+    }).eq('id', shopId);
+
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('basic-info save error:', e);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// ── 予約ルール 저장 ──────────────────────────────
+app.post('/api/shop/:shopId/booking-rules', requireJWT, async (req, res) => {
+  try {
+    const { shopId } = req.params;
+    if (!isUuid(shopId)) return res.status(400).json({ error: 'invalid shopId' });
+    const { sameDayBooking, minBookingHours, cancelPolicy, noshowPolicy } = req.body;
+
+    const { data: shop } = await supabase.from('shops')
+      .select('id').eq('id', shopId).eq('owner_email', req.user.email).single();
+    if (!shop) return res.status(403).json({ error: 'forbidden' });
+
+    const { error } = await supabase.from('shops').update({
+      booking_rules: {
+        sameDayBooking: sameDayBooking || '',
+        minBookingHours: minBookingHours || '',
+        cancelPolicy: cancelPolicy || '',
+        noshowPolicy: noshowPolicy || ''
+      }
+    }).eq('id', shopId);
+
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('booking-rules save error:', e);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// ── FAQ 저장 ──────────────────────────────
+app.post('/api/shop/:shopId/faq', requireJWT, async (req, res) => {
+  try {
+    const { shopId } = req.params;
+    if (!isUuid(shopId)) return res.status(400).json({ error: 'invalid shopId' });
+    const { faqs } = req.body;
+
+    const { data: shop } = await supabase.from('shops')
+      .select('id').eq('id', shopId).eq('owner_email', req.user.email).single();
+    if (!shop) return res.status(403).json({ error: 'forbidden' });
+
+    const safeFaqs = Array.isArray(faqs)
+      ? faqs.slice(0, 50).map(f => ({
+          question: String(f.question || '').slice(0, 200),
+          answer: String(f.answer || '').slice(0, 400)
+        }))
+      : [];
+
+    const { error } = await supabase.from('shops')
+      .update({ faq_items: safeFaqs }).eq('id', shopId);
+
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('faq save error:', e);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// ── AI応答ポリシー 저장 ──────────────────────────────
+app.post('/api/shop/:shopId/ai-policy', requireJWT, async (req, res) => {
+  try {
+    const { shopId } = req.params;
+    if (!isUuid(shopId)) return res.status(400).json({ error: 'invalid shopId' });
+    const { noGuess, noDiscount, noMedical, noPromise } = req.body;
+
+    const { data: shop } = await supabase.from('shops')
+      .select('id').eq('id', shopId).eq('owner_email', req.user.email).single();
+    if (!shop) return res.status(403).json({ error: 'forbidden' });
+
+    const { error } = await supabase.from('shops').update({
+      ai_policy: {
+        noGuess: Boolean(noGuess),
+        noDiscount: Boolean(noDiscount),
+        noMedical: Boolean(noMedical),
+        noPromise: Boolean(noPromise)
+      }
+    }).eq('id', shopId);
+
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('ai-policy save error:', e);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
+// ── トーン＆マナー 저장 ──────────────────────────────
+app.post('/api/shop/:shopId/tone-settings', requireJWT, async (req, res) => {
+  try {
+    const { shopId } = req.params;
+    if (!isUuid(shopId)) return res.status(400).json({ error: 'invalid shopId' });
+    const { toneStyle, useEmoji, replyLength } = req.body;
+
+    const { data: shop } = await supabase.from('shops')
+      .select('id').eq('id', shopId).eq('owner_email', req.user.email).single();
+    if (!shop) return res.status(403).json({ error: 'forbidden' });
+
+    const allowedTone = ['polite', 'friendly'];
+    const allowedEmoji = ['yes', 'no'];
+    const allowedLength = ['short', 'normal'];
+
+    const { error } = await supabase.from('shops').update({
+      tone_settings: {
+        toneStyle: allowedTone.includes(toneStyle) ? toneStyle : 'polite',
+        useEmoji: allowedEmoji.includes(useEmoji) ? useEmoji : 'no',
+        replyLength: allowedLength.includes(replyLength) ? replyLength : 'normal'
+      }
+    }).eq('id', shopId);
+
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('tone-settings save error:', e);
+    res.status(500).json({ error: 'server error' });
+  }
+});
+
 app.get('/api/dashboard', adminLimiter, adminAuth, async (_req, res) => {
   try {
     const jstToday = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -2810,6 +2967,101 @@ async function handleEvent(event, shop, template) {
     : '';
   const basePrompt = template?.system_prompt || `あなたは${shop.shop_name}の親切な予約アシスタントです。`;
   const fullBasePrompt = basePrompt + (vipGreeting ? `\n\n${vipGreeting}` : '');
+
+  // ── 新規設定: 店舗基本情報 ──────────────────────
+  let extraPrompt = '';
+
+  // 매장 기본 정보
+  if (shop.shop_address) {
+    extraPrompt += `\n\n【店舗基本情報】\n住所・アクセス: ${shop.shop_address}`;
+  }
+  if (shop.shop_phone) {
+    extraPrompt += `\n電話番号: ${shop.shop_phone}`;
+  }
+  if (shop.shop_parking) {
+    extraPrompt += `\n駐車場: ${shop.shop_parking}`;
+  }
+  if (shop.shop_sns) {
+    extraPrompt += `\nSNS・HP: ${shop.shop_sns}`;
+  }
+  if (Array.isArray(shop.payment_methods) && shop.payment_methods.length > 0) {
+    extraPrompt += `\nお支払い方法: ${shop.payment_methods.join('、')}`;
+  }
+
+  // 예약 규칙
+  const bookingRules = shop.booking_rules || {};
+  if (Object.keys(bookingRules).length > 0) {
+    extraPrompt += `\n\n【予約ルール】`;
+    if (bookingRules.sameDayBooking === 'yes') {
+      extraPrompt += `\n当日予約: 受け付けています`;
+    } else if (bookingRules.sameDayBooking === 'no') {
+      extraPrompt += `\n当日予約: 受け付けていません`;
+    }
+    if (bookingRules.minBookingHours) {
+      extraPrompt += `\n最低予約時間: ${bookingRules.minBookingHours}時間前まで`;
+    }
+    if (bookingRules.cancelPolicy) {
+      extraPrompt += `\nキャンセルポリシー: ${bookingRules.cancelPolicy}`;
+    }
+    if (bookingRules.noshowPolicy) {
+      extraPrompt += `\n無断キャンセル対応: ${bookingRules.noshowPolicy}`;
+    }
+  }
+
+  // FAQ
+  const faqItems = shop.faq_items || [];
+  if (Array.isArray(faqItems) && faqItems.length > 0) {
+    extraPrompt += `\n\n【よくある質問と回答】\n以下の質問には必ずこの回答を使用してください。`;
+    faqItems.forEach((faq, i) => {
+      if (faq.question && faq.answer) {
+        extraPrompt += `\nQ${i + 1}: ${faq.question}\nA${i + 1}: ${faq.answer}`;
+      }
+    });
+  }
+
+  // AI 응답 정책
+  const aiPolicy = shop.ai_policy || {};
+  const policyRules = [];
+  if (aiPolicy.noGuess) {
+    policyRules.push('設定にない情報については「確認してご連絡します」と答え、推測で回答しないこと');
+  }
+  if (aiPolicy.noDiscount) {
+    policyRules.push('設定にない割引やサービスを勝手に案内しないこと');
+  }
+  if (aiPolicy.noMedical) {
+    policyRules.push('アレルギーや肌トラブルに関する質問には「専門家にご相談ください」と案内すること');
+  }
+  if (aiPolicy.noPromise) {
+    policyRules.push('設定に書いていない対応を勝手に約束しないこと');
+  }
+  if (policyRules.length > 0) {
+    extraPrompt += `\n\n【AI応答ルール - 必ず守ること】`;
+    policyRules.forEach((rule, i) => {
+      extraPrompt += `\n${i + 1}. ${rule}`;
+    });
+  }
+
+  // 톤앤매너
+  const tone = shop.tone_settings || {};
+  if (Object.keys(tone).length > 0) {
+    extraPrompt += `\n\n【話し方のルール】`;
+    if (tone.toneStyle === 'polite') {
+      extraPrompt += `\n言葉づかい: 丁寧・フォーマル（「〜でございます」「〜いたします」を使う）`;
+    } else if (tone.toneStyle === 'friendly') {
+      extraPrompt += `\n言葉づかい: 親しみやすい・カジュアル（「〜です」「〜ますよ」を使う）`;
+    }
+    if (tone.useEmoji === 'yes') {
+      extraPrompt += `\n絵文字: 適度に使用してよい`;
+    } else {
+      extraPrompt += `\n絵文字: 使用しないこと`;
+    }
+    if (tone.replyLength === 'short') {
+      extraPrompt += `\n返答の長さ: 短め・要点のみ`;
+    } else {
+      extraPrompt += `\n返答の長さ: 標準・必要な情報をしっかり伝える`;
+    }
+  }
+
   const fullSystemPrompt = `${fullBasePrompt}
 今日の日付は${today}です。${extraInfo}${memoryContext}
 
@@ -2839,7 +3091,7 @@ async function handleEvent(event, shop, template) {
 特定の日の空き状況を確認したい場合は返答の最後に以下を追加してください：
 [AVAIL_CHECK]{"date":"YYYY-MM-DD"}[/AVAIL_CHECK]
 
-マークダウン記号（**など）は使わないでください。`;
+	マークダウン記号（**など）は使わないでください。${extraPrompt}`;
 
   let replyText = '';
   try {
