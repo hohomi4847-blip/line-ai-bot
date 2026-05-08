@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LINE接続 | スマート予約Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&family=Noto+Serif+JP:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #06C755;
+      --green-dark: #05A847;
+      --green-soft: #F0FDF4;
+      --bg: #F7F7F5;
+      --white: #FFFFFF;
+      --text: #111827;
+      --text2: #4B5563;
+      --text3: #8A8F98;
+      --border: #E5E7EB;
+      --yellow: #FFFBEB;
+      --yellow-border: #FDE68A;
+      --red-border: #FECACA;
+      --serif: 'Noto Serif JP', serif;
+      --shadow: 0 12px 34px rgba(17, 24, 39, 0.08);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Noto Sans JP', 'Helvetica Neue', Arial, sans-serif;
+      background: var(--white);
+      color: var(--text);
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      height: 68px;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid #E5E5E5;
+      transition: box-shadow 0.2s ease;
+    }
+    .nav.scrolled { box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08); }
+    .nav-inner {
+      max-width: 1120px;
+      height: 100%;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: #111;
+      color: var(--white);
+    }
+    .help-link {
+      color: var(--green-dark);
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .progress {
+      position: sticky;
+      top: 68px;
+      z-index: 90;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .progress-inner {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 18px 24px 16px;
+    }
+    .progress-track {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      position: relative;
+      align-items: start;
+      gap: 10px;
+    }
+    .progress-track::before {
+      content: '';
+      position: absolute;
+      top: 12px;
+      left: 16%;
+      right: 16%;
+      height: 3px;
+      background: var(--green);
+      border-radius: 999px;
+    }
+    .step-link {
+      position: relative;
+      display: grid;
+      justify-items: center;
+      gap: 6px;
+      color: var(--green-dark);
+      font-size: 12px;
+      font-weight: 800;
+      text-align: center;
+      z-index: 1;
+    }
+    .step-dot {
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--green);
+      border: 3px solid var(--green);
+      color: var(--white);
+    }
+    .step-name { color: var(--text); font-weight: 800; }
+
+    .hero {
+      padding: 178px 24px 84px;
+      background:
+        radial-gradient(circle at 18% 14%, rgba(6,199,85,0.14), transparent 34%),
+        linear-gradient(180deg, #FFFFFF 0%, #F1FFF6 100%);
+      text-align: center;
+    }
+    .wrap { max-width: 1120px; margin: 0 auto; }
+    .narrow { max-width: 780px; margin: 0 auto; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      border: 1px solid #BBF7D0;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.86);
+      color: var(--green-dark);
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 24px;
+    }
+    h1, h2, h3 { line-height: 1.35; letter-spacing: 0; }
+    h1, h2 { font-family: var(--serif); }
+    h1 { font-size: clamp(40px, 7vw, 68px); font-weight: 700; }
+    h2 { font-size: clamp(30px, 4.5vw, 46px); font-weight: 700; }
+    h3 { font-size: 20px; font-weight: 800; }
+    .hero-copy {
+      margin: 24px auto 0;
+      color: var(--text2);
+      font-size: 18px;
+      line-height: 2;
+    }
+    .time-badge {
+      display: inline-flex;
+      margin-top: 24px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: #111;
+      color: var(--white);
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .encourage {
+      max-width: 680px;
+      margin: 28px auto 0;
+      padding: 18px 22px;
+      border: 1px solid rgba(6,199,85,0.18);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.9);
+      color: var(--text2);
+      font-size: 15px;
+      line-height: 2;
+    }
+
+    .section { padding: 96px 24px; }
+    .section.bg { background: var(--bg); }
+    .section-head { text-align: center; max-width: 760px; margin: 0 auto 44px; }
+    .eyebrow {
+      display: inline-flex;
+      color: var(--green-dark);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .lead { color: var(--text2); font-size: 16px; line-height: 2; margin-top: 16px; }
+
+    .guide-list { display: grid; gap: 34px; }
+    .guide-card, .prepare-card, .checklist, .done-card {
+      padding: 32px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--white);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+    }
+    .prepare-card, .checklist, .done-card {
+      max-width: 860px;
+      margin: 0 auto;
+      box-shadow: var(--shadow);
+    }
+    .guide-card p, .prepare-card p { color: var(--text2); font-size: 15px; line-height: 2; }
+    .big-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 56px;
+      margin-top: 20px;
+      padding: 0 26px;
+      border-radius: 999px;
+      background: var(--green);
+      color: var(--white);
+      font-weight: 800;
+      box-shadow: 0 12px 26px rgba(6,199,85,0.22);
+    }
+    .notice {
+      margin-top: 20px;
+      padding: 18px 20px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.9;
+    }
+    .notice.warn { background: var(--yellow); border: 1px solid var(--yellow-border); color: #92400E; }
+    .notice.good { background: var(--green-soft); border: 1px solid #BBF7D0; color: #166534; }
+    .notice.important { background: #FFF7F7; border: 1.5px solid var(--red-border); color: #991B1B; }
+    .prepare-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 16px;
+    }
+    .prepare-item {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+      color: var(--text2);
+      font-size: 15px;
+    }
+    .prepare-item strong { color: var(--text); }
+    .step-num {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 18px;
+      border-radius: 16px;
+      background: #111;
+      color: var(--white);
+      font-family: var(--serif);
+      font-size: 30px;
+      font-weight: 700;
+    }
+
+    .mock {
+      margin-top: 20px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: #F9FAFB;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .mock-head {
+      padding: 14px 18px;
+      background: #111;
+      color: var(--white);
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .mock-body { padding: 22px; }
+    .mock-row {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--white);
+      margin-bottom: 12px;
+      font-size: 14px;
+      color: var(--text2);
+    }
+    .mock-row:last-child { margin-bottom: 0; }
+    .mock-row.selected { border-color: var(--green); background: var(--green-soft); color: var(--text); font-weight: 800; }
+    .mock-label {
+      color: var(--text3);
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    .mock-field {
+      min-height: 46px;
+      padding: 13px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--white);
+      color: var(--text3);
+      font-size: 14px;
+      word-break: break-all;
+    }
+    .mock-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .arrow { text-align: center; color: var(--green-dark); font-size: 28px; font-weight: 800; margin: 18px 0 0; }
+    .chat-mock {
+      margin-top: 22px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: #E8F5E9;
+      box-shadow: var(--shadow);
+    }
+    .chat-name { font-size: 12px; color: var(--text2); font-weight: 800; margin-bottom: 6px; }
+    .bubble {
+      max-width: 82%;
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: var(--white);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .bubble.user {
+      margin-left: auto;
+      background: var(--green);
+      color: var(--white);
+      text-align: right;
+    }
+    .todo-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+    .todo-card {
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--white);
+    }
+    .todo-card.primary { border-color: rgba(6,199,85,0.48); box-shadow: var(--shadow); }
+    .priority {
+      display: inline-flex;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: #166534;
+      font-size: 12px;
+      font-weight: 800;
+      margin: 10px 0;
+    }
+    .todo-card p { color: var(--text2); font-size: 14px; line-height: 1.9; }
+    .todo-link {
+      display: inline-flex;
+      margin-top: 14px;
+      color: var(--green-dark);
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      width: 100%;
+      margin-top: 18px;
+      padding: 16px 18px;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      background: var(--white);
+      color: var(--text2);
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+    }
+    .check-item .box {
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: var(--white);
+      font-weight: 800;
+      line-height: 1;
+    }
+    .check-item.checked {
+      border-color: rgba(6,199,85,0.5);
+      background: var(--green-soft);
+      color: var(--text);
+      font-weight: 800;
+    }
+    .check-item.checked .box {
+      border-color: var(--green);
+      background: var(--green);
+      color: var(--white);
+    }
+    .done-card {
+      display: none;
+      margin-top: 24px;
+      border-color: rgba(6,199,85,0.5);
+      background: var(--green-soft);
+      text-align: center;
+    }
+    .done-card.visible { display: block; }
+    .done-card h3 { font-family: var(--serif); font-size: clamp(26px, 4vw, 38px); margin-bottom: 12px; }
+    .done-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 22px;
+    }
+    .done-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 50px;
+      padding: 0 22px;
+      border-radius: 999px;
+      background: var(--green);
+      color: var(--white);
+      font-weight: 800;
+      opacity: 0.4;
+      pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    .done-button.enabled { opacity: 1; pointer-events: auto; box-shadow: 0 12px 26px rgba(6,199,85,0.24); }
+    .done-button.enabled:hover { transform: translateY(-2px); }
+
+    .faq-list {
+      max-width: 860px;
+      margin: 0 auto;
+      display: grid;
+      gap: 12px;
+    }
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--white);
+      overflow: hidden;
+    }
+    .faq-q {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      padding: 20px 22px;
+      border: none;
+      background: var(--white);
+      color: var(--text);
+      font-weight: 800;
+      text-align: left;
+      cursor: pointer;
+    }
+    .faq-q span:last-child { color: var(--green-dark); font-size: 20px; }
+    .faq-a {
+      display: none;
+      padding: 0 22px 22px;
+      color: var(--text2);
+      font-size: 14px;
+      line-height: 2;
+    }
+    .faq-item.open .faq-a { display: block; }
+
+    .footer { background: #111; color: var(--white); padding: 48px 24px; }
+    .footer-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .footer-links {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      color: rgba(255,255,255,0.72);
+      font-size: 13px;
+    }
+    .copyright {
+      width: 100%;
+      color: rgba(255,255,255,0.48);
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    .fade-up {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 760px) {
+      .nav { height: 62px; }
+      .nav-inner { padding: 0 16px; }
+      .brand span:last-child { font-size: 14px; }
+      .brand-mark { width: 32px; height: 32px; }
+      .help-link { font-size: 12px; }
+      .progress { top: 62px; }
+      .progress-inner { padding: 14px 12px 12px; }
+      .step-link { font-size: 10px; }
+      .step-name { display: block; font-size: 10px; }
+      .hero { padding: 152px 16px 64px; }
+      .hero-copy { font-size: 16px; }
+      .section { padding: 72px 16px; }
+      .guide-card, .prepare-card, .checklist, .done-card { padding: 22px; }
+      .mock-body { padding: 16px; }
+      .todo-grid { grid-template-columns: 1fr; }
+      .bubble { max-width: 92%; }
+      .done-actions { flex-direction: column; }
+      .footer-inner { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a href="/" class="brand">
+        <span class="brand-mark">⚡</span>
+        <span>スマート予約Pro</span>
+      </a>
+      <a href="#help" class="help-link">困ったときは →</a>
+    </div>
+  </header>
+
+  <div class="progress" aria-label="設定ステップ">
+    <div class="progress-inner">
+      <div class="progress-track">
+        <a class="step-link" href="setup-line.html">
+          <span class="step-dot">●</span>
+          <span>STEP1<br><span class="step-name">LINEの準備</span></span>
+        </a>
+        <a class="step-link" href="setup-register.html">
+          <span class="step-dot">●</span>
+          <span>STEP2<br><span class="step-name">システム登録</span></span>
+        </a>
+        <a class="step-link" href="#top" aria-current="step">
+          <span class="step-dot">●</span>
+          <span>STEP3<br><span class="step-name">LINE接続</span></span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <main id="top">
+    <section class="hero">
+      <div class="wrap fade-up">
+        <span class="badge">STEP 3 / 3 · 最終ステップ！</span>
+        <h1>LINEとシステムを繋ぐ</h1>
+        <div class="hero-copy">
+          このページでやること：<br>
+          ✅ LINE Official Account Managerに<br>
+          Webhook URLを設定する<br>
+          ✅ テスト予約をして動作確認する
+        </div>
+        <div class="time-badge">⏱️ 所要時間：約5分</div>
+        <p class="encourage">
+          もうすぐ完了です！💪<br>
+          このSTEPが終わると、AIが予約を受け付けられるようになります。<br>
+          あと少し、頑張りましょう！
+        </p>
+      </div>
+    </section>
+
+    <section class="section bg">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <span class="eyebrow">準備するもの</span>
+          <h2>始める前に確認してください</h2>
+        </div>
+        <div class="prepare-card fade-up">
+          <h3>以下のものを手元に用意してください</h3>
+          <div class="prepare-list">
+            <div class="prepare-item">✅ <strong>Webhook URL</strong><br>→ STEP2でメモしたもの<br>例：https://...app/webhook/xxxx</div>
+            <div class="prepare-item">✅ <strong>LINE Official Account Managerにログインできる状態</strong></div>
+          </div>
+          <div class="notice warn">
+            ⚠️ Webhook URLがわからない場合<br>
+            ダッシュボードから確認できます。<br>
+            ① ダッシュボードを開く<br>
+            ②「連携情報」タブをクリック<br>
+            ③ Webhook URLをコピー
+          </div>
+          <a class="big-button" href="/shop-dashboard.html" target="_blank" rel="noopener">ダッシュボードを開く →</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <article class="guide-card fade-up">
+          <div class="step-num">①</div>
+          <h2>LINE Official Account Managerを開く</h2>
+          <p>下のボタンを押してLINE Official Account Managerを開いてください。</p>
+          <a class="big-button" href="https://manager.line.biz/" target="_blank" rel="noopener">📱 LINE Official Account Managerを開く →</a>
+          <p style="margin-top:20px;">LINE公式アカウントを作ったときのメールアドレス・パスワードでログインしてください。</p>
+          <div class="mock">
+            <div class="mock-head">LINE Official Account Manager</div>
+            <div class="mock-body">
+              <div class="mock-row selected">🏪 あなたのお店の名前</div>
+              <div class="mock-row">ホーム　チャット　分析　<strong style="color:var(--green-dark);">設定</strong></div>
+            </div>
+          </div>
+          <div class="notice good">ログインしたら上のメニューの「設定」をクリックしてください。</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section bg">
+      <div class="wrap">
+        <article class="guide-card fade-up">
+          <div class="step-num">②</div>
+          <h2>「Messaging API」の設定を開く</h2>
+          <p>左側のメニューから「Messaging API」をクリックしてください。</p>
+          <div class="mock">
+            <div class="mock-head">設定</div>
+            <div class="mock-body">
+              <div class="mock-row">□ 基本設定</div>
+              <div class="mock-row">□ 権限管理</div>
+              <div class="mock-row selected">■ Messaging API　← ここをクリック！</div>
+              <div class="mock-row">□ 応答設定</div>
+              <div class="mock-row">□ LINE VOOM</div>
+            </div>
+          </div>
+          <div class="notice warn">
+            ⚠️「Messaging API」が表示されない場合<br>
+            まだMessaging APIが有効になっていません。<br>
+            ① 設定 →「Messaging APIを利用する」ボタンを押す<br>
+            ② 確認画面で「同意する」を押す<br>
+            ③ もう一度「Messaging API」をクリック
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <article class="guide-card fade-up">
+          <div class="step-num">③</div>
+          <h2>Webhook URLを貼り付ける</h2>
+          <p>「Messaging API設定」画面の中に「Webhook URL」という入力欄があります。</p>
+          <div class="mock">
+            <div class="mock-head">Messaging API設定</div>
+            <div class="mock-body">
+              <div class="mock-label">Webhook URL</div>
+              <div class="mock-field">&nbsp;</div>
+              <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+                <span class="mock-button">検証</span>
+                <span class="mock-button">更新</span>
+              </div>
+              <div class="mock-label" style="margin-top:18px;">Webhookの利用</div>
+              <div class="mock-row">○ 利用する　● 利用しない</div>
+            </div>
+          </div>
+          <div class="notice good">
+            ① 入力欄をクリックする<br>
+            ② STEP2でメモしたWebhook URLを貼り付ける<br>
+            ③「更新」ボタンを押す
+          </div>
+          <div class="notice good">
+            💡 貼り付け方<br>
+            スマートフォン：入力欄を長押し →「貼り付け」<br>
+            パソコン：入力欄をクリック → Ctrl+V（Mac：Command+V）
+          </div>
+          <div class="mock">
+            <div class="mock-head">更新後の画面</div>
+            <div class="mock-body">
+              <div class="mock-label">Webhook URL</div>
+              <div class="mock-field">https://...app/webhook/xxxx</div>
+              <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+                <span class="mock-button">検証</span>
+                <span class="mock-button">更新</span>
+              </div>
+            </div>
+          </div>
+          <p style="margin-top:18px;">URLを貼り付けたら「更新」を押してください。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section bg">
+      <div class="wrap">
+        <article class="guide-card fade-up">
+          <div class="step-num">④</div>
+          <h2>Webhookを「利用する」に変える</h2>
+          <p>Webhook URLの下に「Webhookの利用」という設定があります。</p>
+          <div class="mock">
+            <div class="mock-head">変更前</div>
+            <div class="mock-body">
+              <div class="mock-label">Webhookの利用</div>
+              <div class="mock-row">○ 利用する</div>
+              <div class="mock-row selected">● 利用しない　← 今はこっちになってる</div>
+            </div>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="mock">
+            <div class="mock-head">変更後</div>
+            <div class="mock-body">
+              <div class="mock-label">Webhookの利用</div>
+              <div class="mock-row selected">● 利用する　← これに変える！</div>
+              <div class="mock-row">○ 利用しない</div>
+            </div>
+          </div>
+          <div class="notice important">
+            ⚠️ ここが一番大事です！<br>
+            「利用する」にしないとAIが全く動きません。必ず「利用する」を選んでください。
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <article class="guide-card fade-up">
+          <div class="step-num">⑤</div>
+          <h2>応答設定を確認する</h2>
+          <p>設定メニューの「応答設定」を開いてください。</p>
+          <div class="mock">
+            <div class="mock-head">設定</div>
+            <div class="mock-body">
+              <div class="mock-row">□ Messaging API</div>
+              <div class="mock-row selected">■ 応答設定　← ここをクリック！</div>
+            </div>
+          </div>
+          <div class="mock">
+            <div class="mock-head">応答モード</div>
+            <div class="mock-body">
+              <div class="mock-row selected">● Bot ✅ ← これになっていればOK</div>
+              <div class="mock-row">○ チャット</div>
+            </div>
+          </div>
+          <p style="margin-top:14px;">「Bot」になっていればOKです。</p>
+          <div class="mock">
+            <div class="mock-head">自動応答メッセージ</div>
+            <div class="mock-body">
+              <div class="mock-row selected">● OFF ✅ ← 必ずOFFに！</div>
+              <div class="mock-row">○ ON</div>
+            </div>
+          </div>
+          <div class="notice important">
+            ⚠️「自動応答メッセージ」は必ずOFF！<br>
+            ONのままだと、LINEの自動応答とスマート予約Proの返答が同時に2つ送られてしまいます。
+            お客様が混乱するので必ずOFFにしてください。
+          </div>
+          <div class="mock">
+            <div class="mock-head">あいさつメッセージ</div>
+            <div class="mock-body">
+              <div class="mock-row selected">● OFF（推奨）</div>
+              <div class="mock-row">○ ON</div>
+            </div>
+          </div>
+          <p style="margin-top:14px;">OFFを推奨します。ONにするとLINE追加時に自動でメッセージが送られます。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section bg">
+      <div class="wrap">
+        <article class="guide-card fade-up">
+          <div class="step-num">⑥</div>
+          <h2>「検証」ボタンで確認する</h2>
+          <p>Messaging API設定に戻って「検証」ボタンを押してください。</p>
+          <div class="mock">
+            <div class="mock-head">Webhook URL</div>
+            <div class="mock-body">
+              <div class="mock-field">https://...app/webhook/xxxx</div>
+              <div style="margin-top:12px;"><span class="mock-button">検証</span> <strong style="color:var(--green-dark);font-size:13px;">← このボタンを押す！</strong></div>
+            </div>
+          </div>
+          <div class="mock">
+            <div class="mock-head">成功時</div>
+            <div class="mock-body"><div class="mock-row selected">✅ 成功<br>WebhookURLへの疎通確認ができました</div></div>
+          </div>
+          <div class="notice good">🎉 成功と表示されました！これで設定は完了です！次のステップでテスト予約をしてみましょう。</div>
+          <div class="mock">
+            <div class="mock-head">失敗時</div>
+            <div class="mock-body"><div class="mock-row">❌ 失敗<br>Webhookへの接続に失敗しました</div></div>
+          </div>
+          <div class="notice warn">
+            ❌ 失敗と表示された場合<br>
+            ① Webhook URLが正しくコピーされているか（途中で切れていないか）<br>
+            ② 前後にスペースが入っていないか<br>
+            ③「Webhookの利用」が「利用する」になっているか<br>
+            ④ ダッシュボードにログインできているか<br>
+            ⑤ 上記全て確認してもダメな場合はSNS DMへご連絡ください
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <span class="eyebrow">テスト予約</span>
+          <h2>🎊 設定完了！テスト予約をしてみましょう</h2>
+          <p class="lead">実際にLINEで話しかけてみてください。</p>
+        </div>
+        <div class="guide-list">
+          <article class="guide-card fade-up">
+            <h3>① LINEでお店のアカウントを開く</h3>
+            <p>
+              スマートフォンのLINEアプリであなたのお店のLINE公式アカウントを開いてください。
+              「友だち追加」がまだの場合はQRコードかリンクで追加してください。
+            </p>
+          </article>
+          <article class="guide-card fade-up">
+            <h3>②「予約したい」と送ってみる</h3>
+            <p>LINEのトーク画面に「予約したい」と入力して送ってください。数秒以内にAIが返答します。</p>
+            <div class="chat-mock">
+              <div class="chat-name" style="text-align:right;">あなた</div>
+              <div class="bubble user">予約したい</div>
+              <div class="chat-name">🏪 あなたのお店</div>
+              <div class="bubble">ご希望のメニューを<br>教えていただけますか？</div>
+            </div>
+            <div class="notice good">✅ このように返答が来れば完璧です！</div>
+            <div class="notice warn">
+              ⚠️ 返答がない場合<br>
+              ① Webhookが「利用する」になっているか<br>
+              ②「自動応答」がOFFになっているか<br>
+              ③ ダッシュボードの「設定チェック」でエラーが出ていないか
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section bg">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <span class="eyebrow">Next Actions</span>
+          <h2>次にやること（重要）</h2>
+          <p class="lead">設定が完了したら、以下を順番に行ってください。</p>
+        </div>
+        <div class="todo-grid">
+          <div class="todo-card primary fade-up">
+            <h3>🕐 営業時間を設定する</h3>
+            <span class="priority">最重要</span>
+            <p>営業時間が設定されていないとAIが正しく空き時間を案内できません。必ず最初に設定してください。</p>
+            <a class="todo-link" href="/shop-dashboard.html">ダッシュボード → 店舗設定 →</a>
+          </div>
+          <div class="todo-card fade-up">
+            <h3>📋 メニューを登録する</h3>
+            <span class="priority">重要</span>
+            <p>メニュー名・料金・所要時間を登録するとAIが正確にメニューを案内できます。売上分析にも使われます。</p>
+            <a class="todo-link" href="/shop-dashboard.html">ダッシュボード → 店舗設定 →</a>
+          </div>
+          <div class="todo-card fade-up">
+            <h3>📝 店舗紹介文を入力する</h3>
+            <p>お店の特徴を入力するとAIがより自然な会話ができるようになります。</p>
+            <p>例：「駅から3分の美容室です。経験豊富なスタッフが対応します。」</p>
+          </div>
+          <div class="todo-card fade-up">
+            <h3>📅 Googleカレンダーと連携する</h3>
+            <p>ダッシュボード → 連携情報 からGoogleカレンダー連携URLをコピーして追加すると、予約が自動で反映されます。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <span class="eyebrow">確認チェックリスト</span>
+          <h2>STEP3の確認リスト</h2>
+        </div>
+        <div class="checklist fade-up">
+          <button class="check-item" type="button" data-check-key="webhook-url">
+            <span class="box">□</span>
+            <span>Webhook URLを設定した</span>
+          </button>
+          <button class="check-item" type="button" data-check-key="webhook-on">
+            <span class="box">□</span>
+            <span>「Webhookの利用」を「利用する」にした</span>
+          </button>
+          <button class="check-item" type="button" data-check-key="auto-response-off">
+            <span class="box">□</span>
+            <span>「自動応答メッセージ」をOFFにした</span>
+          </button>
+          <button class="check-item" type="button" data-check-key="verified">
+            <span class="box">□</span>
+            <span>「検証」で成功と表示された</span>
+          </button>
+          <button class="check-item" type="button" data-check-key="test-reply">
+            <span class="box">□</span>
+            <span>テスト予約をして返答が来た</span>
+          </button>
+          <div class="done-card" id="doneCard">
+            <h3>🎉 おめでとうございます！</h3>
+            <p>全ての設定が完了しました！<br>AIが24時間、あなたの代わりに予約を受け付けます。</p>
+            <div class="done-actions">
+              <a class="done-button" href="/shop-dashboard.html">ダッシュボードを開く →</a>
+              <a class="done-button" href="/shop-dashboard.html">営業時間を設定する →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section bg" id="help">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <span class="eyebrow">Troubleshooting</span>
+          <h2>困ったときは</h2>
+        </div>
+        <div class="faq-list fade-up">
+          <div class="faq-item">
+            <button class="faq-q" type="button"><span>「検証」で失敗する</span><span>＋</span></button>
+            <div class="faq-a">
+              ① Webhook URLの前後にスペースが入っていないか<br>
+              ② URLが途中で切れていないか<br>
+              正しい例：https://line-ai-bot-production-2d6d.up.railway.app/webhook/あなたのID<br>
+              ③「Webhookの利用」が「利用する」になっているか<br>
+              ④ ダッシュボードにログインし直してみる<br>
+              ⑤ それでもダメならSNS DMへ
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" type="button"><span>LINEに送っても返答がない</span><span>＋</span></button>
+            <div class="faq-a">
+              ① Webhookが「利用する」になっているか<br>
+              ②「自動応答メッセージ」がOFFになっているか<br>
+              ③「応答モード」が「Bot」になっているか<br>
+              ④ ダッシュボード → 設定チェックでエラーが出ていないか確認
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" type="button"><span>「Messaging API」の設定が見つからない</span><span>＋</span></button>
+            <div class="faq-a">
+              LINE Official Account ManagerでMessaging APIを有効にする必要があります。
+              設定 →「Messaging APIを利用する」ボタンを押してください。
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" type="button"><span>二重に返答が届く</span><span>＋</span></button>
+            <div class="faq-a">
+              「自動応答メッセージ」がONになっています。
+              応答設定 →「自動応答メッセージ」をOFFにしてください。
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" type="button"><span>営業時間外でも予約が入ってしまう</span><span>＋</span></button>
+            <div class="faq-a">
+              ダッシュボード → 店舗設定 から営業時間を正しく設定してください。
+              設定されていない場合AIは営業時間を判断できません。
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" type="button"><span>それでも解決しない</span><span>＋</span></button>
+            <div class="faq-a">
+              SNS（X / Instagram）のDMへご連絡ください。
+              画面のスクリーンショットを送っていただくと、より早く解決できます。
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <a href="/" class="brand">
+        <span class="brand-mark">⚡</span>
+        <span>スマート予約Pro</span>
+      </a>
+      <div class="footer-links">
+        <a href="/">トップページ</a>
+        <a href="/terms.html">利用規約</a>
+        <a href="/privacy.html">プライバシーポリシー</a>
+        <a href="/refund.html">返金ポリシー</a>
+        <a href="/tokusho.html">特定商取引法</a>
+      </div>
+      <div class="copyright">© 2026 スマート予約Pro</div>
+    </div>
+  </footer>
+
+  <script>
+    'use strict';
+
+    const storagePrefix = 'setup-webhook:';
+    const finalKeys = ['webhook-url', 'webhook-on', 'auto-response-off', 'verified', 'test-reply'];
+    const nav = document.getElementById('nav');
+    const doneCard = document.getElementById('doneCard');
+
+    function setNavShadow() {
+      nav.classList.toggle('scrolled', window.scrollY > 8);
+    }
+
+    function storageKey(key) {
+      return storagePrefix + key;
+    }
+
+    function isChecked(key) {
+      return localStorage.getItem(storageKey(key)) === '1';
+    }
+
+    function setChecked(button, checked) {
+      const key = button.dataset.checkKey;
+      const box = button.querySelector('.box');
+      button.classList.toggle('checked', checked);
+      button.setAttribute('aria-pressed', checked ? 'true' : 'false');
+      if (box) box.textContent = checked ? '✓' : '□';
+      localStorage.setItem(storageKey(key), checked ? '1' : '0');
+      updateDoneState();
+    }
+
+    function updateDoneState() {
+      const ready = finalKeys.every(isChecked);
+      doneCard.classList.toggle('visible', ready);
+      doneCard.querySelectorAll('.done-button').forEach(button => {
+        button.classList.toggle('enabled', ready);
+        button.setAttribute('aria-disabled', ready ? 'false' : 'true');
+      });
+    }
+
+    document.querySelectorAll('.check-item[data-check-key]').forEach(button => {
+      setChecked(button, isChecked(button.dataset.checkKey));
+      button.addEventListener('click', () => {
+        setChecked(button, !button.classList.contains('checked'));
+      });
+    });
+
+    document.querySelectorAll('.faq-q').forEach(button => {
+      button.addEventListener('click', () => {
+        const item = button.closest('.faq-item');
+        const mark = button.querySelector('span:last-child');
+        item.classList.toggle('open');
+        if (mark) mark.textContent = item.classList.contains('open') ? '−' : '＋';
+      });
+    });
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+    window.addEventListener('scroll', setNavShadow, { passive: true });
+    setNavShadow();
+    updateDoneState();
+  </script>
+</body>
+</html>

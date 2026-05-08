@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>システム登録 | スマート予約Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&family=Noto+Serif+JP:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #06C755;
+      --green-dark: #05A847;
+      --green-soft: #F0FDF4;
+      --bg: #F7F7F5;
+      --white: #FFFFFF;
+      --text: #111827;
+      --text2: #4B5563;
+      --text3: #8A8F98;
+      --border: #E5E7EB;
+      --yellow: #FFFBEB;
+      --yellow-border: #FDE68A;
+      --red-border: #FECACA;
+      --serif: 'Noto Serif JP', serif;
+      --shadow: 0 12px 34px rgba(17, 24, 39, 0.08);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Noto Sans JP', 'Helvetica Neue', Arial, sans-serif;
+      background: var(--white);
+      color: var(--text);
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      height: 68px;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid #E5E5E5;
+      transition: box-shadow 0.2s ease;
+    }
+    .nav.scrolled { box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08); }
+    .nav-inner {
+      max-width: 1120px;
+      height: 100%;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: #111;
+      color: var(--white);
+    }
+    .help-link {
+      color: var(--green-dark);
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .progress {
+      position: sticky;
+      top: 68px;
+      z-index: 90;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .progress-inner {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 18px 24px 16px;
+    }
+    .progress-track {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      position: relative;
+      align-items: start;
+      gap: 10px;
+    }
+    .progress-track::before {
+      content: '';
+      position: absolute;
+      top: 12px;
+      left: 16%;
+      right: 16%;
+      height: 3px;
+      background: var(--border);
+      border-radius: 999px;
+    }
+    .progress-track::after {
+      content: '';
+      position: absolute;
+      top: 12px;
+      left: 16%;
+      width: 34%;
+      height: 3px;
+      background: var(--green);
+      border-radius: 999px;
+    }
+    .step-link {
+      position: relative;
+      display: grid;
+      justify-items: center;
+      gap: 6px;
+      color: var(--text3);
+      font-size: 12px;
+      font-weight: 800;
+      text-align: center;
+      z-index: 1;
+    }
+    .step-dot {
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--white);
+      border: 3px solid var(--border);
+      z-index: 1;
+    }
+    .step-link.done, .step-link.active { color: var(--green-dark); }
+    .step-link.done .step-dot, .step-link.active .step-dot {
+      background: var(--green);
+      border-color: var(--green);
+      color: var(--white);
+    }
+    .step-name { color: var(--text); font-weight: 800; }
+
+    .hero {
+      padding: 178px 24px 84px;
+      background:
+        radial-gradient(circle at 18% 14%, rgba(6,199,85,0.14), transparent 34%),
+        linear-gradient(180deg, #FFFFFF 0%, #F1FFF6 100%);
+      text-align: center;
+    }
+    .wrap { max-width: 1120px; margin: 0 auto; }
+    .narrow { max-width: 780px; margin: 0 auto; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      border: 1px solid #BBF7D0;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.86);
+      color: var(--green-dark);
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 24px;
+    }
+    h1, h2, h3 { line-height: 1.35; letter-spacing: 0; }
+    h1, h2 { font-family: var(--serif); }
+    h1 { font-size: clamp(40px, 7vw, 68px); font-weight: 700; }
+    h2 { font-size: clamp(30px, 4.5vw, 46px); font-weight: 700; }
+    h3 { font-size: 20px; font-weight: 800; }
+    .hero-copy {
+      margin: 24px auto 0;
+      color: var(--text2);
+      font-size: 18px;
+      line-height: 2;
+    }
+    .time-badge {
+      display: inline-flex;
+      margin-top: 24px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: #111;
+      color: var(--white);
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .encourage {
+      max-width: 640px;
+      margin: 28px auto 0;
+      padding: 18px 22px;
+      border: 1px solid rgba(6,199,85,0.18);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.9);
+      color: var(--text2);
+      font-size: 15px;
+      line-height: 2;
+    }
+
+    .section { padding: 96px 24px; }
+    .section.bg { background: var(--bg); }
+    .section-head { text-align: center; max-width: 760px; margin: 0 auto 44px; }
+    .eyebrow {
+      display: inline-flex;
+      color: var(--green-dark);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .lead { color: var(--text2); font-size: 16px; line-height: 2; margin-top: 16px; }
+
+    .guide-list { display: grid; gap: 34px; }
+    .guide-card {
+      padding: 32px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--white);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+    }
+    .guide-card h3 { margin-bottom: 12px; }
+    .guide-card p { color: var(--text2); font-size: 15px; line-height: 2; }
+    .big-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 56px;
+      margin-top: 20px;
+      padding: 0 26px;
+      border-radius: 999px;
+      background: var(--green);
+      color: var(--white);
+      font-weight: 800;
+      box-shadow: 0 12px 26px rgba(6,199,85,0.22);
+    }
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      margin-top: 16px;
+      padding: 0 18px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--white);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .notice {
+      margin-top: 20px;
+      padding: 18px 20px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.9;
+    }
+    .notice.warn { background: var(--yellow); border: 1px solid var(--yellow-border); color: #92400E; }
+    .notice.good { background: var(--green-soft); border: 1px solid #BBF7D0; color: #166534; }
+    .notice.important { background: #FFF7F7; border: 1.5px solid var(--red-border); color: #991B1B; }
+    .notice.dark { background: #111; border: 1px solid #111; color: var(--white); }
+
+    .prepare-card {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 28px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--white);
+      box-shadow: var(--shadow);
+    }
+    .prepare-card h3 { margin-bottom: 14px; }
+    .prepare-card ul { display: grid; gap: 12px; }
+    .prepare-card li {
+      list-style: none;
+      padding: 12px 0;
+      border-top: 1px solid var(--border);
+      color: var(--text2);
+    }
+    .prepare-card strong { color: var(--text); }
+
+    .step-num {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 18px;
+      border-radius: 16px;
+      background: #111;
+      color: var(--white);
+      font-family: var(--serif);
+      font-size: 30px;
+      font-weight: 700;
+    }
+
+    .mock {
+      margin-top: 20px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: #F9FAFB;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .mock-head {
+      padding: 14px 18px;
+      background: #111;
+      color: var(--white);
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .mock-body { padding: 22px; }
+    .mock-row {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--white);
+      margin-bottom: 12px;
+      font-size: 14px;
+      color: var(--text2);
+    }
+    .mock-row:last-child { margin-bottom: 0; }
+    .mock-row.selected { border-color: var(--green); background: var(--green-soft); color: var(--text); font-weight: 800; }
+    .mock-label {
+      color: var(--text3);
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    .mock-field {
+      padding: 13px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--white);
+      color: var(--text3);
+      font-size: 14px;
+      word-break: break-all;
+    }
+    .mock-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      border-radius: 12px;
+      background: var(--green);
+      color: var(--white);
+      font-weight: 800;
+    }
+    .two-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .item-title {
+      display: inline-flex;
+      align-items: center;
+      margin: 34px 0 12px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: #111;
+      color: var(--white);
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .industry-list {
+      margin-top: 14px;
+      color: var(--text2);
+      font-size: 14px;
+      line-height: 2;
+    }
+    .pay-brands {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .pay-brands span {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: #166534;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      width: 100%;
+      margin-top: 18px;
+      padding: 16px 18px;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      background: var(--white);
+      color: var(--text2);
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+    }
+    .check-item .box {
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: var(--white);
+      font-weight: 800;
+      line-height: 1;
+    }
+    .check-item.checked {
+      border-color: rgba(6,199,85,0.5);
+      background: var(--green-soft);
+      color: var(--text);
+      font-weight: 800;
+    }
+    .check-item.checked .box {
+      border-color: var(--green);
+      background: var(--green);
+      color: var(--white);
+    }
+    .checklist {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 28px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--white);
+      box-shadow: var(--shadow);
+    }
+    .next-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 56px;
+      margin-top: 24px;
+      border-radius: 999px;
+      background: var(--green);
+      color: var(--white);
+      font-size: 16px;
+      font-weight: 800;
+      opacity: 0.4;
+      pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    .next-button.enabled {
+      opacity: 1;
+      pointer-events: auto;
+      box-shadow: 0 12px 26px rgba(6,199,85,0.24);
+    }
+    .next-button.enabled:hover { transform: translateY(-2px); }
+
+    .faq-list {
+      max-width: 860px;
+      margin: 0 auto;
+      display: grid;
+      gap: 12px;
+    }
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--white);
+      overflow: hidden;
+    }
+    .faq-q {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      padding: 20px 22px;
+      border: none;
+      background: var(--white);
+      color: var(--text);
+      font-weight: 800;
+      text-align: left;
+      cursor: pointer;
+    }
+    .faq-q span:last-child { color: var(--green-dark); font-size: 20px; }
+    .faq-a {
+      display: none;
+      padding: 0 22px 22px;
+      color: var(--text2);
+      font-size: 14px;
+      line-height: 2;
+    }
+    .faq-item.open .faq-a { display: block; }
+
+    .footer {
+      background: #111;
+      color: var(--white);
+      padding: 48px 24px;
+    }
+    .footer-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .footer-links {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      color: rgba(255,255,255,0.72);
+      font-size: 13px;
+    }
+    .copyright {
+      width: 100%;
+      color: rgba(255,255,255,0.48);
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    .fade-up {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 760px) {
+      .nav { height: 62px; }
+      .nav-inner { padding: 0 16px; }
+      .brand span:last-child { font-size: 14px; }
+      .brand-mark { width: 32px; height: 32px; }
+      .help-link { font-size: 12px; }
+      .progress { top: 62px; }
+      .progress-inner { padding: 14px 12px 12px; }
+      .step-link { font-size: 10px; }
+      .step-name { display: block; font-size: 10px; }
+      .hero { padding: 152px 16px 64px; }
+      .hero-copy { font-size: 16px; }
+      .section { padding: 72px 16px; }
+      .guide-card, .checklist, .prepare-card { padding: 22px; }
+      .mock-body { padding: 16px; }
+      .two-fields { grid-template-columns: 1fr; }
+      .footer-inner { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a href="/" class="brand">
+        <span class="brand-mark">⚡</span>
+        <span>スマート予約Pro</span>
+      </a>
+      <a href="#help" class="help-link">困ったときは →</a>
+    </div>
+  </header>
+
+  <div class="progress" aria-label="設定ステップ">
+    <div class="progress-inner">
+      <div class="progress-track">
+        <a class="step-link done" href="setup-line.html">
+          <span class="step-dot">●</span>
+          <span>STEP1<br><span class="step-name">LINEの準備</span></span>
+        </a>
+        <a class="step-link active" href="#top" aria-current="step">
+          <span class="step-dot">●</span>
+          <span>STEP2<br><span class="step-name">システム登録</span></span>
+        </a>
+        <a class="step-link" href="setup-webhook.html">
+          <span class="step-dot">○</span>
+          <span>STEP3<br><span class="step-name">LINE接続</span></span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <main id="top">
+    <section class="hero">
+      <div class="wrap fade-up">
+        <span class="badge">STEP 2 / 3</span>
+        <h1>システムにお店を登録する</h1>
+        <div class="hero-copy">
+          このページでやること：<br>
+          ✅ スマート予約Proにお店の情報を入力する<br>
+          ✅ 7日間の無料体験を開始する
+        </div>
+        <div class="time-badge">⏱️ 所要時間：約5分</div>
+        <p class="encourage">
+          STEP1お疲れ様でした！😊<br>
+          このSTEPはとても簡単です。<br>
+          フォームに入力して、ボタンを押すだけです。
+        </p>
+      </div>
+    </section>
+
+    <section class="section bg">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <span class="eyebrow">準備するもの</span>
+          <h2>始める前に確認してください</h2>
+        </div>
+        <div class="prepare-card fade-up">
+          <h3>以下のものを手元に用意してください</h3>
+          <ul>
+            <li>✅ <strong>Googleアカウント</strong>（メールアドレス）</li>
+            <li>✅ <strong>合言葉１（Channel Secret）</strong><br>→ STEP1でメモしたもの</li>
+            <li>✅ <strong>合言葉２（Access Token）</strong><br>→ STEP1でメモしたもの</li>
+            <li>✅ <strong>クレジットカード</strong><br>（7日間は請求されません）</li>
+          </ul>
+          <div class="notice warn">
+            ⚠️ STEP1がまだの方へ<br>
+            合言葉のメモがない場合は先にSTEP1を完了させてください。
+          </div>
+          <a class="back-button" href="setup-line.html">← STEP1に戻る</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <article class="guide-card fade-up">
+          <div class="step-num">①</div>
+          <h2>トップページを開く</h2>
+          <p>下のボタンを押してトップページを開いてください。このページは開いたままにしておいてください。</p>
+          <a class="big-button" href="/" target="_blank" rel="noopener">🌐 トップページを開く →</a>
+          <p style="margin-top:20px;">
+            新しいタブでトップページが開きます。
+            このページ（設定ガイド）は開いたままにしておいてください。
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section bg">
+      <div class="wrap">
+        <article class="guide-card fade-up">
+          <div class="step-num">②</div>
+          <h2>Googleアカウントでログインする</h2>
+          <p>トップページを一番下までスクロールすると「今すぐ無料で始める」という欄があります。</p>
+          <div class="mock">
+            <div class="mock-head">今すぐ無料で始める</div>
+            <div class="mock-body">
+              <div class="mock-label">① Googleアカウントでログイン</div>
+              <div class="mock-row selected">G　Googleでログイン<br><span>↑ このボタンを押す！</span></div>
+            </div>
+          </div>
+          <div class="mock">
+            <div class="mock-head">Googleログイン後</div>
+            <div class="mock-body">
+              <div class="mock-row selected">✅ xxxxxx@gmail.com でログイン中</div>
+            </div>
+          </div>
+          <div class="notice good">このように表示されればOKです！</div>
+          <div class="notice warn">
+            ⚠️ どのGoogleアカウントでもOKです<br>
+            普段使っているGoogleアカウントをそのまま使ってください。新しく作る必要はありません。
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <article class="guide-card fade-up">
+          <div class="step-num">③</div>
+          <h2>お店の情報を入力する</h2>
+          <p>ログインすると入力欄が出てきます。以下の順番で入力してください。</p>
+
+          <span class="item-title">項目１</span>
+          <div class="mock">
+            <div class="mock-head">お店の名前</div>
+            <div class="mock-body"><div class="mock-field">例：山田美容室</div></div>
+          </div>
+          <p>LINEでの自動返答に使われます。お店の正式名称を入力してください。</p>
+
+          <span class="item-title">項目２</span>
+          <div class="mock">
+            <div class="mock-head">業種</div>
+            <div class="mock-body"><div class="mock-field">美容室 ▼</div></div>
+          </div>
+          <p>お店の種類をリストから選んでください。</p>
+          <div class="industry-list">
+            対応業種：美容室 / ネイルサロン / 整骨院 / マッサージ / 歯科医院 / ジム /
+            ペットサロン / アイブロウ・まつ毛 / ヨガ・ピラティス / 鍼灸院 / 飲食店
+          </div>
+
+          <span class="item-title">項目３</span>
+          <div class="mock">
+            <div class="mock-head">LINE Channel Secret（合言葉１）</div>
+            <div class="mock-body"><div class="mock-field">●●●●●●●●●●●●●　[表示]</div></div>
+          </div>
+          <p>STEP1でメモした「合言葉１」をコピー&amp;ペーストしてください。</p>
+          <div class="notice good">
+            💡 貼り付け方<br>
+            スマートフォンの場合：入力欄を長押し → 「貼り付け」をタップ<br><br>
+            パソコンの場合：入力欄をクリックして Ctrl+V（Macの場合はCommand+V）を押す
+          </div>
+          <div class="notice warn">
+            ⚠️ よくあるミス<br>
+            ・前後に空白スペースが入らないよう注意<br>
+            ・Channel SecretとAccess Tokenを逆に入れないよう注意
+          </div>
+
+          <span class="item-title">項目４</span>
+          <div class="mock">
+            <div class="mock-head">LINE Channel Access Token（合言葉２）</div>
+            <div class="mock-body"><div class="mock-field">&nbsp;</div></div>
+          </div>
+          <p>STEP1でメモした「合言葉２」をコピー&amp;ペーストしてください。</p>
+
+          <div class="notice good">
+            🔒 安心してください<br>
+            入力した合言葉は暗号化されて安全に保管されます。第三者に見られることは一切ありません。
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section bg">
+      <div class="wrap">
+        <article class="guide-card fade-up">
+          <div class="step-num">④</div>
+          <h2>「次へ → 決済へ進む」を押す</h2>
+          <div class="mock">
+            <div class="mock-head">入力完了後</div>
+            <div class="mock-body">
+              <div class="mock-button">次へ → 決済へ進む<br>↑ このボタンを押す！</div>
+            </div>
+          </div>
+          <div class="notice warn">
+            ❓「すべての項目を入力してください」と表示された場合<br>
+            → 空欄になっている項目がないか確認してください
+          </div>
+          <div class="notice warn">
+            ❓「エラーが発生しました」と表示された場合<br>
+            → 合言葉が間違っている可能性があります<br>
+            → STEP1に戻って Channel SecretとAccess Tokenをコピーし直してください
+          </div>
+          <div class="notice warn">
+            ❓ 画面が動かない場合<br>
+            → ページを再読み込みしてもう一度試してください<br>
+            → それでもダメな場合はSNS DMへ
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <article class="guide-card fade-up">
+          <div class="step-num">⑤</div>
+          <h2>7日間の無料体験を開始する</h2>
+          <p>「次へ」ボタンを押すと決済画面が表示されます。</p>
+          <div class="mock">
+            <div class="mock-head">③ 7日間無料体験開始</div>
+            <div class="mock-body">
+              <p style="color:var(--text2);">7日間、完全無料。無料期間中の解約は費用が一切かかりません。</p>
+              <div class="mock-button" style="margin-top:16px;">7日間無料で始める<br>↑ このボタンを押す！</div>
+            </div>
+          </div>
+          <p style="margin-top:22px;">Paddleという決済会社の画面が開きます。</p>
+          <div class="mock">
+            <div class="mock-head">スマート予約Pro　スタンダードプラン 月額</div>
+            <div class="mock-body">
+              <div class="mock-label">メールアドレス</div>
+              <div class="mock-field">（自動入力されます）</div>
+              <div class="mock-label" style="margin-top:14px;">カード番号</div>
+              <div class="mock-field">1234　5678　9012　3456</div>
+              <div class="two-fields" style="margin-top:14px;">
+                <div><div class="mock-label">有効期限</div><div class="mock-field">MM / YY</div></div>
+                <div><div class="mock-label">セキュリティコード</div><div class="mock-field">CVV</div></div>
+              </div>
+              <div class="mock-button" style="margin-top:16px;">7日間無料で始める</div>
+            </div>
+          </div>
+          <div class="notice good">
+            🔒 カード情報について<br>
+            ・カード番号はPaddle社が管理します<br>
+            ・スマート予約Proはカード番号を一切見ることができません<br>
+            ・7日間は絶対に請求されません<br>
+            ・いつでも無料でキャンセルできます
+          </div>
+          <div class="pay-brands">
+            <span>✅ Visa</span>
+            <span>✅ Mastercard</span>
+            <span>✅ American Express</span>
+            <span>✅ その他</span>
+          </div>
+          <div class="mock">
+            <div class="mock-head">決済完了後</div>
+            <div class="mock-body">
+              <div class="mock-row selected">✅ 登録完了！<br>予約受付が起動しました</div>
+              <div class="mock-label">LINE Webhook URL:</div>
+              <div class="mock-field">https://....../webhook/あなたのID　[コピー]</div>
+            </div>
+          </div>
+          <div class="notice important">
+            📋 この「Webhook URL」をコピーしてメモ帳に貼り付けてください！<br>
+            次のSTEP3で使います。コピーしないと次に進めません。
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section bg">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <span class="eyebrow">確認チェックリスト</span>
+          <h2>STEP2の確認リスト</h2>
+          <p class="lead">全部チェックできたら次へ進んでください！</p>
+        </div>
+        <div class="checklist fade-up">
+          <button class="check-item" type="button" data-check-key="google-login">
+            <span class="box">□</span>
+            <span>Googleアカウントでログインした</span>
+          </button>
+          <button class="check-item" type="button" data-check-key="shop-info">
+            <span class="box">□</span>
+            <span>お店の情報を入力した</span>
+          </button>
+          <button class="check-item" type="button" data-check-key="trial-start">
+            <span class="box">□</span>
+            <span>無料体験を開始した</span>
+          </button>
+          <button class="check-item" type="button" data-check-key="webhook-memo">
+            <span class="box">□</span>
+            <span>Webhook URLをメモ帳に貼り付けた</span>
+          </button>
+          <div class="notice good">🎉 あと1STEPです！<br>Webhook URLのメモを持って最後のSTEPへ進んでください。</div>
+          <a class="next-button" id="nextButton" href="setup-webhook.html" aria-disabled="true">STEP 3へ進む →</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="help">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <span class="eyebrow">Troubleshooting</span>
+          <h2>困ったときは</h2>
+        </div>
+        <div class="faq-list fade-up">
+          <div class="faq-item">
+            <button class="faq-q" type="button"><span>Googleログインボタンが押せない</span><span>＋</span></button>
+            <div class="faq-a">
+              ブラウザのポップアップブロックが原因の可能性があります。
+              ブラウザのアドレスバー右側に「ポップアップがブロックされました」と表示されていれば、
+              それをクリックして「許可」を選んでください。
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" type="button"><span>「エラーが発生しました」と出る</span><span>＋</span></button>
+            <div class="faq-a">
+              以下を確認してください。<br>
+              ① Channel SecretとAccess Tokenが逆になっていないか<br>
+              ② 前後にスペースが入っていないか<br>
+              ③ STEP1からやり直してみる
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" type="button"><span>決済画面が開かない</span><span>＋</span></button>
+            <div class="faq-a">
+              ポップアップブロックが原因の場合があります。
+              ブラウザの設定でポップアップを許可してください。
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" type="button"><span>クレジットカードが使えない</span><span>＋</span></button>
+            <div class="faq-a">
+              Visa・Mastercard・American Expressに対応しています。
+              カード情報に間違いがないか確認してください。
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" type="button"><span>Webhook URLが表示されない</span><span>＋</span></button>
+            <div class="faq-a">
+              ダッシュボードからも確認できます。<br>
+              ① ダッシュボードを開く → /shop-dashboard.html<br>
+              ② 「連携情報」タブをクリック<br>
+              ③ Webhook URLをコピー
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <a href="/" class="brand">
+        <span class="brand-mark">⚡</span>
+        <span>スマート予約Pro</span>
+      </a>
+      <div class="footer-links">
+        <a href="/">トップページ</a>
+        <a href="/terms.html">利用規約</a>
+        <a href="/privacy.html">プライバシーポリシー</a>
+        <a href="/refund.html">返金ポリシー</a>
+        <a href="/tokusho.html">特定商取引法</a>
+      </div>
+      <div class="copyright">© 2026 スマート予約Pro</div>
+    </div>
+  </footer>
+
+  <script>
+    'use strict';
+
+    const storagePrefix = 'setup-register:';
+    const finalKeys = ['google-login', 'shop-info', 'trial-start', 'webhook-memo'];
+    const nav = document.getElementById('nav');
+    const nextButton = document.getElementById('nextButton');
+
+    function setNavShadow() {
+      nav.classList.toggle('scrolled', window.scrollY > 8);
+    }
+
+    function storageKey(key) {
+      return storagePrefix + key;
+    }
+
+    function isChecked(key) {
+      return localStorage.getItem(storageKey(key)) === '1';
+    }
+
+    function setChecked(button, checked) {
+      const key = button.dataset.checkKey;
+      const box = button.querySelector('.box');
+      button.classList.toggle('checked', checked);
+      button.setAttribute('aria-pressed', checked ? 'true' : 'false');
+      if (box) box.textContent = checked ? '✓' : '□';
+      localStorage.setItem(storageKey(key), checked ? '1' : '0');
+      updateNextButton();
+    }
+
+    function updateNextButton() {
+      const ready = finalKeys.every(isChecked);
+      nextButton.classList.toggle('enabled', ready);
+      nextButton.setAttribute('aria-disabled', ready ? 'false' : 'true');
+    }
+
+    document.querySelectorAll('.check-item[data-check-key]').forEach(button => {
+      setChecked(button, isChecked(button.dataset.checkKey));
+      button.addEventListener('click', () => {
+        setChecked(button, !button.classList.contains('checked'));
+      });
+    });
+
+    nextButton.addEventListener('click', event => {
+      if (!nextButton.classList.contains('enabled')) event.preventDefault();
+    });
+
+    document.querySelectorAll('.faq-q').forEach(button => {
+      button.addEventListener('click', () => {
+        const item = button.closest('.faq-item');
+        const mark = button.querySelector('span:last-child');
+        item.classList.toggle('open');
+        if (mark) mark.textContent = item.classList.contains('open') ? '−' : '＋';
+      });
+    });
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+    window.addEventListener('scroll', setNavShadow, { passive: true });
+    setNavShadow();
+    updateNextButton();
+  </script>
+</body>
+</html>

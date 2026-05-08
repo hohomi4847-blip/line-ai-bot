@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LINEの準備 | スマート予約Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&family=Noto+Serif+JP:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #06C755;
+      --green-dark: #05A847;
+      --green-soft: #F0FDF4;
+      --bg: #F7F7F5;
+      --white: #FFFFFF;
+      --text: #111827;
+      --text2: #4B5563;
+      --text3: #8A8F98;
+      --border: #E5E7EB;
+      --yellow: #FFFBEB;
+      --yellow-border: #FDE68A;
+      --red-soft: #FEF2F2;
+      --red-border: #FECACA;
+      --serif: 'Noto Serif JP', serif;
+      --shadow: 0 12px 34px rgba(17, 24, 39, 0.08);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Noto Sans JP', 'Helvetica Neue', Arial, sans-serif;
+      background: var(--white);
+      color: var(--text);
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      height: 68px;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid #E5E5E5;
+      transition: box-shadow 0.2s ease;
+    }
+    .nav.scrolled { box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08); }
+    .nav-inner {
+      max-width: 1120px;
+      height: 100%;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: #111;
+      color: var(--white);
+    }
+    .help-link {
+      color: var(--green-dark);
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .progress {
+      position: sticky;
+      top: 68px;
+      z-index: 90;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .progress-inner {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 18px 24px 16px;
+    }
+    .progress-track {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      position: relative;
+      align-items: start;
+      gap: 10px;
+    }
+    .progress-track::before {
+      content: '';
+      position: absolute;
+      top: 12px;
+      left: 16%;
+      right: 16%;
+      height: 3px;
+      background: var(--border);
+      border-radius: 999px;
+    }
+    .step-link {
+      position: relative;
+      display: grid;
+      justify-items: center;
+      gap: 6px;
+      color: var(--text3);
+      font-size: 12px;
+      font-weight: 800;
+      text-align: center;
+    }
+    .step-dot {
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--white);
+      border: 3px solid var(--border);
+      z-index: 1;
+    }
+    .step-link.active { color: var(--green-dark); }
+    .step-link.active .step-dot { background: var(--green); border-color: var(--green); color: var(--white); }
+    .step-name { color: var(--text); font-weight: 800; }
+
+    .hero {
+      padding: 178px 24px 84px;
+      background:
+        radial-gradient(circle at 18% 14%, rgba(6,199,85,0.14), transparent 34%),
+        linear-gradient(180deg, #FFFFFF 0%, #F1FFF6 100%);
+      text-align: center;
+    }
+    .wrap { max-width: 1120px; margin: 0 auto; }
+    .narrow { max-width: 780px; margin: 0 auto; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      border: 1px solid #BBF7D0;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.86);
+      color: var(--green-dark);
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 24px;
+    }
+    h1, h2, h3 { line-height: 1.35; letter-spacing: 0; }
+    h1, h2 { font-family: var(--serif); }
+    h1 { font-size: clamp(40px, 7vw, 68px); font-weight: 700; }
+    h2 { font-size: clamp(30px, 4.5vw, 46px); font-weight: 700; }
+    h3 { font-size: 20px; font-weight: 800; }
+    .hero-copy {
+      margin: 24px auto 0;
+      color: var(--text2);
+      font-size: 18px;
+      line-height: 2;
+    }
+    .time-badge {
+      display: inline-flex;
+      margin-top: 24px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: #111;
+      color: var(--white);
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .encourage {
+      max-width: 640px;
+      margin: 28px auto 0;
+      padding: 18px 22px;
+      border: 1px solid rgba(6,199,85,0.18);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.9);
+      color: var(--text2);
+      font-size: 15px;
+      line-height: 2;
+    }
+
+    .section { padding: 96px 24px; }
+    .section.bg { background: var(--bg); }
+    .section-head { text-align: center; max-width: 760px; margin: 0 auto 44px; }
+    .eyebrow {
+      display: inline-flex;
+      color: var(--green-dark);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .lead { color: var(--text2); font-size: 16px; line-height: 2; margin-top: 16px; }
+
+    .choice-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      max-width: 900px;
+      margin: 0 auto 26px;
+    }
+    .choice-card {
+      min-height: 170px;
+      padding: 28px;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      background: var(--white);
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+    .choice-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+    .choice-card.primary { border-color: rgba(6,199,85,0.42); }
+    .choice-title { font-size: 20px; font-weight: 800; line-height: 1.6; }
+    .choice-desc { color: var(--text2); font-size: 14px; margin-top: 10px; }
+    .plain-note {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 18px 22px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--white);
+      color: var(--text2);
+      font-size: 15px;
+    }
+
+    .guide-list { display: grid; gap: 34px; }
+    .guide-card {
+      padding: 32px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--white);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+    }
+    .guide-card h3 { margin-bottom: 12px; }
+    .guide-card p { color: var(--text2); font-size: 15px; line-height: 2; }
+    .big-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 56px;
+      margin-top: 20px;
+      padding: 0 26px;
+      border-radius: 999px;
+      background: var(--green);
+      color: var(--white);
+      font-weight: 800;
+      box-shadow: 0 12px 26px rgba(6,199,85,0.22);
+    }
+
+    .notice {
+      margin-top: 20px;
+      padding: 18px 20px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.9;
+    }
+    .notice.warn { background: var(--yellow); border: 1px solid var(--yellow-border); color: #92400E; }
+    .notice.good { background: var(--green-soft); border: 1px solid #BBF7D0; color: #166534; }
+    .notice.important { background: #FFF7F7; border: 1.5px solid var(--red-border); color: #991B1B; }
+
+    .mock {
+      margin-top: 20px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: #F9FAFB;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .mock-head {
+      padding: 14px 18px;
+      background: #111;
+      color: var(--white);
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .mock-body { padding: 22px; }
+    .mock-row {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--white);
+      margin-bottom: 12px;
+      font-size: 14px;
+      color: var(--text2);
+    }
+    .mock-row:last-child { margin-bottom: 0; }
+    .mock-row.selected { border-color: var(--green); background: var(--green-soft); color: var(--text); font-weight: 800; }
+    .mock-label {
+      color: var(--text3);
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    .mock-secret {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--white);
+      font-family: 'SF Mono', 'Consolas', monospace;
+      word-break: break-all;
+    }
+    .mock-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--white);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .input-list {
+      margin-top: 20px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: #FAFAFA;
+      padding: 22px;
+    }
+    .input-list-title { font-weight: 800; margin-bottom: 10px; }
+    .input-list li {
+      list-style: none;
+      padding: 10px 0;
+      border-top: 1px solid var(--border);
+      color: var(--text2);
+      font-size: 14px;
+    }
+
+    .part-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 34px 0 4px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: #111;
+      color: var(--white);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      width: 100%;
+      margin-top: 18px;
+      padding: 16px 18px;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      background: var(--white);
+      color: var(--text2);
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+    }
+    .check-item .box {
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: var(--white);
+      font-weight: 800;
+      line-height: 1;
+    }
+    .check-item.checked {
+      border-color: rgba(6,199,85,0.5);
+      background: var(--green-soft);
+      color: var(--text);
+      font-weight: 800;
+    }
+    .check-item.checked .box {
+      border-color: var(--green);
+      background: var(--green);
+      color: var(--white);
+    }
+
+    .checklist {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 28px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--white);
+      box-shadow: var(--shadow);
+    }
+    .next-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 56px;
+      margin-top: 24px;
+      border-radius: 999px;
+      background: var(--green);
+      color: var(--white);
+      font-size: 16px;
+      font-weight: 800;
+      opacity: 0.4;
+      pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    .next-button.enabled {
+      opacity: 1;
+      pointer-events: auto;
+      box-shadow: 0 12px 26px rgba(6,199,85,0.24);
+    }
+    .next-button.enabled:hover { transform: translateY(-2px); }
+
+    .faq-list {
+      max-width: 860px;
+      margin: 0 auto;
+      display: grid;
+      gap: 12px;
+    }
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--white);
+      overflow: hidden;
+    }
+    .faq-q {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      padding: 20px 22px;
+      border: none;
+      background: var(--white);
+      color: var(--text);
+      font-weight: 800;
+      text-align: left;
+      cursor: pointer;
+    }
+    .faq-q span:last-child { color: var(--green-dark); font-size: 20px; }
+    .faq-a {
+      display: none;
+      padding: 0 22px 22px;
+      color: var(--text2);
+      font-size: 14px;
+      line-height: 2;
+    }
+    .faq-item.open .faq-a { display: block; }
+
+    .footer {
+      background: #111;
+      color: var(--white);
+      padding: 48px 24px;
+    }
+    .footer-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .footer-links {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      color: rgba(255,255,255,0.72);
+      font-size: 13px;
+    }
+    .copyright {
+      width: 100%;
+      color: rgba(255,255,255,0.48);
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    .fade-up {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 760px) {
+      .nav { height: 62px; }
+      .nav-inner { padding: 0 16px; }
+      .brand span:last-child { font-size: 14px; }
+      .brand-mark { width: 32px; height: 32px; }
+      .help-link { font-size: 12px; }
+      .progress { top: 62px; }
+      .progress-inner { padding: 14px 12px 12px; }
+      .step-link { font-size: 10px; }
+      .step-name { display: block; font-size: 10px; }
+      .hero { padding: 152px 16px 64px; }
+      .hero-copy { font-size: 16px; }
+      .section { padding: 72px 16px; }
+      .choice-grid { grid-template-columns: 1fr; }
+      .choice-card, .guide-card, .checklist { padding: 22px; }
+      .mock-body { padding: 16px; }
+      .mock-secret { align-items: flex-start; flex-direction: column; }
+      .footer-inner { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a href="/" class="brand">
+        <span class="brand-mark">⚡</span>
+        <span>スマート予約Pro</span>
+      </a>
+      <a href="#help" class="help-link">困ったときは →</a>
+    </div>
+  </header>
+
+  <div class="progress" aria-label="設定ステップ">
+    <div class="progress-inner">
+      <div class="progress-track">
+        <a class="step-link active" href="#top" aria-current="step">
+          <span class="step-dot">●</span>
+          <span>STEP1<br><span class="step-name">LINEの準備</span></span>
+        </a>
+        <a class="step-link" href="setup-register.html">
+          <span class="step-dot">○</span>
+          <span>STEP2<br><span class="step-name">システム登録</span></span>
+        </a>
+        <a class="step-link" href="setup-webhook.html">
+          <span class="step-dot">○</span>
+          <span>STEP3<br><span class="step-name">LINE接続</span></span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <main id="top">
+    <section class="hero">
+      <div class="wrap fade-up">
+        <span class="badge">STEP 1 / 3</span>
+        <h1>LINEの準備をしましょう</h1>
+        <div class="hero-copy">
+          このページでやること：<br>
+          ✅ LINE公式アカウントを用意する<br>
+          ✅ 2つの「合言葉」をメモする
+        </div>
+        <div class="time-badge">⏱️ 所要時間：約15分</div>
+        <p class="encourage">
+          難しそうに見えますが、<br>
+          順番通りに進めるだけで大丈夫です😊<br>
+          わからなくなったら下の「困ったときは」を押してください。
+        </p>
+      </div>
+    </section>
+
+    <section class="section bg">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <span class="eyebrow">まず確認</span>
+          <h2>まず確認してください</h2>
+        </div>
+        <div class="choice-grid">
+          <button class="choice-card primary fade-up" type="button" data-scroll-target="get-keys">
+            <div class="choice-title">✅ LINE公式アカウントを<br>すでに持っている</div>
+            <p class="choice-desc">クリックすると「合言葉の取得」へ進みます。</p>
+          </button>
+          <button class="choice-card fade-up" type="button" data-scroll-target="create-account">
+            <div class="choice-title">📱 LINE公式アカウントを<br>まだ持っていない</div>
+            <p class="choice-desc">クリックすると「アカウント開設」へ進みます。</p>
+          </button>
+        </div>
+        <p class="plain-note fade-up">
+          「LINE公式アカウント」とは、お店専用のLINEアカウントのことです。
+          普段使っている個人のLINEとは別物です。
+        </p>
+      </div>
+    </section>
+
+    <section class="section" id="create-account">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <span class="eyebrow">アカウント開設</span>
+          <h2>LINE公式アカウントを作る</h2>
+          <p class="lead">無料で作れます。5分でできます。</p>
+        </div>
+
+        <div class="guide-list">
+          <article class="guide-card fade-up">
+            <h3>①　開設ページを開く</h3>
+            <p>下のボタンを押すと、LINE公式アカウントの登録ページが開きます。</p>
+            <a class="big-button" href="https://www.lycbiz.com/jp/signup/account-manager/" target="_blank" rel="noopener">📱 LINE公式アカウントを開設する →</a>
+            <div class="notice warn">
+              ⚠️ ここで注意！<br>
+              「LINE」で検索して出てくる個人用のLINEアプリではありません。
+              必ず上のボタンから進んでください。
+            </div>
+          </article>
+
+          <article class="guide-card fade-up">
+            <h3>②　アカウントの種類を選ぶ</h3>
+            <p>
+              登録画面でアカウントの種類を選ぶ画面が出ます。
+              「未認証アカウント」を選んでください。
+            </p>
+            <div class="mock" aria-label="アカウント種類の選択画面">
+              <div class="mock-head">アカウントの種類を選択</div>
+              <div class="mock-body">
+                <div class="mock-row selected">✅ 未認証アカウント（推奨）<br><span>無料・審査なし・すぐ始められる</span></div>
+                <div class="mock-row">□ 認証済みアカウント<br><span>審査あり・有料</span></div>
+              </div>
+            </div>
+            <div class="notice good">✅「未認証アカウント」を選んでください</div>
+          </article>
+
+          <article class="guide-card fade-up">
+            <h3>③　必要情報を入力する</h3>
+            <p>以下の情報を入力してください。</p>
+            <div class="input-list">
+              <div class="input-list-title">入力項目</div>
+              <ul>
+                <li>✏️ アカウント名 → お店の名前を入力</li>
+                <li>✏️ 業種 → お店の種類を選ぶ</li>
+                <li>✏️ メールアドレス → 連絡先メール</li>
+              </ul>
+            </div>
+            <button class="check-item" type="button" data-check-key="account-created">
+              <span class="box">□</span>
+              <span>LINE公式アカウントの開設が完了した</span>
+            </button>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section bg" id="get-keys">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <span class="eyebrow">合言葉の取得</span>
+          <h2>2つの「合言葉」を取得する</h2>
+          <p class="lead">
+            スマート予約ProとLINEを繋ぐために、2つの合言葉（パスワードのようなもの）が必要です。
+            コピー&amp;ペーストするだけなので難しくありません。
+          </p>
+        </div>
+        <div class="notice good fade-up narrow">
+          📋 これから取得するもの：<br>
+          ① 合言葉１：「Channel Secret」<br>
+          ② 合言葉２：「Channel Access Token」<br>
+          → 両方とも無料で取得できます
+        </div>
+
+        <div class="guide-list" style="margin-top:34px;">
+          <article class="guide-card fade-up">
+            <span class="part-title">合言葉１の取得</span>
+            <h3>合言葉１（Channel Secret）を取得する</h3>
+            <h3 style="margin-top:24px;">①　LINE Developersを開く</h3>
+            <p>下のボタンを押してください。LINE公式アカウントを作ったときと同じメールアドレス・パスワードでログインしてください。</p>
+            <a class="big-button" href="https://developers.line.biz/" target="_blank" rel="noopener">🔗 LINE Developers を開く →</a>
+
+            <h3 style="margin-top:34px;">②　プロバイダーを選ぶ</h3>
+            <p>ログインすると下のような画面が出ます。お店の名前が書いてある部分をクリックしてください。</p>
+            <div class="mock">
+              <div class="mock-head">LINE Developers</div>
+              <div class="mock-body">
+                <div class="mock-label">Providers</div>
+                <div class="mock-row selected">📁 あなたのお店の名前　←クリック！</div>
+              </div>
+            </div>
+
+            <h3 style="margin-top:34px;">③　チャネルを選ぶ</h3>
+            <p>お店の名前をクリックすると下のような画面が出ます。「Messaging API」と書かれた部分をクリックしてください。</p>
+            <div class="mock">
+              <div class="mock-head">あなたのお店の名前</div>
+              <div class="mock-body">
+                <div class="mock-row selected">📱 Messaging API　← クリック！<br><span>あなたのお店の名前</span></div>
+              </div>
+            </div>
+            <div class="notice warn">
+              ⚠️ この画面が出ない場合<br>
+              「Messaging API」が有効になっていない可能性があります。<br>
+              ① LINE Official Account Manager を開く → https://manager.line.biz/<br>
+              ② 設定 → Messaging API をクリック<br>
+              ③「Messaging APIを利用する」ボタンを押す<br>
+              ④ もう一度 LINE Developers に戻って確認
+            </div>
+
+            <h3 style="margin-top:34px;">④　合言葉１をコピーする</h3>
+            <p>
+              「チャネル基本設定」タブを開くと下のような画面が出ます。
+              「Channel Secret」の右にある「コピー」ボタンを押してください。
+            </p>
+            <div class="mock">
+              <div class="mock-head">チャネル基本設定　　Messaging API</div>
+              <div class="mock-body">
+                <div class="mock-label">Channel Secret</div>
+                <div class="mock-secret"><span>●●●●●●●●●●●●●●●●</span></div>
+                <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+                  <span class="mock-btn">表示する</span>
+                  <span class="mock-btn">コピー</span>
+                  <strong style="color:var(--green-dark);font-size:13px;">←ここを押す！</strong>
+                </div>
+              </div>
+            </div>
+            <div class="notice important">
+              📋 コピーしたら、すぐにメモ帳に貼り付けてください！<br>
+              スマートフォンの方：メモアプリを開いて貼り付け<br>
+              パソコンの方：メモ帳を開いて貼り付け<br>
+              画面を閉じると見えなくなります。
+            </div>
+            <button class="check-item" type="button" data-check-key="secret-saved">
+              <span class="box">□</span>
+              <span>合言葉１（Channel Secret）をメモ帳に貼り付けた</span>
+            </button>
+          </article>
+
+          <article class="guide-card fade-up">
+            <span class="part-title">合言葉２の取得</span>
+            <h3>合言葉２（Channel Access Token）を取得する</h3>
+            <h3 style="margin-top:24px;">①　Messaging APIタブを開く</h3>
+            <p>先ほどの画面の上にある「Messaging API」タブをクリックしてください。</p>
+            <div class="mock">
+              <div class="mock-head">タブの切り替え</div>
+              <div class="mock-body">
+                <div class="mock-row">チャネル基本設定　│　<strong style="color:var(--green-dark);">Messaging API ← ここをクリック</strong></div>
+              </div>
+            </div>
+
+            <h3 style="margin-top:34px;">②　合言葉２を発行する</h3>
+            <p>少し下にスクロールすると「チャネルアクセストークン」という項目があります。「発行」ボタンを押してください。</p>
+            <div class="mock">
+              <div class="mock-head">チャネルアクセストークン（長期）</div>
+              <div class="mock-body">
+                <div class="mock-row">（まだ発行されていません）</div>
+                <span class="mock-btn">発行</span>
+                <strong style="color:var(--green-dark);font-size:13px;"> ← このボタンを押す！</strong>
+              </div>
+            </div>
+            <div class="mock">
+              <div class="mock-head">発行後の画面</div>
+              <div class="mock-body">
+                <div class="mock-label">チャネルアクセストークン（長期）</div>
+                <div class="mock-secret"><span>eyJhbGciOiJIUzI1NiJ9...</span></div>
+                <div style="margin-top:12px;">
+                  <span class="mock-btn">コピー</span>
+                  <strong style="color:var(--green-dark);font-size:13px;"> ← このボタンを押す！</strong>
+                </div>
+              </div>
+            </div>
+            <div class="notice important">
+              📋 コピーしたら、すぐにメモ帳に貼り付けてください！<br>
+              合言葉１の下に貼り付けておくと便利です。
+            </div>
+            <button class="check-item" type="button" data-check-key="token-saved">
+              <span class="box">□</span>
+              <span>合言葉２（Access Token）をメモ帳に貼り付けた</span>
+            </button>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <span class="eyebrow">確認チェックリスト</span>
+          <h2>STEP1の確認リスト</h2>
+          <p class="lead">全部チェックできたら次へ進んでください！</p>
+        </div>
+        <div class="checklist fade-up">
+          <button class="check-item" type="button" data-check-key="final-account">
+            <span class="box">□</span>
+            <span>LINE公式アカウントを用意した</span>
+          </button>
+          <button class="check-item" type="button" data-check-key="final-secret">
+            <span class="box">□</span>
+            <span>合言葉１（Channel Secret）をメモした</span>
+          </button>
+          <button class="check-item" type="button" data-check-key="final-token">
+            <span class="box">□</span>
+            <span>合言葉２（Access Token）をメモした</span>
+          </button>
+          <a class="next-button" id="nextButton" href="setup-register.html" aria-disabled="true">STEP 2へ進む →</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section bg" id="help">
+      <div class="wrap">
+        <div class="section-head fade-up">
+          <span class="eyebrow">Troubleshooting</span>
+          <h2>困ったときは</h2>
+        </div>
+        <div class="faq-list fade-up">
+          <div class="faq-item">
+            <button class="faq-q" type="button"><span>「プロバイダー」や「チャネル」が見つからない</span><span>＋</span></button>
+            <div class="faq-a">
+              LINE Official Account ManagerでMessaging APIを有効にする必要があります。<br>
+              ① https://manager.line.biz/ を開く<br>
+              ② 設定 → Messaging API をクリック<br>
+              ③「Messaging APIを利用する」を押す<br>
+              ④ 再度 LINE Developers を開く
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" type="button"><span>ログインできない</span><span>＋</span></button>
+            <div class="faq-a">
+              LINE公式アカウントを作ったときのメールアドレス・パスワードでログインしてください。
+              個人のLINEアカウントとは別です。
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" type="button"><span>「発行」ボタンが見つからない</span><span>＋</span></button>
+            <div class="faq-a">
+              ページを少し下にスクロールしてください。
+              「チャネルアクセストークン（長期）」という項目の中にあります。
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" type="button"><span>それでも解決しない</span><span>＋</span></button>
+            <div class="faq-a">
+              SNSのDMでお気軽にご連絡ください。
+              画面のスクリーンショットを送っていただくと、より早く解決できます。
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <a href="/" class="brand">
+        <span class="brand-mark">⚡</span>
+        <span>スマート予約Pro</span>
+      </a>
+      <div class="footer-links">
+        <a href="/">トップページ</a>
+        <a href="/terms.html">利用規約</a>
+        <a href="/privacy.html">プライバシーポリシー</a>
+        <a href="/refund.html">返金ポリシー</a>
+        <a href="/tokusho.html">特定商取引法</a>
+      </div>
+      <div class="copyright">© 2026 スマート予約Pro</div>
+    </div>
+  </footer>
+
+  <script>
+    'use strict';
+
+    const storagePrefix = 'setup-line:';
+    const finalKeys = ['final-account', 'final-secret', 'final-token'];
+    const nav = document.getElementById('nav');
+    const nextButton = document.getElementById('nextButton');
+
+    function setNavShadow() {
+      nav.classList.toggle('scrolled', window.scrollY > 8);
+    }
+
+    function scrollToId(id) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function storageKey(key) {
+      return storagePrefix + key;
+    }
+
+    function isChecked(key) {
+      return localStorage.getItem(storageKey(key)) === '1';
+    }
+
+    function setChecked(button, checked) {
+      const key = button.dataset.checkKey;
+      const box = button.querySelector('.box');
+      button.classList.toggle('checked', checked);
+      button.setAttribute('aria-pressed', checked ? 'true' : 'false');
+      if (box) box.textContent = checked ? '✓' : '□';
+      localStorage.setItem(storageKey(key), checked ? '1' : '0');
+      updateNextButton();
+    }
+
+    function updateNextButton() {
+      const ready = finalKeys.every(isChecked);
+      nextButton.classList.toggle('enabled', ready);
+      nextButton.setAttribute('aria-disabled', ready ? 'false' : 'true');
+    }
+
+    document.querySelectorAll('[data-scroll-target]').forEach(button => {
+      button.addEventListener('click', () => scrollToId(button.dataset.scrollTarget));
+    });
+
+    document.querySelectorAll('.check-item[data-check-key]').forEach(button => {
+      setChecked(button, isChecked(button.dataset.checkKey));
+      button.addEventListener('click', () => {
+        setChecked(button, !button.classList.contains('checked'));
+      });
+    });
+
+    nextButton.addEventListener('click', event => {
+      if (!nextButton.classList.contains('enabled')) event.preventDefault();
+    });
+
+    document.querySelectorAll('.faq-q').forEach(button => {
+      button.addEventListener('click', () => {
+        const item = button.closest('.faq-item');
+        const mark = button.querySelector('span:last-child');
+        item.classList.toggle('open');
+        if (mark) mark.textContent = item.classList.contains('open') ? '−' : '＋';
+      });
+    });
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+    window.addEventListener('scroll', setNavShadow, { passive: true });
+    setNavShadow();
+    updateNextButton();
+  </script>
+</body>
+</html>
