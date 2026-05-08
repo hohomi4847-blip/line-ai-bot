@@ -11,16 +11,16 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --green:        #06C755;
-      --green-d:      #05A847;
+      --green:        #C9A84C;
+      --green-d:      #B8953F;
       --green-light:  #F0FDF4;
       --green-border: #BBF7D0;
-      --bg:           #F7F7F5;
+      --bg:           #F7F5F0;
       --white:        #FFFFFF;
-      --text:         #111827;
-      --text2:        #4B5563;
-      --text3:        #9CA3AF;
-      --border:       #E5E7EB;
+      --text:         #1C1710;
+      --text2:        #888880;
+      --text3:        #888880;
+      --border:       #F0EBE0;
       --radius:       14px;
       --shadow-sm:    0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
       --shadow-md:    0 4px 20px rgba(0,0,0,0.06);
@@ -28,8 +28,11 @@
     }
 
     body {
-      font-family: 'Noto Sans JP', 'Helvetica Neue', Arial, sans-serif;
-      background: var(--bg); color: var(--text);
+      font-family: sans-serif;
+      font-size: 14px;
+      color: #1C1710;
+      line-height: 1.7;
+      background: #F7F5F0;
       -webkit-font-smoothing: antialiased;
       min-height: 100vh;
     }
@@ -69,61 +72,55 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: #111;
-      color: white;
-      font-size: 15px;
+      background: #1C1710;
+      color: #ffffff;
+      font-size: 13px;
       font-weight: 700;
-      padding: 14px 32px;
-      border-radius: 999px;
+      padding: 8px 16px;
+      border-radius: 6px;
       text-decoration: none;
       border: none;
       cursor: pointer;
       transition: background 0.15s;
       box-shadow: none;
     }
-    .block-btn:hover { background: #333; }
+    .block-btn:hover { background: #1C1710; }
 
     /* ── HEADER ─────────────────────────────────────────── */
     .dash-header {
       background: #ffffff;
-      color: #111;
+      color: #1C1710;
       padding: 0 28px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 64px;
+      height: 72px;
       position: sticky;
       top: 0;
       z-index: 100;
-      border-bottom: 1px solid var(--border);
-      box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+      border-bottom: 1px solid #F0EBE0;
+      box-shadow: none;
     }
     .dash-header-left { display: flex; align-items: center; gap: 12px; }
-    .dash-logo {
-      width: 32px; height: 32px; background: #111;
-      border-radius: 10px; display: flex; align-items: center;
-      justify-content: center; font-size: 16px; flex-shrink: 0;
-    }
-    .dash-shop-name { font-size: 16px; font-weight: 700; color: #111; letter-spacing: -0.02em; font-family: var(--serif); }
     .dash-header-right { display: flex; align-items: center; gap: 16px; }
-    .dash-date { font-size: 13px; color: #9CA3AF; }
+    .dash-date { font-size: 12px; color: #888; }
     .dash-logout {
-      background: #F3F4F6;
-      border: 1px solid var(--border);
-      color: #555;
+      background: white;
+      border: 1px solid #E2DDD4;
+      color: #1C1710;
       padding: 7px 16px;
-      border-radius: 999px;
+      border-radius: 6px;
       text-decoration: none;
       font-size: 13px;
       font-weight: 600;
       transition: background 0.15s, color 0.15s;
     }
-    .dash-logout:hover { background: #E5E7EB; color: #111; }
+    .dash-logout:hover { background: #F7F7F5; color: #1C1710; }
 
     /* ── STATUS STRIP ───────────────────────────────────── */
     .status-strip {
-      background: #F7F7F5;
-      border-bottom: 1px solid var(--border);
+      background: #F7F5F0;
+      border-bottom: 1px solid #F0EBE0;
       padding: 10px 28px;
     }
     .status-inner { max-width: 900px; margin: 0 auto; }
@@ -140,9 +137,9 @@
 
     /* ── TAB NAVIGATION ─────────────────────────────────── */
     .tab-nav {
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
-      padding: 0 28px;
+      background: #ffffff;
+      border-bottom: 1px solid #F0EBE0;
+      padding: 0 24px;
     }
     .tab-nav-inner {
       max-width: 900px; margin: 0 auto;
@@ -152,54 +149,58 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      padding: 16px 18px;
-      background: none;
+      padding: 14px 16px;
+      background: transparent;
       border: none;
-      border-bottom: 2.5px solid transparent;
+      border-bottom: 2px solid transparent;
       font-size: 13px;
-      font-weight: 700;
-      color: var(--text3);
+      font-weight: 500;
+      color: #888880;
       cursor: pointer;
       white-space: nowrap;
       transition: color 0.15s, border-color 0.15s;
-      font-family: inherit;
+      font-family: sans-serif;
       margin-bottom: -1px;
-      letter-spacing: 0.01em;
+      letter-spacing: 0.5px;
     }
-    .tab-btn:hover { color: var(--text2); }
-    .tab-btn.tab-active { color: #111; border-bottom-color: #111; }
+    .tab-btn:hover { color: #1C1710; }
+    .tab-btn.tab-active {
+      color: #1C1710;
+      font-weight: 600;
+      border-bottom-color: #C9A84C;
+    }
 
     /* ── MAIN CONTAINER ─────────────────────────────────── */
-    .dash-body { max-width: 900px; margin: 0 auto; padding: 28px; }
+    .dash-body { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
 
     /* ── CARDS ──────────────────────────────────────────── */
     .card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 28px;
-      box-shadow: var(--shadow-sm);
+      background: #ffffff;
+      border: 1px solid #F0EBE0;
+      border-radius: 12px;
+      padding: 24px 28px;
+      box-shadow: 0 1px 4px rgba(28,23,16,0.06);
       margin-bottom: 20px;
     }
     .card-title {
-      font-size: 15px;
-      font-weight: 800;
-      color: var(--text);
-      margin-bottom: 20px;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 16px;
+      font-weight: 400;
+      color: #1C1710;
+      letter-spacing: 1px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #F0EBE0;
+      margin-bottom: 16px;
       display: flex;
       align-items: center;
       gap: 8px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--border);
-      font-family: var(--serif);
-      letter-spacing: -0.01em;
     }
 
     /* ── INTEGRATION INFO ───────────────────────────────── */
     .info-row {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
+      background: #FAFAF8;
+      border: 1px solid #F0EBE0;
+      border-radius: 6px;
       padding: 16px;
       margin-bottom: 14px;
     }
@@ -207,7 +208,7 @@
     .info-label {
       font-size: 11px;
       font-weight: 800;
-      color: var(--text3);
+      color: #888880;
       margin-bottom: 10px;
       text-transform: uppercase;
       letter-spacing: 0.06em;
@@ -216,50 +217,80 @@
       display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
     }
     .info-row code {
-      flex: 1; font-size: 13px; color: var(--text); word-break: break-all;
+      flex: 1;
+      font-size: 12px;
+      color: #888880;
+      word-break: break-all;
       font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
-      background: var(--white); padding: 7px 11px; border-radius: 7px;
-      border: 1px solid var(--border);
+      background: #FAFAF8;
+      padding: 10px 14px;
+      border-radius: 6px;
+      border: 1px solid #F0EBE0;
     }
     .copy-btn {
-      background: #111;
+      background: #1C1710;
       border: none;
-      color: white;
-      padding: 7px 14px;
-      border-radius: 999px;
+      color: #ffffff;
+      padding: 8px 16px;
+      border-radius: 6px;
       cursor: pointer;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
       white-space: nowrap;
       transition: background 0.15s;
       font-family: inherit;
       flex-shrink: 0;
     }
-    .copy-btn:hover { background: #333; }
-    .copy-btn:active { background: #333; }
+    .copy-btn:hover { background: #1C1710; }
+    .copy-btn:active { background: #1C1710; }
 
     /* ── RESERVATION TABLE ──────────────────────────────── */
     .res-table { width: 100%; border-collapse: collapse; font-size: 14px; }
     .res-table th {
-      padding: 10px 12px; text-align: left; font-size: 12px;
-      color: var(--text3); font-weight: 600;
-      background: var(--bg); border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 12px;
+      color: #888880;
+      font-weight: 400;
+      letter-spacing: 0.5px;
+      background: #FAFAF8;
+      border-bottom: 1px solid #F7F5F0;
     }
-    .res-table td { padding: 12px 12px; border-bottom: 1px solid var(--border); color: var(--text2); }
+    .res-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #F7F5F0;
+      color: #1C1710;
+      font-size: 14px;
+    }
     .res-table tbody tr:last-child td { border-bottom: none; }
     .res-table tbody tr:hover td { background: #FAFFF9; }
     .s-confirmed {
-      display: inline-block; background: var(--green-light); color: #16a34a;
-      padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;
+      display: inline-block;
+      background: #F0F7EE;
+      color: #3A7D44;
+      border-radius: 4px;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 600;
     }
     .s-canceled {
-      display: inline-block; background: var(--bg); color: var(--text3);
-      padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;
-      border: 1px solid var(--border);
+      display: inline-block;
+      background: #FAFAF8;
+      color: #888880;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid #F0EBE0;
     }
     .cancel-btn {
-      background: none; border: 1.5px solid var(--border); color: var(--text3);
-      padding: 5px 12px; border-radius: 7px; cursor: pointer; font-size: 12px;
+      background: white;
+      border: 1px solid #E2DDD4;
+      color: #888880;
+      border-radius: 6px;
+      padding: 4px 12px;
+      cursor: pointer;
+      font-size: 12px;
       transition: border-color 0.15s, color 0.15s; font-family: inherit;
     }
     .cancel-btn:hover:not(:disabled) { border-color: #EF4444; color: #EF4444; }
@@ -344,29 +375,31 @@
 
     /* ── BUTTONS ────────────────────────────────────────── */
     .btn {
-      padding: 11px 20px; border: none; border-radius: 9px;
-      font-size: 14px; font-weight: 700; cursor: pointer;
+      background: #1C1710;
+      color: #ffffff;
+      padding: 8px 16px; border: none; border-radius: 6px;
+      font-size: 13px; font-weight: 700; cursor: pointer;
       font-family: inherit; transition: background 0.15s, opacity 0.15s;
       width: 100%; margin-top: 10px;
     }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-green {
-      background: #111;
-      color: white;
+      background: #1C1710;
+      color: #ffffff;
       box-shadow: none;
     }
     .btn-green:hover:not(:disabled) {
-      background: #333;
+      background: #1C1710;
     }
     .btn-outline {
       background: var(--white);
-      color: #111;
+      color: #1C1710;
       border: 1.5px solid var(--border);
       margin-top: 8px;
     }
     .btn-outline:hover:not(:disabled) {
       background: var(--bg);
-      border-color: #111;
+      border-color: #C9A84C;
     }
 
     /* ── TOAST ──────────────────────────────────────────── */
@@ -388,47 +421,48 @@
 
     /* ── ANALYTICS ─────────────────────────────────────── */
     .savings-card {
-      background: #111;
-      color: white;
-      border-radius: 18px;
-      padding: 32px;
-      margin-bottom: 16px;
+      background: #ffffff;
+      color: #1C1710;
+      border: 1px solid #F0EBE0;
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 20px;
       text-align: center;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      box-shadow: 0 1px 4px rgba(28,23,16,0.06);
     }
-    .savings-title { font-size: 15px; font-weight: 600; opacity: 0.9; margin-bottom: 8px; }
+    .savings-title { font-size: 15px; font-weight: 600; color: #888880; margin-bottom: 8px; }
     .savings-amount {
       font-size: 44px;
       font-weight: 800;
       letter-spacing: -0.03em;
       margin-bottom: 4px;
       font-family: var(--serif);
-      color: #06C755;
+      color: #1C1710;
     }
-    .savings-desc { font-size: 12px; opacity: 0.8; }
+    .savings-desc { font-size: 12px; color: #888880; }
     .ana-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
     .ana-card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 22px;
+      background: #ffffff;
+      border: 1px solid #F0EBE0;
+      border-radius: 12px;
+      padding: 24px 28px;
       text-align: center;
-      box-shadow: var(--shadow-sm);
+      box-shadow: 0 1px 4px rgba(28,23,16,0.06);
     }
-    .ana-label { font-size: 12px; color: var(--text3); font-weight: 500; margin-bottom: 6px; }
+    .ana-label { font-size: 12px; color: #888880; font-weight: 500; margin-bottom: 6px; }
     .ana-value {
       font-size: 30px;
       font-weight: 800;
-      color: var(--text);
+      color: #1C1710;
       letter-spacing: -0.02em;
       font-family: var(--serif);
     }
     .ana-growth { font-size: 12px; margin-top: 4px; font-weight: 600; }
     .rank-section { margin-bottom: 20px; }
     .rank-section:last-child { margin-bottom: 0; }
-    .rank-title { font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 8px; }
+    .rank-title { font-size: 13px; font-weight: 600; color: #888880; margin-bottom: 8px; }
     .rank-list { padding-left: 20px; }
-    .rank-list li { font-size: 14px; color: var(--text); margin-bottom: 4px; }
+    .rank-list li { font-size: 14px; color: #1C1710; margin-bottom: 4px; }
 
     /* ── DIAGNOSTICS ─────────────────────────────────────── */
     .diag-summary {
@@ -475,10 +509,10 @@
       .dash-header { padding: 0 16px; }
       .dash-date { display: none; }
       .status-strip { padding: 8px 16px; }
-      .tab-nav { padding: 0 16px; }
-      .tab-btn { padding: 12px 12px; font-size: 13px; }
+      .tab-nav { padding: 0 24px; }
+      .tab-btn { padding: 14px 16px; font-size: 12px; }
       .dash-body { padding: 16px; }
-      .card { padding: 18px; }
+      .card { padding: 16px 18px; }
       .hours-row { grid-template-columns: 60px 1fr 1fr; }
       .hours-row .closed-label { grid-column: 1 / -1; }
       .menu-item { grid-template-columns: 1fr 80px 38px; }
@@ -527,20 +561,32 @@
   gap: 12px; margin-bottom: 8px;
 }
 .segment-card {
-  border: 1px solid var(--border); border-radius: 10px;
-  padding: 16px; position: relative; overflow: hidden;
+  background: #FAFAF8;
+  border: 1px solid #F0EBE0;
+  border-radius: 10px;
+  padding: 16px 20px;
+  position: relative;
+  overflow: hidden;
 }
 .segment-card::before {
-  content: ''; position: absolute; top: 0; left: 0;
-  width: 4px; height: 100%; border-radius: 10px 0 0 10px;
+  content: none;
 }
-.segment-vip::before    { background: #F59E0B; }
-.segment-repeat::before { background: var(--green); }
-.segment-new::before    { background: #3B82F6; }
-.segment-sleep::before  { background: #9CA3AF; }
-.segment-icon { font-size: 20px; margin-bottom: 6px; }
-.segment-label { font-size: 12px; color: var(--text3); font-weight: 600; margin-bottom: 4px; }
-.segment-count { font-size: 24px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; }
+.segment-vip { border-left: 3px solid #C9A84C; }
+.segment-new { border-left: 3px solid #3A7D44; }
+.segment-icon { display: none; }
+.segment-label {
+  font-size: 11px;
+  color: #888880;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+.segment-count {
+  font-size: 28px;
+  font-weight: 300;
+  color: #1C1710;
+  letter-spacing: 0;
+}
 .segment-desc { font-size: 11px; color: var(--text2); margin-top: 4px; line-height: 1.5; }
 .segment-alert {
   margin-top: 12px; padding: 10px 12px;
@@ -549,20 +595,24 @@
   display: flex; align-items: flex-start; gap: 6px; line-height: 1.5;
 }
 
-.advice-list { display: grid; gap: 10px; }
+.advice-list { display: grid; gap: 0; }
 .advice-item {
   display: flex; gap: 12px; align-items: flex-start;
-  padding: 14px 16px; border: 1px solid var(--border);
-  border-radius: 10px; background: var(--white);
+  padding: 14px 0;
+  border: 0;
+  border-bottom: 1px solid #F7F5F0;
+  border-radius: 0;
+  background: transparent;
 }
+.advice-item:last-child { border-bottom: none; }
 .advice-dot {
-  width: 10px; height: 10px; border-radius: 50%;
+  width: 8px; height: 8px; border-radius: 50%;
   flex-shrink: 0; margin-top: 4px;
 }
 .advice-dot-red    { background: #EF4444; }
 .advice-dot-yellow { background: #F59E0B; }
 .advice-dot-green  { background: var(--green); }
-.advice-text { font-size: 13px; color: var(--text); line-height: 1.6; }
+.advice-text { font-size: 14px; color: #1C1710; line-height: 1.7; }
 .advice-text strong { color: var(--text); font-weight: 700; }
 .advice-loading {
   text-align: center; padding: 32px; color: var(--text3); font-size: 14px;
@@ -588,7 +638,6 @@
 <!-- ══ PAYMENT REQUIRED SCREEN ══════════════════════════ -->
 <div id="paymentScreen" class="full-screen" style="display:none;">
   <div class="block-card">
-    <div class="block-icon">💳</div>
     <h2 class="block-title">お支払いが必要です</h2>
     <p class="block-desc">サービスをご利用いただくには、サブスクリプションのお申し込みが必要です。30日間無料でお試しいただけます。</p>
     <a href="/" class="block-btn">プランを確認する →</a>
@@ -598,7 +647,6 @@
 <!-- ══ EXPIRED SCREEN ════════════════════════════════════ -->
 <div id="expiredScreen" class="full-screen" style="display:none;">
   <div class="block-card">
-    <div class="block-icon">⏰</div>
     <h2 class="block-title">サブスクリプションが<br>期限切れです</h2>
     <p class="block-desc">ご契約のプランが期限切れになりました。引き続きご利用いただくには更新が必要です。</p>
     <a href="/" class="block-btn">プランを更新する →</a>
@@ -611,14 +659,54 @@
   <!-- Header -->
   <header class="dash-header">
     <div class="dash-header-left">
-      <div class="dash-logo" style="font-size:18px;">⚡</div>
-      <span class="dash-shop-name" id="shopNameHeader"></span>
+      <a href="/" style="text-decoration:none; display:flex; align-items:center; gap:14px;">
+        <div style="
+          width: 40px;
+          height: 40px;
+          border: 2px solid #C9A84C;
+          border-radius: 5px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          background: white;
+        ">
+          <span style="
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 20px;
+            color: #1C1710;
+            font-weight: 400;
+            line-height: 1;
+          ">予</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:3px;">
+          <span style="
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 17px;
+            color: #1C1710;
+            letter-spacing: 3px;
+            font-weight: 400;
+            line-height: 1;
+          ">スマート予約</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <div style="height:1px; width:32px; background:#C9A84C; opacity:0.7;"></div>
+            <span style="
+              font-family: sans-serif;
+              font-size: 10px;
+              font-weight: 700;
+              color: #C9A84C;
+              letter-spacing: 4px;
+            ">Pro</span>
+          </div>
+        </div>
+      </a>
+      <span id="shopNameHeader" style="display:none;"></span>
     </div>
     <div class="dash-header-right">
       <span class="dash-date" id="todayDate"></span>
-      <a href="/" style="font-size:13px;color:#9CA3AF;text-decoration:none;font-weight:600;
+      <a href="/" style="font-size:13px;color:#888880;text-decoration:none;font-weight:600;
    padding:7px 14px;border-radius:999px;transition:background 0.15s;"
-   onmouseover="this.style.background='#F3F4F6'"
+   onmouseover="this.style.background='#F7F5F0'"
    onmouseout="this.style.background='transparent'">
   ← トップ
 </a>
@@ -637,22 +725,22 @@
   <div class="tab-nav">
     <div class="tab-nav-inner">
       <button class="tab-btn tab-active" data-tab="reservations" onclick="switchTab('reservations')">
-        📅 予約一覧
+        予約一覧
       </button>
       <button class="tab-btn" data-tab="integration" onclick="switchTab('integration')">
-        🔗 連携情報
+        連携情報
       </button>
       <button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">
-        ⚙️ 店舗設定
+        店舗設定
       </button>
       <button class="tab-btn" data-tab="diagnostics" onclick="switchTab('diagnostics')">
-        ✅ 設定チェック
+        設定チェック
       </button>
       <button class="tab-btn" data-tab="analytics" onclick="switchTab('analytics')">
-        📊 経営分析
+        経営分析
       </button>
       <button class="tab-btn" data-tab="cartes" onclick="switchTab('cartes')">
-        👤 顧客カルテ
+        顧客カルテ
       </button>
     </div>
   </div>
@@ -663,10 +751,9 @@
     <!-- ── Tab 1: Reservations ── -->
     <div id="tab-reservations" class="tab-content">
       <div class="card">
-        <div class="card-title">📅 予約一覧</div>
+        <div class="card-title">予約一覧</div>
         <div id="reservationList">
           <div class="empty-state">
-            <div class="empty-state-icon">📋</div>
             読み込み中...
           </div>
         </div>
@@ -676,7 +763,7 @@
     <!-- ── Tab 2: Integration ── -->
     <div id="tab-integration" class="tab-content" style="display:none;">
       <div class="card">
-        <div class="card-title">🔗 連携情報</div>
+        <div class="card-title">連携情報</div>
         <div class="info-row">
           <div class="info-label">LINE Webhook URL（LINEデベロッパーコンソールに設定）</div>
           <div class="info-code-wrap">
@@ -694,7 +781,7 @@
       </div>
 
       <div class="card">
-        <div class="card-title">📅 Googleカレンダー連携手順</div>
+        <div class="card-title">Googleカレンダー連携手順</div>
         <ol style="padding-left:20px;line-height:2.0;font-size:14px;color:var(--text2);">
           <li>上記の「Googleカレンダー連携URL」をコピーします。</li>
           <li><a href="https://calendar.google.com" target="_blank" rel="noopener" style="color:var(--green);font-weight:600;">Google カレンダー</a> を開きます。</li>
@@ -707,7 +794,7 @@
       </div>
 
       <div class="card">
-        <div class="card-title">📖 初期設定・使い方ガイド</div>
+        <div class="card-title">初期設定・使い方ガイド</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);
                     gap:12px;">
           <a href="/setup-line.html"
@@ -717,7 +804,6 @@
                     transition:background 0.15s;"
              onmouseover="this.style.background='#F0FDF4'"
              onmouseout="this.style.background='var(--bg)'">
-            <div style="font-size:20px;margin-bottom:8px;">📱</div>
             <div style="font-weight:800;font-size:13px;margin-bottom:4px;">
               STEP1: LINEの準備
             </div>
@@ -732,7 +818,6 @@
                     transition:background 0.15s;"
              onmouseover="this.style.background='#F0FDF4'"
              onmouseout="this.style.background='var(--bg)'">
-            <div style="font-size:20px;margin-bottom:8px;">⚙️</div>
             <div style="font-weight:800;font-size:13px;margin-bottom:4px;">
               STEP2: システム登録
             </div>
@@ -747,7 +832,6 @@
                     transition:background 0.15s;"
              onmouseover="this.style.background='#F0FDF4'"
              onmouseout="this.style.background='var(--bg)'">
-            <div style="font-size:20px;margin-bottom:8px;">🔗</div>
             <div style="font-weight:800;font-size:13px;margin-bottom:4px;">
               STEP3: LINE接続
             </div>
@@ -764,7 +848,7 @@
 
       <!-- Basic info -->
       <div class="card">
-        <div class="card-title">🏪 店舗基本情報</div>
+        <div class="card-title">店舗基本情報</div>
         <div class="form-group">
           <label>店舗紹介文（自動応答の案内に使用します）</label>
           <textarea id="shopDescription" placeholder="例：駅から徒歩3分の美容室です。経験豊富なスタッフが丁寧に対応します。"></textarea>
@@ -788,36 +872,36 @@
           <span class="toggle-label">予約完了後に Google クチコミをリクエストする</span>
         </div>
         <button class="btn btn-green" id="saveBasicBtn" onclick="saveBasicInfo()" style="margin-top:20px;">保存する</button>
-        <div class="toast toast-ok"  id="basicOk">✅ 保存しました！</div>
-        <div class="toast toast-err" id="basicErr">❌ 保存に失敗しました。もう一度お試しください。</div>
+        <div class="toast toast-ok"  id="basicOk">保存しました！</div>
+        <div class="toast toast-err" id="basicErr">保存に失敗しました。もう一度お試しください。</div>
       </div>
 
       <!-- Business hours -->
       <div class="card">
-        <div class="card-title">🕐 営業時間設定</div>
+        <div class="card-title">営業時間設定</div>
         <div id="hoursGrid"></div>
         <button class="btn btn-green" id="saveHoursBtn" onclick="saveHours()" style="margin-top:16px;">営業時間を保存</button>
-        <div class="toast toast-ok"  id="hoursOk">✅ 保存しました！</div>
-        <div class="toast toast-err" id="hoursErr">❌ 保存に失敗しました。</div>
+        <div class="toast toast-ok"  id="hoursOk">保存しました！</div>
+        <div class="toast toast-err" id="hoursErr">保存に失敗しました。</div>
       </div>
 
       <!-- Menu -->
       <div class="card">
-        <div class="card-title">📋 メニュー・料金設定</div>
+        <div class="card-title">メニュー・料金設定</div>
         <div id="menuItems"></div>
         <button class="btn btn-outline" onclick="addMenuItem()" style="margin-top:4px;">＋ メニューを追加</button>
         <button class="btn btn-green" id="saveMenuBtn" onclick="saveMenu()">メニューを保存</button>
-        <div class="toast toast-ok"  id="menuOk">✅ 保存しました！</div>
-        <div class="toast toast-err" id="menuErr">❌ 保存に失敗しました。</div>
+        <div class="toast toast-ok"  id="menuOk">保存しました！</div>
+        <div class="toast toast-err" id="menuErr">保存に失敗しました。</div>
       </div>
     </div>
 
     <!-- ── Tab 4: Diagnostics ── -->
     <div id="tab-diagnostics" class="tab-content" style="display:none;">
       <div class="card">
-        <div class="card-title">✅ 設定チェック</div>
+        <div class="card-title">設定チェック</div>
         <div id="diagnosticsContainer">
-          <div class="empty-state"><div class="empty-state-icon">✅</div>読み込み中...</div>
+          <div class="empty-state">読み込み中...</div>
         </div>
         <button class="btn btn-outline" onclick="loadDiagnostics()" style="margin-top:16px;">再チェック</button>
       </div>
@@ -853,7 +937,7 @@
 
       <!-- ── 강화 1: 6개월 트렌드 ── -->
       <div class="card">
-        <div class="card-title">📈 6ヶ月トレンド</div>
+        <div class="card-title">6ヶ月トレンド</div>
         <div id="trendContent">
           <div class="advice-loading">
             <div class="spinner"></div>
@@ -864,7 +948,7 @@
 
       <!-- ── 강화 2: 고객 세그먼트 ── -->
       <div class="card">
-        <div class="card-title">👥 顧客セグメント分析</div>
+        <div class="card-title">顧客セグメント分析</div>
         <div id="segmentContent">
           <div class="advice-loading">
             <div class="spinner"></div>
@@ -875,7 +959,7 @@
 
       <!-- ── 강화 3: AI 경영 어드바이스 ── -->
       <div class="card">
-        <div class="card-title">💡 今月の経営アドバイス
+        <div class="card-title">今月の経営アドバイス
           <span style="font-size:11px;font-weight:500;color:var(--text3);margin-left:auto;">
             AIが予約データを分析して自動生成
           </span>
@@ -890,7 +974,7 @@
 
       <!-- 인기 랭킹 (기존 유지) -->
       <div class="card">
-        <div class="card-title">🏆 人気ランキング（今月）</div>
+        <div class="card-title">人気ランキング（今月）</div>
         <div class="rank-section">
           <div class="rank-title">メニュー TOP3</div>
           <ol class="rank-list" id="rankMenus"></ol>
@@ -910,9 +994,9 @@
     <!-- ── Tab 6: Customer Cartes ── -->
     <div id="tab-cartes" class="tab-content" style="display:none;">
       <div class="card">
-        <div class="card-title">👤 顧客カルテ</div>
+        <div class="card-title">顧客カルテ</div>
         <div id="cartesContainer">
-          <div class="empty-state"><div class="empty-state-icon">👤</div>読み込み中...</div>
+          <div class="empty-state">読み込み中...</div>
         </div>
       </div>
     </div>
