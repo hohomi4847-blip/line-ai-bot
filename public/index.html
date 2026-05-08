@@ -61,24 +61,6 @@
       justify-content: space-between;
       gap: 24px;
     }
-    .logo {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      font-family: var(--serif);
-      font-weight: 700;
-      font-size: 18px;
-      white-space: nowrap;
-    }
-    .logo-mark {
-      width: 36px;
-      height: 36px;
-      border-radius: 12px;
-      background: #111;
-      color: #fff;
-      display: grid;
-      place-items: center;
-    }
     .nav-links { display: flex; align-items: center; gap: 22px; font-size: 14px; color: #555; }
     .nav-links a:hover { color: #000; }
     .nav-cta, .btn-primary {
@@ -427,8 +409,7 @@
     }
     @media (max-width: 680px) {
       section, .section { padding: 78px 18px; }
-      .nav-inner { height: 64px; padding: 0 16px; }
-      .logo { font-size: 15px; }
+      .nav-inner { height: 70px; padding: 0 16px; }
       .nav-cta { padding: 8px 13px; font-size: 13px; }
       .hero { padding-top: 110px; }
       .counters, .cards, .impact-grid, .feature-list, .ba-grid, .flow-grid, .svc-grid, .svc-grid.option { grid-template-columns: 1fr; }
@@ -455,7 +436,47 @@
 <body>
   <nav class="navbar" id="navbar">
     <div class="nav-inner">
-      <a href="/" class="logo"><span class="logo-mark">⚡</span><span>スマート予約Pro</span></a>
+      <a href="/" class="nav-logo" style="text-decoration:none; display:flex; align-items:center; gap:14px;">
+        <div style="
+          width: 44px;
+          height: 44px;
+          border: 2px solid #C9A84C;
+          border-radius: 5px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          background: white;
+        ">
+          <span style="
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 22px;
+            color: #1C1710;
+            font-weight: 400;
+            line-height: 1;
+          ">予</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <span style="
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 20px;
+            color: #1C1710;
+            letter-spacing: 3px;
+            font-weight: 400;
+            line-height: 1;
+          ">スマート予約</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="height:1px; width:40px; background:#C9A84C; opacity:0.7;"></div>
+            <span style="
+              font-family: sans-serif;
+              font-size: 11px;
+              font-weight: 700;
+              color: #C9A84C;
+              letter-spacing: 5px;
+            ">Pro</span>
+          </div>
+        </div>
+      </a>
       <div class="nav-links">
         <a href="/guide.html">使い方</a>
         <a href="/services.html">制作代行</a>
@@ -1877,7 +1898,49 @@
   </section>
 
   <footer>
-    <div class="logo" style="justify-content:center;"><span class="logo-mark">⚡</span><span>スマート予約Pro</span></div>
+    <div style="display:flex;justify-content:center;margin-bottom:18px;">
+      <a href="/" class="nav-logo" style="text-decoration:none; display:flex; align-items:center; gap:14px;">
+        <div style="
+          width: 44px;
+          height: 44px;
+          border: 2px solid #C9A84C;
+          border-radius: 5px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          background: white;
+        ">
+          <span style="
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 22px;
+            color: #1C1710;
+            font-weight: 400;
+            line-height: 1;
+          ">予</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <span style="
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 20px;
+            color: #1C1710;
+            letter-spacing: 3px;
+            font-weight: 400;
+            line-height: 1;
+          ">スマート予約</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="height:1px; width:40px; background:#C9A84C; opacity:0.7;"></div>
+            <span style="
+              font-family: sans-serif;
+              font-size: 11px;
+              font-weight: 700;
+              color: #C9A84C;
+              letter-spacing: 5px;
+            ">Pro</span>
+          </div>
+        </div>
+      </a>
+    </div>
     <div class="footer-links">
       <a href="/">トップページ</a><a href="/terms.html">利用規約</a><a href="/privacy.html">プライバシーポリシー</a>
       <a href="/refund.html">返金ポリシー</a><a href="/tokusho.html">特定商取引法</a>
