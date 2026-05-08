@@ -876,6 +876,381 @@
         <div class="toast toast-err" id="basicErr">保存に失敗しました。もう一度お試しください。</div>
       </div>
 
+      <!-- 店舗基本情報カード -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-title">店舗基本情報</div>
+        <p style="font-size:12px; color:#888880; margin:0 0 16px;">
+          お客様がよく質問する内容です。入力しておくとAIが正確にご案内できます。
+        </p>
+
+        <!-- 住所 -->
+        <div style="margin-bottom:16px;">
+          <label style="font-size:13px; color:#1C1710; font-weight:600; display:block; margin-bottom:4px;">
+            住所・アクセス
+          </label>
+          <p style="font-size:11px; color:#888880; margin:0 0 6px;">
+            例：東京都渋谷区〇〇1-2-3　渋谷駅から徒歩5分、〇〇出口すぐ
+          </p>
+          <input type="text" id="shopAddress"
+            placeholder="例：東京都渋谷区〇〇1-2-3　渋谷駅から徒歩5分"
+            style="width:100%; padding:10px 12px; border:1px solid #F0EBE0; border-radius:6px; font-size:14px; box-sizing:border-box; color:#1C1710;">
+        </div>
+
+        <!-- 電話番号 -->
+        <div style="margin-bottom:16px;">
+          <label style="font-size:13px; color:#1C1710; font-weight:600; display:block; margin-bottom:4px;">
+            電話番号
+          </label>
+          <p style="font-size:11px; color:#888880; margin:0 0 6px;">
+            お客様への案内に使用します。非公開にしたい場合は空欄のままでOKです。
+          </p>
+          <input type="tel" id="shopPhone"
+            placeholder="例：03-1234-5678"
+            style="width:100%; padding:10px 12px; border:1px solid #F0EBE0; border-radius:6px; font-size:14px; box-sizing:border-box; color:#1C1710;">
+        </div>
+
+        <!-- 支払い方法 -->
+        <div style="margin-bottom:16px;">
+          <label style="font-size:13px; color:#1C1710; font-weight:600; display:block; margin-bottom:4px;">
+            お支払い方法
+          </label>
+          <p style="font-size:11px; color:#888880; margin:0 0 8px;">
+            対応している支払い方法をすべて選んでください。
+          </p>
+          <div style="display:flex; flex-wrap:wrap; gap:10px;">
+            <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:#1C1710; cursor:pointer;">
+              <input type="checkbox" id="pay_cash" value="現金"> 現金
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:#1C1710; cursor:pointer;">
+              <input type="checkbox" id="pay_card" value="クレジットカード"> クレジットカード
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:#1C1710; cursor:pointer;">
+              <input type="checkbox" id="pay_paypay" value="PayPay"> PayPay
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:#1C1710; cursor:pointer;">
+              <input type="checkbox" id="pay_ic" value="交通系IC"> 交通系IC
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:#1C1710; cursor:pointer;">
+              <input type="checkbox" id="pay_line" value="LINE Pay"> LINE Pay
+            </label>
+          </div>
+        </div>
+
+        <!-- 駐車場 -->
+        <div style="margin-bottom:16px;">
+          <label style="font-size:13px; color:#1C1710; font-weight:600; display:block; margin-bottom:4px;">
+            駐車場・駐輪場
+          </label>
+          <p style="font-size:11px; color:#888880; margin:0 0 6px;">
+            例：店舗前に駐車場3台あり（無料）　近隣にコインパーキングあり
+          </p>
+          <input type="text" id="shopParking"
+            placeholder="例：店舗前に駐車場3台あり（無料）"
+            style="width:100%; padding:10px 12px; border:1px solid #F0EBE0; border-radius:6px; font-size:14px; box-sizing:border-box; color:#1C1710;">
+        </div>
+
+        <!-- SNS -->
+        <div style="margin-bottom:20px;">
+          <label style="font-size:13px; color:#1C1710; font-weight:600; display:block; margin-bottom:4px;">
+            公式SNS・ホームページ（任意）
+          </label>
+          <p style="font-size:11px; color:#888880; margin:0 0 6px;">
+            InstagramやホームページのURLを入力するとAIがご案内できます。
+          </p>
+          <input type="url" id="shopSns"
+            placeholder="例：https://www.instagram.com/yourshop"
+            style="width:100%; padding:10px 12px; border:1px solid #F0EBE0; border-radius:6px; font-size:14px; box-sizing:border-box; color:#1C1710;">
+        </div>
+
+        <!-- 保存ボタン -->
+        <button onclick="saveShopBasicInfo()"
+          style="width:100%; padding:14px; background:#1C1710; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; letter-spacing:0.5px;">
+          店舗基本情報を保存
+        </button>
+      </div>
+
+      <!-- 予約ルールカード -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-title">予約ルール</div>
+        <p style="font-size:12px; color:#888880; margin:0 0 16px;">
+          予約に関するルールを設定します。AIがお客様の質問に正確にお答えできるようになります。
+        </p>
+
+        <!-- 当日予約 -->
+        <div style="margin-bottom:16px;">
+          <label style="font-size:13px; color:#1C1710; font-weight:600; display:block; margin-bottom:4px;">
+            当日予約
+          </label>
+          <p style="font-size:11px; color:#888880; margin:0 0 8px;">
+            当日の予約受付をしていますか？
+          </p>
+          <div style="display:flex; gap:12px;">
+            <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:#1C1710; cursor:pointer;">
+              <input type="radio" name="sameDayBooking" value="yes"> 受け付けている
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:#1C1710; cursor:pointer;">
+              <input type="radio" name="sameDayBooking" value="no"> 受け付けていない
+            </label>
+          </div>
+        </div>
+
+        <!-- 最低予約時間 -->
+        <div style="margin-bottom:16px;">
+          <label style="font-size:13px; color:#1C1710; font-weight:600; display:block; margin-bottom:4px;">
+            最低予約時間（何時間前まで受付？）
+          </label>
+          <p style="font-size:11px; color:#888880; margin:0 0 6px;">
+            例：「2時間前まで」の場合は「2」と入力してください。
+          </p>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <input type="number" id="minBookingHours" min="0" max="72"
+              placeholder="2"
+              style="width:80px; padding:10px 12px; border:1px solid #F0EBE0; border-radius:6px; font-size:14px; color:#1C1710;">
+            <span style="font-size:13px; color:#1C1710;">時間前まで</span>
+          </div>
+        </div>
+
+        <!-- キャンセル規定 -->
+        <div style="margin-bottom:16px;">
+          <label style="font-size:13px; color:#1C1710; font-weight:600; display:block; margin-bottom:4px;">
+            キャンセル・変更のルール
+          </label>
+          <p style="font-size:11px; color:#888880; margin:0 0 6px;">
+            お客様にそのまま伝えられる文章で書いてください。
+            例：予約の24時間前までキャンセル無料。当日キャンセルはキャンセル料が発生する場合があります。
+          </p>
+          <textarea id="cancelPolicy" rows="3"
+            placeholder="例：予約の24時間前までキャンセル無料。当日キャンセルはキャンセル料が発生する場合があります。"
+            style="width:100%; padding:10px 12px; border:1px solid #F0EBE0; border-radius:6px; font-size:14px; box-sizing:border-box; color:#1C1710; resize:vertical;"></textarea>
+        </div>
+
+        <!-- ノーショーポリシー -->
+        <div style="margin-bottom:20px;">
+          <label style="font-size:13px; color:#1C1710; font-weight:600; display:block; margin-bottom:4px;">
+            無断キャンセル（ノーショー）への対応
+          </label>
+          <p style="font-size:11px; color:#888880; margin:0 0 6px;">
+            無断キャンセルが続いた場合の対応を入力してください。
+            例：無断キャンセルが2回以上の場合、予約をお断りする場合があります。
+          </p>
+          <textarea id="noshowPolicy" rows="2"
+            placeholder="例：無断キャンセルが2回以上の場合、予約をお断りする場合があります。"
+            style="width:100%; padding:10px 12px; border:1px solid #F0EBE0; border-radius:6px; font-size:14px; box-sizing:border-box; color:#1C1710; resize:vertical;"></textarea>
+        </div>
+
+        <!-- 保存ボタン -->
+        <button onclick="saveBookingRules()"
+          style="width:100%; padding:14px; background:#1C1710; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; letter-spacing:0.5px;">
+          予約ルールを保存
+        </button>
+      </div>
+
+      <!-- FAQカード -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-title">よくある質問（FAQ）</div>
+        <p style="font-size:12px; color:#888880; margin:0 0 16px;">
+          お客様からよく聞かれる質問と答えを登録してください。<br>
+          AIの回答精度が大幅にアップします。質問は何個でも追加できます。
+        </p>
+
+        <div id="faqList" style="display:flex; flex-direction:column; gap:12px; margin-bottom:16px;">
+          <!-- FAQ行テンプレート（1行目） -->
+          <div class="faq-item" style="background:#FAFAF8; border:1px solid #F0EBE0; border-radius:10px; padding:16px;">
+            <div style="margin-bottom:10px;">
+              <label style="font-size:12px; color:#888880; display:block; margin-bottom:4px;">
+                質問（お客様が聞きそうな内容）
+              </label>
+              <input type="text" class="faq-question"
+                placeholder="例：駐車場はありますか？"
+                style="width:100%; padding:10px 12px; border:1px solid #F0EBE0; border-radius:6px; font-size:14px; box-sizing:border-box; color:#1C1710;">
+            </div>
+            <div style="margin-bottom:10px;">
+              <label style="font-size:12px; color:#888880; display:block; margin-bottom:4px;">
+                答え（AIがそのまま使う文章で書いてください）
+              </label>
+              <textarea class="faq-answer" rows="2"
+                placeholder="例：はい、店舗前に3台分の無料駐車場がございます。"
+                style="width:100%; padding:10px 12px; border:1px solid #F0EBE0; border-radius:6px; font-size:14px; box-sizing:border-box; color:#1C1710; resize:vertical;"></textarea>
+            </div>
+            <button onclick="removeFaqItem(this)"
+              style="background:white; border:1px solid #FFCCCC; color:#CC4444; border-radius:6px; padding:4px 12px; font-size:12px; cursor:pointer;">
+              削除
+            </button>
+          </div>
+        </div>
+
+        <button onclick="addFaqItem()"
+          style="width:100%; padding:12px; background:white; color:#1C1710; border:1px solid #E2DDD4; border-radius:8px; font-size:13px; cursor:pointer; margin-bottom:12px;">
+          ＋ 質問を追加する
+        </button>
+
+        <p style="font-size:11px; color:#C9A84C; margin:0 0 16px;">
+          💡 ヒント：「支払い方法は？」「予約なしで行けますか？」「子ども連れでも大丈夫？」などよく聞かれる質問から登録するのがおすすめです。
+        </p>
+
+        <button onclick="saveFaq()"
+          style="width:100%; padding:14px; background:#1C1710; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; letter-spacing:0.5px;">
+          FAQを保存する
+        </button>
+      </div>
+
+      <!-- AI応答ポリシーカード -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-title">AI応答ポリシー</div>
+        <p style="font-size:12px; color:#888880; margin:0 0 16px;">
+          AIに「言ってはいけないこと」を設定します。<br>
+          チェックを入れた項目はAIが自動的に守ります。
+        </p>
+
+        <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+
+          <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; background:#FAFAF8; border:1px solid #F0EBE0; border-radius:10px; padding:14px;">
+            <input type="checkbox" id="policy_noGuess" checked
+              style="margin-top:2px; flex-shrink:0;">
+            <div>
+              <div style="font-size:13px; font-weight:600; color:#1C1710; margin-bottom:2px;">
+                知らないことは答えない
+              </div>
+              <div style="font-size:11px; color:#888880;">
+                設定にない情報については「確認してご連絡します」と答えます。推測で回答しません。
+              </div>
+            </div>
+          </label>
+
+          <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; background:#FAFAF8; border:1px solid #F0EBE0; border-radius:10px; padding:14px;">
+            <input type="checkbox" id="policy_noDiscount" checked
+              style="margin-top:2px; flex-shrink:0;">
+            <div>
+              <div style="font-size:13px; font-weight:600; color:#1C1710; margin-bottom:2px;">
+                勝手に割引・サービスを約束しない
+              </div>
+              <div style="font-size:11px; color:#888880;">
+                設定にない割引やサービスをAIが勝手に案内することを防ぎます。
+              </div>
+            </div>
+          </label>
+
+          <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; background:#FAFAF8; border:1px solid #F0EBE0; border-radius:10px; padding:14px;">
+            <input type="checkbox" id="policy_noMedical" checked
+              style="margin-top:2px; flex-shrink:0;">
+            <div>
+              <div style="font-size:13px; font-weight:600; color:#1C1710; margin-bottom:2px;">
+                医療・肌トラブルに関する断定をしない
+              </div>
+              <div style="font-size:11px; color:#888880;">
+                アレルギーや肌の状態に関する質問には「専門家にご相談ください」と案内します。
+              </div>
+            </div>
+          </label>
+
+          <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; background:#FAFAF8; border:1px solid #F0EBE0; border-radius:10px; padding:14px;">
+            <input type="checkbox" id="policy_noPromise" checked
+              style="margin-top:2px; flex-shrink:0;">
+            <div>
+              <div style="font-size:13px; font-weight:600; color:#1C1710; margin-bottom:2px;">
+                店舗ポリシーにない約束をしない
+              </div>
+              <div style="font-size:11px; color:#888880;">
+                設定に書いていない対応をAIが勝手に約束することを防ぎます。
+              </div>
+            </div>
+          </label>
+
+        </div>
+
+        <button onclick="saveAiPolicy()"
+          style="width:100%; padding:14px; background:#1C1710; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; letter-spacing:0.5px;">
+          ポリシーを保存する
+        </button>
+      </div>
+
+      <!-- トーン＆マナーカード -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-title">AIの話し方設定</div>
+        <p style="font-size:12px; color:#888880; margin:0 0 16px;">
+          AIがお客様に話しかけるときの言葉づかいを設定できます。<br>
+          お店の雰囲気に合わせて選んでください。
+        </p>
+
+        <!-- 말투 -->
+        <div style="margin-bottom:20px;">
+          <label style="font-size:13px; color:#1C1710; font-weight:600; display:block; margin-bottom:8px;">
+            言葉づかい
+          </label>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; background:#FAFAF8; border:1px solid #F0EBE0; border-radius:10px; padding:14px;">
+              <input type="radio" name="toneStyle" value="polite" checked style="margin-top:2px;">
+              <div>
+                <div style="font-size:13px; font-weight:600; color:#1C1710; margin-bottom:2px;">
+                  丁寧・フォーマル
+                </div>
+                <div style="font-size:11px; color:#888880;">
+                  「〜でございます」「〜いたします」など丁寧な敬語を使います。
+                </div>
+              </div>
+            </label>
+            <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; background:#FAFAF8; border:1px solid #F0EBE0; border-radius:10px; padding:14px;">
+              <input type="radio" name="toneStyle" value="friendly" style="margin-top:2px;">
+              <div>
+                <div style="font-size:13px; font-weight:600; color:#1C1710; margin-bottom:2px;">
+                  親しみやすい・カジュアル
+                </div>
+                <div style="font-size:11px; color:#888880;">
+                  「〜です」「〜ますよ」など話しかけるような自然な言葉づかいを使います。
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- 이모지 -->
+        <div style="margin-bottom:20px;">
+          <label style="font-size:13px; color:#1C1710; font-weight:600; display:block; margin-bottom:8px;">
+            絵文字の使用
+          </label>
+          <div style="display:flex; gap:12px;">
+            <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:#1C1710; cursor:pointer;">
+              <input type="radio" name="useEmoji" value="yes"> 使う（親しみやすい雰囲気）
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:#1C1710; cursor:pointer;">
+              <input type="radio" name="useEmoji" value="no" checked> 使わない（すっきりした印象）
+            </label>
+          </div>
+        </div>
+
+        <!-- 응답 길이 -->
+        <div style="margin-bottom:20px;">
+          <label style="font-size:13px; color:#1C1710; font-weight:600; display:block; margin-bottom:8px;">
+            返答の長さ
+          </label>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; background:#FAFAF8; border:1px solid #F0EBE0; border-radius:10px; padding:14px;">
+              <input type="radio" name="replyLength" value="short" style="margin-top:2px;">
+              <div>
+                <div style="font-size:13px; font-weight:600; color:#1C1710; margin-bottom:2px;">短め</div>
+                <div style="font-size:11px; color:#888880;">
+                  要点だけ簡潔にお伝えします。LINEらしいテンポの良い返答です。
+                </div>
+              </div>
+            </label>
+            <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; background:#FAFAF8; border:1px solid #F0EBE0; border-radius:10px; padding:14px;">
+              <input type="radio" name="replyLength" value="normal" checked style="margin-top:2px;">
+              <div>
+                <div style="font-size:13px; font-weight:600; color:#1C1710; margin-bottom:2px;">標準</div>
+                <div style="font-size:11px; color:#888880;">
+                  必要な情報をしっかりお伝えします。ほとんどのお店におすすめです。
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <button onclick="saveToneSettings()"
+          style="width:100%; padding:14px; background:#1C1710; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; letter-spacing:0.5px;">
+          話し方設定を保存する
+        </button>
+      </div>
+
       <!-- Business hours -->
       <div class="card">
         <div class="card-title">営業時間設定</div>
@@ -1419,6 +1794,156 @@ async function saveMenu() {
     btn.disabled = false;
 	  }
 	}
+
+async function saveShopBasicInfo() {
+  if (!currentShop) return;
+  const shopId = currentShop.id;
+  const data = {
+    address: document.getElementById('shopAddress').value,
+    phone: document.getElementById('shopPhone').value,
+    parking: document.getElementById('shopParking').value,
+    sns: document.getElementById('shopSns').value,
+    payment: ['pay_cash', 'pay_card', 'pay_paypay', 'pay_ic', 'pay_line']
+      .filter(id => document.getElementById(id).checked)
+      .map(id => document.getElementById(id).value),
+  };
+  try {
+    const res = await api(`/api/shop/${encodeURIComponent(shopId)}/basic-info`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (res.ok) alert('店舗基本情報を保存しました');
+    else alert('保存に失敗しました。もう一度お試しください。');
+  } catch (e) {
+    alert('保存に失敗しました。もう一度お試しください。');
+  }
+}
+
+async function saveBookingRules() {
+  if (!currentShop) return;
+  const shopId = currentShop.id;
+  const data = {
+    sameDayBooking: document.querySelector('input[name="sameDayBooking"]:checked')?.value || '',
+    minBookingHours: document.getElementById('minBookingHours').value,
+    cancelPolicy: document.getElementById('cancelPolicy').value,
+    noshowPolicy: document.getElementById('noshowPolicy').value,
+  };
+  try {
+    const res = await api(`/api/shop/${encodeURIComponent(shopId)}/booking-rules`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (res.ok) alert('予約ルールを保存しました');
+    else alert('保存に失敗しました。もう一度お試しください。');
+  } catch (e) {
+    alert('保存に失敗しました。もう一度お試しください。');
+  }
+}
+
+// FAQ行追加
+function addFaqItem() {
+  const list = document.getElementById('faqList');
+  const item = document.createElement('div');
+  item.className = 'faq-item';
+  item.style.cssText = 'background:#FAFAF8; border:1px solid #F0EBE0; border-radius:10px; padding:16px;';
+  item.innerHTML = `
+    <div style="margin-bottom:10px;">
+      <label style="font-size:12px; color:#888880; display:block; margin-bottom:4px;">質問（お客様が聞きそうな内容）</label>
+      <input type="text" class="faq-question"
+        placeholder="例：子ども連れでも大丈夫ですか？"
+        style="width:100%; padding:10px 12px; border:1px solid #F0EBE0; border-radius:6px; font-size:14px; box-sizing:border-box; color:#1C1710;">
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="font-size:12px; color:#888880; display:block; margin-bottom:4px;">答え（AIがそのまま使う文章で書いてください）</label>
+      <textarea class="faq-answer" rows="2"
+        placeholder="例：はい、お子様連れも大歓迎です。お気軽にお越しください。"
+        style="width:100%; padding:10px 12px; border:1px solid #F0EBE0; border-radius:6px; font-size:14px; box-sizing:border-box; color:#1C1710; resize:vertical;"></textarea>
+    </div>
+    <button onclick="removeFaqItem(this)"
+      style="background:white; border:1px solid #FFCCCC; color:#CC4444; border-radius:6px; padding:4px 12px; font-size:12px; cursor:pointer;">削除</button>
+  `;
+  list.appendChild(item);
+}
+
+// FAQ行削除
+function removeFaqItem(btn) {
+  const items = document.querySelectorAll('#faqList .faq-item');
+  if (items.length <= 1) {
+    alert('質問は最低1件必要です。');
+    return;
+  }
+  btn.closest('.faq-item').remove();
+}
+
+// FAQ保存
+async function saveFaq() {
+  const questions = document.querySelectorAll('.faq-question');
+  const answers = document.querySelectorAll('.faq-answer');
+  const faqs = [];
+  questions.forEach((q, i) => {
+    if (q.value.trim()) {
+      faqs.push({ question: q.value.trim(), answer: answers[i].value.trim() });
+    }
+  });
+  if (faqs.length === 0) {
+    alert('質問を1件以上入力してください。');
+    return;
+  }
+  try {
+    const res = await api(`/api/shop/${currentShop.id}/faq`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ faqs }),
+    });
+    if (res.ok) alert('FAQを保存しました');
+    else alert('保存に失敗しました。もう一度お試しください。');
+  } catch (e) {
+    alert('保存に失敗しました。もう一度お試しください。');
+  }
+}
+
+// AIポリシー保存
+async function saveAiPolicy() {
+  const data = {
+    noGuess: document.getElementById('policy_noGuess').checked,
+    noDiscount: document.getElementById('policy_noDiscount').checked,
+    noMedical: document.getElementById('policy_noMedical').checked,
+    noPromise: document.getElementById('policy_noPromise').checked,
+  };
+  try {
+    const res = await api(`/api/shop/${currentShop.id}/ai-policy`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (res.ok) alert('ポリシーを保存しました');
+    else alert('保存に失敗しました。もう一度お試しください。');
+  } catch (e) {
+    alert('保存に失敗しました。もう一度お試しください。');
+  }
+}
+
+// トーン＆マナー保存
+async function saveToneSettings() {
+  const data = {
+    toneStyle: document.querySelector('input[name="toneStyle"]:checked')?.value || 'polite',
+    useEmoji: document.querySelector('input[name="useEmoji"]:checked')?.value || 'no',
+    replyLength: document.querySelector('input[name="replyLength"]:checked')?.value || 'normal',
+  };
+  try {
+    const res = await api(`/api/shop/${currentShop.id}/tone-settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (res.ok) alert('話し方設定を保存しました');
+    else alert('保存に失敗しました。もう一度お試しください。');
+  } catch (e) {
+    alert('保存に失敗しました。もう一度お試しください。');
+  }
+}
 
 // ─── 設定チェック ───────────────────────────────────────────
 async function loadDiagnostics() {
