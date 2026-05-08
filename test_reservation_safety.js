@@ -9,6 +9,8 @@ process.env.SUPABASE_SERVICE_ROLE_KEY = 'test_service_role_key';
 process.env.ANTHROPIC_API_KEY = 'test_anthropic_key';
 process.env.ADMIN_PASSWORD = 'test_admin_password';
 process.env.PADDLE_WEBHOOK_SECRET = 'test_paddle_secret';
+process.env.RESEND_API_KEY = 'test_resend_key';
+process.env.OWNER_EMAIL = 'owner@example.com';
 
 const assert = require('assert');
 const {
