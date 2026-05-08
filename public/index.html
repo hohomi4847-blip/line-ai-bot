@@ -8,7 +8,7 @@
   <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&amp;family=Noto+Serif+JP:wght@600;700&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&amp;family=Noto+Sans+JP:wght@400;500;700;800&amp;display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
@@ -30,7 +30,8 @@
       --line: #E5E5E5;
       --soft: #F7F7F5;
       --card: #fff;
-      --serif: 'Noto Serif JP', serif;
+      --display: 'DM Sans', 'Noto Sans JP', sans-serif;
+      --serif: var(--display);
       --shadow: 0 20px 60px rgba(0,0,0,0.08);
       --radius: 24px;
     }
@@ -40,12 +41,16 @@
       left: 0;
       right: 0;
       z-index: 1000;
-      background: rgba(255,255,255,0.92);
-      border-bottom: 1px solid #E5E5E5;
+      background: transparent;
+      border-bottom: none;
       backdrop-filter: blur(16px);
-      transition: box-shadow .25s ease;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
     }
-    .navbar.scrolled { box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+    .navbar.scrolled {
+      background: rgba(255,255,255,0.96);
+      border-bottom: 1px solid #E5E5E5;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+    }
     .nav-inner {
       max-width: 1180px;
       height: 72px;
@@ -125,9 +130,7 @@
       padding-top: 150px;
       display: flex;
       align-items: center;
-      background:
-        radial-gradient(circle at 50% 0%, rgba(6,199,85,0.14), rgba(255,255,255,0) 42%),
-        linear-gradient(180deg, #fff 0%, #f8fbf8 100%);
+      background: #fff;
     }
     .hero-inner { text-align: center; }
     .badge {
@@ -144,7 +147,10 @@
       box-shadow: 0 10px 30px rgba(6,199,85,0.08);
     }
     .hero-title {
-      font-size: clamp(44px, 8vw, 92px);
+      font-family: var(--display);
+      font-size: clamp(52px, 9vw, 100px);
+      letter-spacing: -0.04em;
+      font-weight: 800;
       min-height: 1.25em;
     }
     .cursor {
@@ -196,6 +202,20 @@
     .counter-num span { color: var(--green); }
     .counter-label { color: #777; font-size: 13px; margin-top: 4px; }
     .soft { background: var(--soft); }
+    .dark-section { background: #111; }
+    .dark-section .card { background: #1a1a1a; border-color: #222; color: #fff; }
+    .dark-section h2,
+    .dark-section h3 { color: #fff; }
+    .dark-section .sub { color: #888; }
+    .dark-section .eyebrow { color: #06C755; }
+    .dark-section .card p,
+    .dark-section .pain-desc,
+    .dark-section .flow-desc { color: #888; }
+    .dark-section .pain-title { color: #fff; }
+    .dark-section .ba-list li { color: #fff !important; border-bottom-color: #333 !important; }
+    .trust-strip { padding: 40px 24px; border-bottom: none; }
+    .trust-strip .metric-num { font-family: var(--display); font-size: 36px; font-weight: 800; color: #06C755; letter-spacing: -0.03em; }
+    .trust-strip .metric-label { font-size: 13px; color: #888; margin-top: 6px; }
     .demo-scroll { display: grid; grid-template-columns: repeat(3, minmax(280px, 1fr)); gap: 26px; }
     .phone {
       background: #111;
@@ -249,7 +269,6 @@
       box-shadow: 0 10px 34px rgba(0,0,0,0.04);
     }
     .pain-card { display: flex; gap: 16px; align-items: flex-start; font-weight: 700; }
-    .pain-icon { font-size: 30px; line-height: 1; }
     .pain-title { font-weight: 800; color: #111; margin-bottom: 8px; }
     .pain-desc { color: #666; font-size: 14px; font-weight: 500; line-height: 1.8; }
     .impact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
@@ -322,7 +341,6 @@
     .svc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
     .svc-grid.option { grid-template-columns: repeat(3, 1fr); }
     .svc-card h3 { font-size: 18px; margin-bottom: 8px; }
-    .svc-icon { font-size: 32px; margin-bottom: 10px; }
     .price { font-family: var(--serif); font-size: 28px; font-weight: 700; margin: 18px 0; }
     .svc-desc { color: #555; font-size: 14px; min-height: 48px; }
     .svc-features { list-style: none; padding: 0; margin: 18px 0; display: grid; gap: 8px; }
@@ -337,7 +355,7 @@
     .svc-card button { width: 100%; padding: 13px; border: 0; border-radius: 999px; background: #111; color: #fff; font-weight: 800; cursor: pointer; }
     .svc-card.featured button { background: var(--green); }
     .ba-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-    .before { border-color: #fecaca; }
+    .before { border-color: #222; }
     .after { border-color: rgba(6,199,85,0.35); }
     .ba-list { margin: 18px 0 0; padding: 0; list-style: none; }
     .ba-list li { padding: 9px 0; color: #444; }
@@ -360,7 +378,9 @@
     .faq-a { display: none; padding: 0 24px 22px; color: #555; }
     .faq-item.open .faq-a { display: block; }
     .faq-item.open .faq-plus { transform: rotate(45deg); }
-    .cta { background: linear-gradient(180deg, #f1fff6 0%, #fff 100%); text-align: center; }
+    .cta { background: #111; color: #fff; text-align: center; }
+    .cta h2 { color: #fff; }
+    .cta .sub, .cta .hero-note { color: #bbb; }
     .register-wrap { max-width: 720px; margin: 0 auto; }
     .reg-card { margin-bottom: 16px; }
     .reg-head { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
@@ -415,6 +435,10 @@
       .voice-grid, .trust-grid {
         grid-template-columns: 1fr !important;
       }
+      .trust-strip .wrap > div,
+      .demo-feature-grid {
+        grid-template-columns: 1fr !important;
+      }
       .counter { border-right: 0; border-bottom: 1px solid var(--line); }
       .counter:last-child { border-bottom: 0; }
       .calc-card, .monthly-panel, .reg-card { padding: 26px 20px; border-radius: 22px; }
@@ -428,10 +452,9 @@
     <div class="nav-inner">
       <a href="/" class="logo"><span class="logo-mark">⚡</span><span>スマート予約Pro</span></a>
       <div class="nav-links">
-        <a href="/guide.html">使い方ガイド</a>
+        <a href="/guide.html">使い方</a>
         <a href="/services.html">制作代行</a>
-        <a href="#comparison">料金比較</a>
-        <a href="#flow">導入の流れ</a>
+        <a href="#services">料金</a>
         <a href="#start" class="nav-cta" id="navCta">無料で始める</a>
         <a href="/shop-dashboard.html" class="nav-mypage" id="navMyPage">マイページ</a>
         <a href="/auth/logout" class="nav-logout" id="navLogout">ログアウト</a>
@@ -444,15 +467,14 @@
       <div class="badge fade-up">7日間無料体験 実施中</div>
       <h1 class="hero-title" id="heroTitle"></h1>
       <p class="hero-copy fade-up">
-        施術中に鳴るLINE、もう出なくていい。<br>
-        24時間365日、AIが自動で予約を受付・管理。<br>
-        美容室・飲食店・整骨院など全業種対応。月額¥3,980で完結。
+        AIが24時間、予約を自動で受け付けます。<br>
+        月額¥3,980。初期費用¥0。
       </p>
       <div class="hero-actions fade-up">
         <a href="#start" class="btn-primary">7日間無料で試す →</a>
         <a href="#services" class="btn-outline">サービス詳細を見る</a>
       </div>
-      <p class="hero-note fade-up">クレジットカード登録で7日間無料 · いつでも解約可能</p>
+      <p class="hero-note fade-up">7日間無料体験 · いつでも解約可 · 解約手数料¥0</p>
       <div class="counters fade-up">
         <div class="counter"><div class="counter-num"><span id="ctr1">24</span>時間対応</div><div class="counter-label">24時間365日</div></div>
         <div class="counter"><div class="counter-num">¥<span id="ctr2">3,980</span>/月</div><div class="counter-label">月額定額</div></div>
@@ -461,24 +483,24 @@
     </div>
   </section>
 
-  <section class="section" style="padding:40px 24px;background:#fff;border-bottom:1px solid #F0F0F0;">
+  <section class="section dark-section trust-strip">
     <div class="wrap">
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;text-align:center;">
         <div>
-          <div style="font-family:'Noto Serif JP',serif;font-size:36px;font-weight:700;color:#111;">97<span style="font-size:20px;">%</span></div>
-          <div style="font-size:13px;color:#777;margin-top:6px;">導入後の継続率</div>
+          <div class="metric-num">97<span style="font-size:20px;">%</span></div>
+          <div class="metric-label">導入後の継続率</div>
         </div>
         <div>
-          <div style="font-family:'Noto Serif JP',serif;font-size:36px;font-weight:700;color:#111;">3<span style="font-size:20px;">分</span></div>
-          <div style="font-size:13px;color:#777;margin-top:6px;">平均セットアップ時間</div>
+          <div class="metric-num">3<span style="font-size:20px;">分</span></div>
+          <div class="metric-label">平均セットアップ時間</div>
         </div>
         <div>
-          <div style="font-family:'Noto Serif JP',serif;font-size:36px;font-weight:700;color:#111;">24<span style="font-size:20px;">時間</span></div>
-          <div style="font-size:13px;color:#777;margin-top:6px;">365日自動対応</div>
+          <div class="metric-num">24<span style="font-size:20px;">時間</span></div>
+          <div class="metric-label">365日自動対応</div>
         </div>
         <div>
-          <div style="font-family:'Noto Serif JP',serif;font-size:36px;font-weight:700;color:#111;">¥<span style="font-size:20px;">0</span></div>
-          <div style="font-size:13px;color:#777;margin-top:6px;">初期費用・解約手数料</div>
+          <div class="metric-num">¥<span style="font-size:20px;">0</span></div>
+          <div class="metric-label">初期費用・解約手数料</div>
         </div>
       </div>
     </div>
@@ -493,7 +515,7 @@
       </div>
 
       <!-- 강점 설명 배너 -->
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:48px;" class="fade-up">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:48px;" class="demo-feature-grid fade-up">
         <div style="text-align:center;padding:20px;background:#F7F7F5;border-radius:16px;">
           <div style="font-size:24px;margin-bottom:8px;">🧠</div>
           <div style="font-weight:800;font-size:14px;margin-bottom:6px;">自然な長文も理解</div>
@@ -620,33 +642,29 @@
     </div>
   </section>
 
-  <section class="section soft">
+  <section class="section dark-section">
     <div class="wrap">
       <div class="section-head fade-up"><div class="eyebrow">Problems</div><h2>こんなお悩み、ありませんか？</h2></div>
       <div class="cards">
         <div class="card pain-card fade-up">
-          <span class="pain-icon">📞</span>
           <div>
             <div class="pain-title">電話対応に追われて施術に集中できない</div>
             <p class="pain-desc">お客様の施術中に電話が鳴るたびに手を止めなければならない。<br>本来の仕事に集中できていますか？</p>
           </div>
         </div>
         <div class="card pain-card fade-up">
-          <span class="pain-icon">🌙</span>
           <div>
             <div class="pain-title">営業時間外の予約を取りこぼしている</div>
             <p class="pain-desc">夜中や早朝にLINEで来た予約問い合わせ。<br>翌朝返信したら、すでに他の店に行っていた。</p>
           </div>
         </div>
         <div class="card pain-card fade-up">
-          <span class="pain-icon">😓</span>
           <div>
             <div class="pain-title">ノーショーで売上が飛んでいく</div>
             <p class="pain-desc">当日キャンセルや無断欠席が月に何件も。<br>その時間、別のお客様を入れられたのに。</p>
           </div>
         </div>
         <div class="card pain-card fade-up">
-          <span class="pain-icon">📊</span>
           <div>
             <div class="pain-title">経営の数字が全く見えない</div>
             <p class="pain-desc">今月の売上・リピート率・人気メニュー。<br>感覚ではなく数字で経営判断したい。</p>
@@ -667,7 +685,7 @@
     </div>
   </section>
 
-  <section class="section soft">
+  <section class="section">
     <div class="wrap">
       <div class="section-head fade-up"><div class="eyebrow">Calculator</div><h2>あなたの店舗の削減額を計算</h2></div>
       <div class="calc-card fade-up">
@@ -713,7 +731,7 @@
     </div>
   </section>
 
-  <section class="section soft" id="services">
+  <section class="section" id="services">
     <div class="wrap">
       <div class="section-head fade-up"><div class="eyebrow">Services</div><h2>サービス一覧</h2><p class="sub">初期費用¥0・業界最安値水準・AI自動予約システム連動込み</p></div>
       <div class="svc-tabs fade-up">
@@ -740,19 +758,18 @@
         </div>
       </div>
       <div class="svc-panel" id="svc-initial">
-        <div style="background:#f0fdf4;border:1px solid #bbf7d0;
+        <div style="background:#fff;border:1px solid #111;
             border-radius:12px;padding:16px 20px;margin-bottom:28px;">
-          <p style="font-size:14px;color:#166534;line-height:1.8;">
-            🎯 <strong>ご購入後3営業日以内</strong>に必要情報のご案内メールをお送りします。<br>
+          <p style="font-size:14px;color:#111;line-height:1.8;">
+            <strong>ご購入後3営業日以内</strong>に必要情報のご案内メールをお送りします。<br>
             情報をご返信いただき次第、作業を開始いたします。<br>
-            <span style="font-size:12px;color:#4ade80;">
+            <span style="font-size:12px;color:#666;">
               ※ 設定代行はすべて完了後にご報告します。
             </span>
           </p>
         </div>
         <div class="svc-grid">
           <div class="card svc-card fade-up">
-            <div class="svc-icon">💬</div>
             <h3>LINEスタートパック</h3>
             <p class="svc-desc">LINE公式アカウント＋AI自動予約システム連動まで完全代行</p>
             <ul class="svc-features">
@@ -768,12 +785,11 @@
             <div class="price-sub">一回限り・AI自動予約システム連動込み</div>
             <button onclick="openServiceCheckout('pri_01kqxxs9xvygq5rtm2ch9398nw', 'LINEスタートパック')">今すぐ申し込む →</button>
             <p style="font-size:11px;color:#999;text-align:center;margin-top:8px;line-height:1.6;">
-              🔒 情報ご提出前のキャンセルは全額返金。情報ご提出後は返金不可。
+              情報ご提出前のキャンセルは全額返金。情報ご提出後は返金不可。
               <a href="/refund.html" style="color:#06C755;text-decoration:none;" target="_blank">返金ポリシー →</a>
             </p>
           </div>
           <div class="card svc-card fade-up">
-            <div class="svc-icon">🗺️</div>
             <h3>Googleビジネスプロフィール設定パック</h3>
             <p class="svc-desc">Google検索・マップへの店舗登録＋SEO最適化まで完全代行</p>
             <ul class="svc-features">
@@ -789,12 +805,11 @@
             <div class="price-sub">一回限り</div>
             <button onclick="openServiceCheckout('pri_01kqxxx1dpg4tqm7c3mdg6d4cv', 'Googleビジネスプロフィール設定パック')">今すぐ申し込む →</button>
             <p style="font-size:11px;color:#999;text-align:center;margin-top:8px;line-height:1.6;">
-              🔒 情報ご提出前のキャンセルは全額返金。情報ご提出後は返金不可。
+              情報ご提出前のキャンセルは全額返金。情報ご提出後は返金不可。
               <a href="/refund.html" style="color:#06C755;text-decoration:none;" target="_blank">返金ポリシー →</a>
             </p>
           </div>
           <div class="card svc-card fade-up">
-            <div class="svc-icon">📸</div>
             <h3>Instagramスタートパック</h3>
             <p class="svc-desc">Instagram開設＋初回投稿3本＋LINE予約導線設定まで完全代行</p>
             <ul class="svc-features">
@@ -810,13 +825,12 @@
             <div class="price-sub">一回限り</div>
             <button onclick="openServiceCheckout('pri_01kqxxz153aqjsmcgp11ewm9dm', 'Instagramスタートパック')">今すぐ申し込む →</button>
             <p style="font-size:11px;color:#999;text-align:center;margin-top:8px;line-height:1.6;">
-              🔒 情報ご提出前のキャンセルは全額返金。情報ご提出後は返金不可。
+              情報ご提出前のキャンセルは全額返金。情報ご提出後は返金不可。
               <a href="/refund.html" style="color:#06C755;text-decoration:none;" target="_blank">返金ポリシー →</a>
             </p>
           </div>
           <div class="card svc-card featured fade-up">
-            <div class="svc-badge">🔥 最もお得</div>
-            <div class="svc-icon">🚀</div>
+            <div class="svc-badge">最もお得</div>
             <h3>集客フルパック</h3>
             <p class="svc-desc">LINE＋Google＋Instagram 全部まとめて完全代行</p>
             <ul class="svc-features">
@@ -829,26 +843,25 @@
             <div class="price-sub">一回限り・¥4,600お得</div>
             <button onclick="openServiceCheckout('pri_01kqxy12gs97a00wx47w0bdq44', '集客フルパック')">今すぐ申し込む →</button>
             <p style="font-size:11px;color:#999;text-align:center;margin-top:8px;line-height:1.6;">
-              🔒 情報ご提出前のキャンセルは全額返金。情報ご提出後は返金不可。
+              情報ご提出前のキャンセルは全額返金。情報ご提出後は返金不可。
               <a href="/refund.html" style="color:#06C755;text-decoration:none;" target="_blank">返金ポリシー →</a>
             </p>
           </div>
         </div>
       </div>
       <div class="svc-panel" id="svc-option">
-        <div style="background:#f0fdf4;border:1px solid #bbf7d0;
+        <div style="background:#fff;border:1px solid #111;
             border-radius:12px;padding:16px 20px;margin-bottom:28px;">
-          <p style="font-size:14px;color:#166534;line-height:1.8;">
-            🎯 <strong>ご購入後3営業日以内</strong>に必要情報のご案内メールをお送りします。<br>
+          <p style="font-size:14px;color:#111;line-height:1.8;">
+            <strong>ご購入後3営業日以内</strong>に必要情報のご案内メールをお送りします。<br>
             情報をご返信いただき次第、作業を開始いたします。<br>
-            <span style="font-size:12px;color:#4ade80;">
+            <span style="font-size:12px;color:#666;">
               ※ 設定代行はすべて完了後にご報告します。
             </span>
           </p>
         </div>
         <div class="svc-grid option">
           <div class="card svc-card fade-up">
-            <div class="svc-icon">🎨</div>
             <h3>LINEリッチメニューリニューアル</h3>
             <p class="svc-desc">季節・イベントに合わせたリッチメニューに刷新</p>
             <ul class="svc-features">
@@ -862,12 +875,11 @@
             <div class="price-sub">一回限り・季節ごとのリピート歓迎</div>
             <button onclick="openServiceCheckout('pri_01kqxy42cpb268xw8nep10s0ma', 'LINEリッチメニューリニューアル')">今すぐ申し込む →</button>
             <p style="font-size:11px;color:#999;text-align:center;margin-top:8px;line-height:1.6;">
-              🔒 情報ご提出前のキャンセルは全額返金。情報ご提出後は返金不可。
+              情報ご提出前のキャンセルは全額返金。情報ご提出後は返金不可。
               <a href="/refund.html" style="color:#06C755;text-decoration:none;" target="_blank">返金ポリシー →</a>
             </p>
           </div>
           <div class="card svc-card fade-up">
-            <div class="svc-icon">🪪</div>
             <h3>名刺・チラシ作成パック</h3>
             <p class="svc-desc">LINE予約QRコード連動の名刺・チラシをデザイン納品</p>
             <ul class="svc-features">
@@ -882,13 +894,12 @@
             <div class="price-sub">一回限り・印刷は別途</div>
             <button onclick="openServiceCheckout('pri_01kqxy6bzc3ffzfkrttr0vrznj', '名刺・チラシ作成パック')">今すぐ申し込む →</button>
             <p style="font-size:11px;color:#999;text-align:center;margin-top:8px;line-height:1.6;">
-              🔒 情報ご提出前のキャンセルは全額返金。情報ご提出後は返金不可。
+              情報ご提出前のキャンセルは全額返金。情報ご提出後は返金不可。
               <a href="/refund.html" style="color:#06C755;text-decoration:none;" target="_blank">返金ポリシー →</a>
             </p>
           </div>
           <div class="card svc-card featured fade-up">
-            <div class="svc-badge">🎉 開業・移転専用</div>
-            <div class="svc-icon">🏪</div>
+            <div class="svc-badge">開業・移転専用</div>
             <h3>開業・移転完全サポートセット</h3>
             <p class="svc-desc">開業前のSNS全設定＋告知コンテンツ一式を2日以内に納品</p>
             <ul class="svc-features">
@@ -905,7 +916,7 @@
             <div class="price-sub">一回限り・開業前に全部整います</div>
             <button onclick="openServiceCheckout('pri_01kqxy7z4bewp58sxe6vwgf00q', '開業・移転完全サポートセット')">今すぐ申し込む →</button>
             <p style="font-size:11px;color:#999;text-align:center;margin-top:8px;line-height:1.6;">
-              🔒 情報ご提出前のキャンセルは全額返金。情報ご提出後は返金不可。
+              情報ご提出前のキャンセルは全額返金。情報ご提出後は返金不可。
               <a href="/refund.html" style="color:#06C755;text-decoration:none;" target="_blank">返金ポリシー →</a>
             </p>
           </div>
@@ -914,7 +925,7 @@
     </div>
   </section>
 
-  <section class="section">
+  <section class="section dark-section">
     <div class="wrap">
       <div class="section-head fade-up">
         <div class="eyebrow">Before / After</div>
@@ -922,49 +933,47 @@
         <p class="sub">「もっと早く導入すれば良かった」<br>そう言っていただける瞬間が、私たちの喜びです。</p>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;" class="fade-up">
-        <div class="card before" style="border-color:#fecaca;border-width:1.5px;">
+        <div class="card before" style="border-color:#222;border-width:1.5px;">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
-            <div style="width:36px;height:36px;background:#FEF2F2;border-radius:10px;display:grid;place-items:center;font-size:18px;">😰</div>
-            <h3 style="font-size:16px;font-weight:800;color:#DC2626;">導入前</h3>
+            <h3 style="font-size:16px;font-weight:800;color:#fff;">導入前</h3>
           </div>
           <ul class="ba-list">
             <li style="padding:12px 0;border-bottom:1px solid #FEE2E2;color:#444;font-size:14px;line-height:1.7;">
-              📞 施術中にLINEや電話が鳴るたびに手を止める。お客様にも申し訳ない。
+              施術中にLINEや電話が鳴るたびに手を止める。お客様にも申し訳ない。
             </li>
             <li style="padding:12px 0;border-bottom:1px solid #FEE2E2;color:#444;font-size:14px;line-height:1.7;">
-              🌙 夜中の予約メッセージ。翌朝返信したらもう他の店に行っていた。
+              夜中の予約メッセージ。翌朝返信したらもう他の店に行っていた。
             </li>
             <li style="padding:12px 0;border-bottom:1px solid #FEE2E2;color:#444;font-size:14px;line-height:1.7;">
-              😓 ノーショーが月3〜4件。売上もメンタルも削られる。
+              ノーショーが月3〜4件。売上もメンタルも削られる。
             </li>
             <li style="padding:12px 0;border-bottom:1px solid #FEE2E2;color:#444;font-size:14px;line-height:1.7;">
-              📓 手書きの予約帳。ダブルブッキングが怖くて確認が手間。
+              手書きの予約帳。ダブルブッキングが怖くて確認が手間。
             </li>
             <li style="padding:12px 0;color:#444;font-size:14px;line-height:1.7;">
-              📊 今月いくら売れたか、リピーターが何人いるかすら把握できていない。
+              今月いくら売れたか、リピーターが何人いるかすら把握できていない。
             </li>
           </ul>
         </div>
         <div class="card after" style="border-color:rgba(6,199,85,0.5);border-width:1.5px;">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
-            <div style="width:36px;height:36px;background:#F0FDF4;border-radius:10px;display:grid;place-items:center;font-size:18px;">😊</div>
             <h3 style="font-size:16px;font-weight:800;color:#16a34a;">導入後</h3>
           </div>
           <ul class="ba-list">
             <li style="padding:12px 0;border-bottom:1px solid #DCFCE7;color:#444;font-size:14px;line-height:1.7;">
-              ✅ 施術に100%集中できる。LINEはAIが全部対応してくれる。
+              <span style="color:#06C755;font-weight:900;">•</span> 施術に100%集中できる。LINEはAIが全部対応してくれる。
             </li>
             <li style="padding:12px 0;border-bottom:1px solid #DCFCE7;color:#444;font-size:14px;line-height:1.7;">
-              ✅ 深夜2時に予約が入っても、朝起きたら自動で確定している。
+              <span style="color:#06C755;font-weight:900;">•</span> 深夜2時に予約が入っても、朝起きたら自動で確定している。
             </li>
             <li style="padding:12px 0;border-bottom:1px solid #DCFCE7;color:#444;font-size:14px;line-height:1.7;">
-              ✅ 予約確定メッセージにノーショー防止文が自動で入り、無断欠席がほぼゼロに。
+              <span style="color:#06C755;font-weight:900;">•</span> 予約確定メッセージにノーショー防止文が自動で入り、無断欠席がほぼゼロに。
             </li>
             <li style="padding:12px 0;border-bottom:1px solid #DCFCE7;color:#444;font-size:14px;line-height:1.7;">
-              ✅ ダブルブッキングは自動でブロック。Googleカレンダーとも同期。
+              <span style="color:#06C755;font-weight:900;">•</span> ダブルブッキングは自動でブロック。Googleカレンダーとも同期。
             </li>
             <li style="padding:12px 0;color:#444;font-size:14px;line-height:1.7;">
-              ✅ 売上・リピート率・人気メニューがダッシュボードで一目瞭然。AIが改善案を自動提案。
+              <span style="color:#06C755;font-weight:900;">•</span> 売上・リピート率・人気メニューがダッシュボードで一目瞭然。AIが改善案を自動提案。
             </li>
           </ul>
         </div>
@@ -972,27 +981,27 @@
 
       <!-- 임팩트 숫자 -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:32px;" class="fade-up">
-        <div style="text-align:center;padding:24px 16px;background:#F7F7F5;border-radius:16px;">
+        <div style="text-align:center;padding:24px 16px;background:#1a1a1a;border:1px solid #222;border-radius:16px;">
           <div style="font-family:'Noto Serif JP',serif;font-size:32px;font-weight:700;color:#06C755;">−95%</div>
-          <div style="font-size:13px;color:#666;margin-top:6px;">電話・LINE対応時間</div>
+          <div style="font-size:13px;color:#888;margin-top:6px;">電話・LINE対応時間</div>
         </div>
-        <div style="text-align:center;padding:24px 16px;background:#F7F7F5;border-radius:16px;">
+        <div style="text-align:center;padding:24px 16px;background:#1a1a1a;border:1px solid #222;border-radius:16px;">
           <div style="font-family:'Noto Serif JP',serif;font-size:32px;font-weight:700;color:#06C755;">+34%</div>
-          <div style="font-size:13px;color:#666;margin-top:6px;">予約取りこぼし削減</div>
+          <div style="font-size:13px;color:#888;margin-top:6px;">予約取りこぼし削減</div>
         </div>
-        <div style="text-align:center;padding:24px 16px;background:#F7F7F5;border-radius:16px;">
+        <div style="text-align:center;padding:24px 16px;background:#1a1a1a;border:1px solid #222;border-radius:16px;">
           <div style="font-family:'Noto Serif JP',serif;font-size:32px;font-weight:700;color:#06C755;">−87%</div>
-          <div style="font-size:13px;color:#666;margin-top:6px;">ノーショー率</div>
+          <div style="font-size:13px;color:#888;margin-top:6px;">ノーショー率</div>
         </div>
-        <div style="text-align:center;padding:24px 16px;background:#F7F7F5;border-radius:16px;">
+        <div style="text-align:center;padding:24px 16px;background:#1a1a1a;border:1px solid #222;border-radius:16px;">
           <div style="font-family:'Noto Serif JP',serif;font-size:32px;font-weight:700;color:#06C755;">月50h</div>
-          <div style="font-size:13px;color:#666;margin-top:6px;">削減できる対応時間</div>
+          <div style="font-size:13px;color:#888;margin-top:6px;">削減できる対応時間</div>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="section soft">
+  <section class="section">
     <div class="wrap">
       <div class="section-head fade-up">
         <div class="eyebrow">Voice</div>
@@ -1003,7 +1012,7 @@
       <!-- 별점 요약 -->
       <div style="text-align:center;margin-bottom:40px;" class="fade-up">
         <div style="font-size:40px;font-weight:800;font-family:'Noto Serif JP',serif;">4.9</div>
-        <div style="color:#F59E0B;font-size:24px;margin:6px 0;">★★★★★</div>
+        <div style="color:#06C755;font-size:24px;margin:6px 0;">★★★★★</div>
         <div style="font-size:13px;color:#999;">全国のご利用オーナーによる評価</div>
       </div>
 
@@ -1012,14 +1021,14 @@
         <!-- 후기 1: 미용실 -->
         <div style="background:#fff;border:1px solid #E5E5E5;border-radius:20px;padding:28px;box-shadow:0 10px 34px rgba(0,0,0,0.04);">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-            <span style="color:#F59E0B;font-size:16px;">★★★★★</span>
+            <span style="color:#06C755;font-size:16px;">★★★★★</span>
             <span style="font-size:11px;color:#ccc;">2026年3月</span>
           </div>
           <p style="font-size:14px;color:#444;line-height:1.85;margin-bottom:18px;">
             「施術中に電話が鳴るたびにストレスでしたが、導入後は完全に解消。深夜に予約が自動で入っていた時は感動しました。月の売上が導入前より12万円増えています。」
           </p>
           <div style="display:flex;align-items:center;gap:12px;">
-            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#06C755,#05a847);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex-shrink:0;">山</div>
+            <div style="width:44px;height:44px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex-shrink:0;">山</div>
             <div>
               <div style="font-weight:800;font-size:13px;margin-bottom:2px;">山田 恵子さん</div>
               <div style="font-size:12px;color:#999;">美容室オーナー・東京都渋谷区</div>
@@ -1031,14 +1040,14 @@
         <!-- 후기 2: 정골원 -->
         <div style="background:#fff;border:1px solid #E5E5E5;border-radius:20px;padding:28px;box-shadow:0 10px 34px rgba(0,0,0,0.04);">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-            <span style="color:#F59E0B;font-size:16px;">★★★★★</span>
+            <span style="color:#06C755;font-size:16px;">★★★★★</span>
             <span style="font-size:11px;color:#ccc;">2026年2月</span>
           </div>
           <p style="font-size:14px;color:#444;line-height:1.85;margin-bottom:18px;">
             「ホットペッパーに月3万円払っていましたが解約しました。予約数は変わらず、コストが10分の1以下に。AIが自然な文章で返答してくれるので、患者さんから"丁寧ですね"と言われるようになりました。」
           </p>
           <div style="display:flex;align-items:center;gap:12px;">
-            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#3B82F6,#1D4ED8);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex-shrink:0;">田</div>
+            <div style="width:44px;height:44px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex-shrink:0;">田</div>
             <div>
               <div style="font-weight:800;font-size:13px;margin-bottom:2px;">田中 誠さん</div>
               <div style="font-size:12px;color:#999;">整骨院オーナー・大阪府難波</div>
@@ -1050,14 +1059,14 @@
         <!-- 후기 3: 네일 -->
         <div style="background:#fff;border:1px solid #E5E5E5;border-radius:20px;padding:28px;box-shadow:0 10px 34px rgba(0,0,0,0.04);">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-            <span style="color:#F59E0B;font-size:16px;">★★★★★</span>
+            <span style="color:#06C755;font-size:16px;">★★★★★</span>
             <span style="font-size:11px;color:#ccc;">2026年4月</span>
           </div>
           <p style="font-size:14px;color:#444;line-height:1.85;margin-bottom:18px;">
             「1人で経営しているので予約対応が本当に大変でした。今は施術に集中できて、売上より大切な"余裕"が生まれました。お客様への対応もより丁寧になったと感じています。」
           </p>
           <div style="display:flex;align-items:center;gap:12px;">
-            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#EC4899,#BE185D);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex-shrink:0;">佐</div>
+            <div style="width:44px;height:44px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex-shrink:0;">佐</div>
             <div>
               <div style="font-weight:800;font-size:13px;margin-bottom:2px;">佐藤 美咲さん</div>
               <div style="font-size:12px;color:#999;">ネイルサロンオーナー・神奈川県横浜市</div>
@@ -1069,14 +1078,14 @@
         <!-- 후기 4: 음식점 -->
         <div style="background:#fff;border:1px solid #E5E5E5;border-radius:20px;padding:28px;box-shadow:0 10px 34px rgba(0,0,0,0.04);">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-            <span style="color:#F59E0B;font-size:16px;">★★★★★</span>
+            <span style="color:#06C755;font-size:16px;">★★★★★</span>
             <span style="font-size:11px;color:#ccc;">2026年1月</span>
           </div>
           <p style="font-size:14px;color:#444;line-height:1.85;margin-bottom:18px;">
             「飲食店なので忙しい時間帯の電話対応が一番の悩みでした。今は厨房に集中できています。経営分析機能で人気メニューや混雑時間帯がわかり、仕込みの量も最適化できました。」
           </p>
           <div style="display:flex;align-items:center;gap:12px;">
-            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#F59E0B,#D97706);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex-shrink:0;">松</div>
+            <div style="width:44px;height:44px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex-shrink:0;">松</div>
             <div>
               <div style="font-weight:800;font-size:13px;margin-bottom:2px;">松本 健太さん</div>
               <div style="font-size:12px;color:#999;">和食レストランオーナー・京都府</div>
@@ -1088,14 +1097,14 @@
         <!-- 후기 5: 짐 -->
         <div style="background:#fff;border:1px solid #E5E5E5;border-radius:20px;padding:28px;box-shadow:0 10px 34px rgba(0,0,0,0.04);">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-            <span style="color:#F59E0B;font-size:16px;">★★★★★</span>
+            <span style="color:#06C755;font-size:16px;">★★★★★</span>
             <span style="font-size:11px;color:#ccc;">2026年3月</span>
           </div>
           <p style="font-size:14px;color:#444;line-height:1.85;margin-bottom:18px;">
             「パーソナルジムを1人で運営中。VIP顧客への特別対応機能が気に入っています。常連のお客様に名前で話しかけてくれるので"AIとは思えない"とよく言われます。解約する理由が見つかりません。」
           </p>
           <div style="display:flex;align-items:center;gap:12px;">
-            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,#6D28D9);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex-shrink:0;">伊</div>
+            <div style="width:44px;height:44px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex-shrink:0;">伊</div>
             <div>
               <div style="font-weight:800;font-size:13px;margin-bottom:2px;">伊藤 龍一さん</div>
               <div style="font-size:12px;color:#999;">パーソナルジムオーナー・愛知県名古屋市</div>
@@ -1107,14 +1116,14 @@
         <!-- 후기 6: 펫살롱 -->
         <div style="background:#fff;border:1px solid #E5E5E5;border-radius:20px;padding:28px;box-shadow:0 10px 34px rgba(0,0,0,0.04);">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-            <span style="color:#F59E0B;font-size:16px;">★★★★★</span>
+            <span style="color:#06C755;font-size:16px;">★★★★★</span>
             <span style="font-size:11px;color:#ccc;">2026年4月</span>
           </div>
           <p style="font-size:14px;color:#444;line-height:1.85;margin-bottom:18px;">
             「ペットサロンなのでグルーミング中は手が離せません。以前は1日10件以上の電話対応がありましたが、今はゼロです。お客様も"LINEで予約できて便利"と喜んでくれています。」
           </p>
           <div style="display:flex;align-items:center;gap:12px;">
-            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#10B981,#059669);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex-shrink:0;">中</div>
+            <div style="width:44px;height:44px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;flex-shrink:0;">中</div>
             <div>
               <div style="font-weight:800;font-size:13px;margin-bottom:2px;">中村 花子さん</div>
               <div style="font-size:12px;color:#999;">ペットサロンオーナー・福岡県博多区</div>
@@ -1130,7 +1139,7 @@
     </div>
   </section>
 
-  <section class="section soft" id="flow">
+  <section class="section dark-section" id="flow">
     <div class="wrap">
       <div class="section-head fade-up"><div class="eyebrow">Flow</div><h2>導入の流れ</h2></div>
       <div class="flow-grid">
@@ -1165,26 +1174,23 @@
     </div>
   </section>
 
-  <section class="section" style="padding:60px 24px;background:#fff;">
+  <section class="section dark-section" style="padding:60px 24px;">
     <div class="wrap">
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:900px;margin:0 auto;" class="trust-grid fade-up">
 
-        <div style="text-align:center;padding:28px 20px;border:1px solid #E5E5E5;border-radius:20px;">
-          <div style="font-size:36px;margin-bottom:12px;">🔒</div>
-          <div style="font-weight:800;font-size:15px;margin-bottom:8px;">SSL暗号化通信</div>
-          <p style="font-size:13px;color:#666;line-height:1.7;">全ての通信はSSL暗号化。お客様の情報を安全に保護します。</p>
+        <div style="text-align:center;padding:28px 20px;border:1px solid #222;border-radius:20px;background:#1a1a1a;">
+          <div style="font-weight:800;font-size:15px;margin-bottom:8px;color:#fff;">SSL暗号化通信</div>
+          <p style="font-size:13px;color:#888;line-height:1.7;">全ての通信はSSL暗号化。お客様の情報を安全に保護します。</p>
         </div>
 
-        <div style="text-align:center;padding:28px 20px;border:2px solid #06C755;border-radius:20px;background:#f0fff5;">
-          <div style="font-size:36px;margin-bottom:12px;">✅</div>
-          <div style="font-weight:800;font-size:15px;margin-bottom:8px;">7日間返金保証</div>
-          <p style="font-size:13px;color:#666;line-height:1.7;">7日間の無料体験後、ご満足いただけなければ全額返金いたします。</p>
+        <div style="text-align:center;padding:28px 20px;border:2px solid #06C755;border-radius:20px;background:#1a1a1a;">
+          <div style="font-weight:800;font-size:15px;margin-bottom:8px;color:#fff;">7日間返金保証</div>
+          <p style="font-size:13px;color:#888;line-height:1.7;">7日間の無料体験後、ご満足いただけなければ全額返金いたします。</p>
         </div>
 
-        <div style="text-align:center;padding:28px 20px;border:1px solid #E5E5E5;border-radius:20px;">
-          <div style="font-size:36px;margin-bottom:12px;">🛡️</div>
-          <div style="font-weight:800;font-size:15px;margin-bottom:8px;">データ永久保持</div>
-          <p style="font-size:13px;color:#666;line-height:1.7;">解約後もデータは削除されません。いつでも再開できます。</p>
+        <div style="text-align:center;padding:28px 20px;border:1px solid #222;border-radius:20px;background:#1a1a1a;">
+          <div style="font-weight:800;font-size:15px;margin-bottom:8px;color:#fff;">データ永久保持</div>
+          <p style="font-size:13px;color:#888;line-height:1.7;">解約後もデータは削除されません。いつでも再開できます。</p>
         </div>
 
       </div>
@@ -1225,14 +1231,14 @@
           <label>LINE Channel Secret</label>
           <div class="pw-wrap"><input id="channelSecret" type="password" autocomplete="off"><button class="pw-toggle" type="button" onclick="togglePw('channelSecret', this)">表示</button></div>
           <p style="font-size:12px;color:#888;margin-top:6px;display:flex;align-items:center;gap:4px;">
-            🔒 お客様の情報は暗号化されて安全に保管されます。第三者に提供されることは一切ありません。
+            お客様の情報は暗号化されて安全に保管されます。第三者に提供されることは一切ありません。
           </p>
         </div>
         <div class="form-group">
           <label>LINE Channel Access Token</label>
           <div class="pw-wrap"><input id="channelToken" type="password" autocomplete="off"><button class="pw-toggle" type="button" onclick="togglePw('channelToken', this)">表示</button></div>
           <p style="font-size:12px;color:#888;margin-top:6px;display:flex;align-items:center;gap:4px;">
-            🔒 お客様の情報は暗号化されて安全に保管されます。第三者に提供されることは一切ありません。
+            お客様の情報は暗号化されて安全に保管されます。第三者に提供されることは一切ありません。
           </p>
         </div>
         <p class="error-msg" id="registerError"></p>
@@ -1240,13 +1246,13 @@
         <div style="display:flex;align-items:center;justify-content:center;
             gap:16px;margin-top:14px;flex-wrap:wrap;">
           <span style="font-size:12px;color:#888;display:flex;align-items:center;gap:4px;">
-            🔒 SSL暗号化通信
+            SSL暗号化通信
           </span>
           <span style="font-size:12px;color:#888;display:flex;align-items:center;gap:4px;">
-            🛡️ 安全な情報管理
+            安全な情報管理
           </span>
           <span style="font-size:12px;color:#888;display:flex;align-items:center;gap:4px;">
-            ✅ 第三者提供なし
+            第三者提供なし
           </span>
         </div>
       </div>
@@ -1264,7 +1270,7 @@
           border-radius:16px;padding:20px 24px;margin-top:16px;">
           <p style="font-weight:800;color:#16a34a;
              font-size:15px;margin-bottom:10px;">
-            🎉 ご登録ありがとうございます！
+            ご登録ありがとうございます！
           </p>
           <p style="font-size:14px;color:#444;
              line-height:1.8;margin-bottom:14px;">
