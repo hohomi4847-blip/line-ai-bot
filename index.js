@@ -1625,20 +1625,28 @@ app.post('/paddle/webhook', async (req, res) => {
     const shopId = body.data?.custom_data?.shopId
                 || body.data?.customData?.shopId
                 || null;
+
+    // ✅ shopId UUID 검증
+    const validatedShopId = isUuid(shopId) ? shopId : null;
+    if (shopId && !validatedShopId) {
+      await logOpsEvent('warn', 'paddle_invalid_shop_id',
+        'Invalid shopId format in webhook',
+        { shopId, eventId }, null);
+    }
     const customerEmail = body.data?.customer?.email
       || body.data?.custom_data?.email
       || body.data?.customData?.email
       || null;
 
     console.log(`📦 Paddle webhook: ${eventType} | shopId=${shopId} | email=${customerEmail}`);
-    await logOpsEvent('info', 'paddle_webhook_received', eventType, { eventId, shopId, customerEmail }, shopId);
+    await logOpsEvent('info', 'paddle_webhook_received', eventType, { eventId, shopId, customerEmail }, validatedShopId);
 
     // shopId が優先 — なければ email にフォールバック
     function buildQuery(table, updateData) {
       const q = supabase.from(table).update(updateData);
-      if (shopId) {
-        console.log(`  → match by shopId: ${shopId}`);
-        return q.eq('id', shopId);
+      if (validatedShopId) {
+        console.log(`  → match by shopId: ${validatedShopId}`);
+        return q.eq('id', validatedShopId);
       }
       if (customerEmail) {
         console.log(`  → match by email (fallback): ${customerEmail}`);
@@ -1653,7 +1661,7 @@ app.post('/paddle/webhook', async (req, res) => {
     const isSubscriptionTx = (Boolean(body.data?.subscription_id) || eventType === 'subscription.created') && !isOneTimeService;
 
     if ((eventType === 'transaction.completed' && isSubscriptionTx) || eventType === 'subscription.created') {
-      if (!shopId && !customerEmail) {
+      if (!validatedShopId && !customerEmail) {
         console.warn('⚠️ shopId も email もなし — スキップ');
       } else {
         const trialEnd = new Date();
@@ -1669,17 +1677,17 @@ app.post('/paddle/webhook', async (req, res) => {
           const { error } = await q;
           if (error) {
             console.error('shop 활성화 실패:', error);
-            await logOpsEvent('error', 'paddle_activation_failed', error.message, { eventId, eventType, shopId, customerEmail }, shopId);
+            await logOpsEvent('error', 'paddle_activation_failed', error.message, { eventId, eventType, shopId, customerEmail }, validatedShopId);
           } else {
             console.log(`✅ shop 활성화 완료`);
-            await logOpsEvent('info', 'shop_activated_by_paddle', 'Shop activated by Paddle webhook', { eventId, eventType }, shopId);
+            await logOpsEvent('info', 'shop_activated_by_paddle', 'Shop activated by Paddle webhook', { eventId, eventType }, validatedShopId);
           }
         }
       }
     }
 
     if (eventType === 'subscription.canceled') {
-      if (!shopId && !customerEmail) {
+      if (!validatedShopId && !customerEmail) {
         console.warn('⚠️ shopId も email もなし — スキップ');
       } else {
         // effective_at: 실제 서비스 종료 시점(청구 주기 말) — 이 날짜까지 서비스 유지
@@ -1698,10 +1706,10 @@ app.post('/paddle/webhook', async (req, res) => {
           const { error } = await q;
           if (error) {
             console.error('subscription.canceled 업데이트 실패:', error);
-            await logOpsEvent('error', 'paddle_cancel_failed', error.message, { eventId, shopId, customerEmail }, shopId);
+            await logOpsEvent('error', 'paddle_cancel_failed', error.message, { eventId, shopId, customerEmail }, validatedShopId);
           } else {
             console.log(`🚫 구독 취소 완료`);
-            await logOpsEvent('info', 'subscription_canceled_by_paddle', 'Subscription cancellation synced', { eventId, endDate }, shopId);
+            await logOpsEvent('info', 'subscription_canceled_by_paddle', 'Subscription cancellation synced', { eventId, endDate }, validatedShopId);
           }
         }
       }
@@ -1772,7 +1780,7 @@ app.post('/paddle/webhook', async (req, res) => {
     }
 
     if (eventType === 'transaction.refunded') {
-      if (!shopId && !customerEmail) {
+      if (!validatedShopId && !customerEmail) {
         console.warn('⚠️ shopId も email もなし — スキップ');
       } else {
         const q = buildQuery('shops', {
@@ -1783,10 +1791,10 @@ app.post('/paddle/webhook', async (req, res) => {
           const { error } = await q;
           if (error) {
             console.error('transaction.refunded 업데이트 실패:', error);
-            await logOpsEvent('error', 'paddle_refund_failed', error.message, { eventId, shopId, customerEmail }, shopId);
+            await logOpsEvent('error', 'paddle_refund_failed', error.message, { eventId, shopId, customerEmail }, validatedShopId);
           } else {
             console.log(`💰 환불 완료`);
-            await logOpsEvent('warn', 'shop_refunded_by_paddle', 'Shop marked refunded by Paddle webhook', { eventId }, shopId);
+            await logOpsEvent('warn', 'shop_refunded_by_paddle', 'Shop marked refunded by Paddle webhook', { eventId }, validatedShopId);
           }
         }
       }
